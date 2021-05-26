@@ -1,0 +1,15 @@
+{
+    "name": "LooseServicesSample",
+    "references": [
+        "MUtility",
+        "LooseServices"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

@@ -1,0 +1,22 @@
+Service is not marked by Interface
+	Instead:
+		1. [Service(instantiateAutomatically = false)] Attribute
+		2. Virtual method on intaller for suitable Types
+	[Ignore] Attribute not needed anymore.
+	Add IInitializableService interface
+		void InitBeforeFirstLocated();
+	Use Icons for individual objects. (Transform, Rigidbody...)
+	Should be used with custom types!
+
+Publish Beta
+	Balázs
+	Tibi
+	Robi
+	Máté
+
+New Window for finding & creating services &  in sceen & project
+	Remove [+] form no Installer Services.
+
+Better UI fo Installers & ServiceSets
+
+Add tags to ServiceSources.

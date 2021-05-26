@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d136f61293a94aee933c04e43660dac1, type: 3}
+  m_Name: Global Context Installer
+  m_EditorClassIdentifier: 
+  isEnabledInstaller: 1
+  serviceSources:
+  - serviceSourceObject: {fileID: 11400000, guid: b99fab03cb9cb0f4fb88f124346495f7,
+      type: 2}
+    asPrototype: 1
+  - serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
+      type: 3}
+    asPrototype: 1
+  - serviceSourceObject: {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad,
+      type: 2}
+    asPrototype: 0
