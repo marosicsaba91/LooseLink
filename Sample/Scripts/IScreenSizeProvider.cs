@@ -2,7 +2,7 @@
 using LooseServices;
 using UnityEngine;
 
-public interface IScreenSizeProvider : IService
+public interface IScreenSizeProvider
 {
     event Action<Vector2Int> ScreenSizeChanged;
     Vector2Int ScreenSize { get; }

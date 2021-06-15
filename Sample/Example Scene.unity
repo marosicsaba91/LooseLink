@@ -147,16 +147,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 450527953}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2347b45e4d2748b0a566e500e92deeeb, type: 3}
+  m_Script: {fileID: 11500000, guid: 628ac3cbe0c80544691918f25cf45bdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serviceSources:
-  - serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
-      type: 3}
-    asPrototype: 1
-  - serviceSourceObject: {fileID: 2824615768151413838}
-    asPrototype: 0
+  typeProvider: {fileID: 0}
   dontDestroyOnLoad: 1
+  serviceSources:
+  - enabled: 1
+    serviceSourceObject: {fileID: 2824615768151413838}
+    sourceType: 1
+    isExpanded: 1
 --- !u!4 &450527955
 Transform:
   m_ObjectHideFlags: 0
@@ -485,7 +485,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tags:
   - {fileID: 0}
-  - {fileID: 11400000, guid: d1cc7b850318ad44082dd01294665b44, type: 2}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -513,6 +513,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2542751288459471919}
   - component: {fileID: 791050156791309933}
+  - component: {fileID: 2824615768151413839}
   m_Layer: 0
   m_Name: In Scene Time Provider Behaviour
   m_TagString: Untagged
@@ -520,3 +521,17 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &2824615768151413839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824615768151413838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: 
+  age: 0

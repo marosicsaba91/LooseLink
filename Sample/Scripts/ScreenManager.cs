@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using LooseServices;
 using UnityEngine;
 
-[IgnoreService]
 public class ScreenManager : MonoBehaviour, IScreenSizeProvider, ITagged
 {
     Vector2Int _screenSize;
-    
+    [SerializeField] string id;
+    [SerializeField] int age;
     public event Action<Vector2Int> ScreenSizeChanged;
     
     public Vector2Int ScreenSize => _screenSize;
@@ -21,12 +21,12 @@ public class ScreenManager : MonoBehaviour, IScreenSizeProvider, ITagged
         _screenSize = new Vector2Int(Screen.width, Screen.height);
         ScreenSizeChanged?.Invoke(_screenSize);
     }
-
-    public void Initialize() { }
+ 
 
     public IEnumerable<object> GetTags()
     {
-        yield return GetType();
+        yield return (nameof(id),id);
+        yield return (nameof(age),age);
     }
     
 }

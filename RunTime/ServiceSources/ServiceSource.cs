@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq; 
 using UnityEngine;
@@ -12,21 +12,21 @@ abstract class ServiceSource
 {
     List<Type> _allNonAbstractTypes;
     List<Type> _allAbstractTypes;
-    Dictionary<Type, IService> _typeToServiceOnSource;
-    Dictionary<Type, ITagged> _typeToTagProviderOnSource;
+    Dictionary<Type, object> _typeToServiceOnSource;
+    Dictionary<Type, ITagged> _typeToTagProviderOnSource; 
  
-    public Object InstantiatedObject { get; private set; } // GameObject or ScriptableObject 
-    public ServiceSourceSetting setting;
+    public Object InstantiatedObject { get; private set; } // GameObject or ScriptableObject
 
-    public Dictionary<Type, IService> InstantiatedServices { get; private set; } =
-        new Dictionary<Type, IService>();
+    public Dictionary<Type, object> InstantiatedServices { get; private set; } =
+        new Dictionary<Type, object>();
 
-    public abstract Loadability GetLoadability { get; }
+    public abstract Loadability Loadability { get; }
 
-    public bool TryGetService(Type type, IServiceInstaller installer, object[] conditionTags, out object service, out bool newInstance)
+    public bool TryGetService(Type type, IServiceSourceSet set, object[] conditionTags, out object service, out bool newInstance)
     {
         newInstance = false;
-        if (GetLoadability != Loadability.Loadable || !AllAbstractTypes.Contains(type))
+        Loadability loadability = Loadability;
+        if (loadability.type != Loadability.Type.Loadable || !GetAllAbstractTypes(set).Contains(type))
         {
             service = default;
             return false;
@@ -55,8 +55,8 @@ abstract class ServiceSource
 
             if (NeedParentTransform)
             {
-                parentObject = installer != null && installer.GetType().IsSubclassOf(typeof(Component))
-                    ? ((Component) installer).transform
+                parentObject = set != null && set.GetType().IsSubclassOf(typeof(Component))
+                    ? ((Component) set).transform
                     : Services.ParentObject;
             }
             
@@ -65,7 +65,7 @@ abstract class ServiceSource
         }
 
         if (!InstantiatedServices.ContainsKey(type))
-            InstantiatedServices.Add(type, (IService) GetService(type, InstantiatedObject));
+            InstantiatedServices.Add(type,  GetService(type, InstantiatedObject));
 
         service = InstantiatedServices[type];
         return true;
@@ -75,55 +75,49 @@ abstract class ServiceSource
 
     protected abstract Object Instantiate(Transform parent);
 
-    protected abstract object GetService(Type type, Object instantiatedObject); 
+    protected abstract object GetService( Type type, Object instantiatedObject); 
     
     public abstract string Name { get; }
 
     public abstract Object SourceObject { get; }
 
-    public IEnumerable<Type> AllNonAbstractTypes
+    public IEnumerable<Type> GetAllNonAbstractTypes(IServiceSourceSet set)
     {
-        get {
-            if (_allNonAbstractTypes == null)
-                Init();
-            return _allNonAbstractTypes;
-        }
+        if (_allNonAbstractTypes == null)
+            Init(set);
+        return _allNonAbstractTypes;
     }
 
-    public IEnumerable<Type> AllAbstractTypes
+    public IEnumerable<Type> GetAllAbstractTypes(IServiceSourceSet set)
     {
-        get
-        {
-            if (_allAbstractTypes == null)
-                Init();
-            return _allAbstractTypes;
-        }
+        if (_allAbstractTypes == null)
+            Init(set);
+        return _allAbstractTypes;
     }
-    
-    public IService GetServiceOnSource(Type serviceType)
+
+    public object GetServiceOnSource(IServiceSourceSet set, Type serviceType)
     {
         if (_typeToServiceOnSource == null)
-            Init();
+            Init(set);
         return _typeToServiceOnSource[serviceType];
     } 
 
 
-    void Init()
-    {
-        Services.InitServiceTypeMap();
-        _allNonAbstractTypes = GetNonAbstractTypes();
+    void Init(IServiceSourceSet set)
+    { 
+        _allNonAbstractTypes = GetNonAbstractTypes(set);
         _allAbstractTypes = new List<Type>();
-        _typeToServiceOnSource = new Dictionary<Type, IService>();
+        _typeToServiceOnSource = new Dictionary<Type, object>();
         _typeToTagProviderOnSource = new Dictionary<Type, ITagged>();
         foreach (Type concreteType in _allNonAbstractTypes)
         {
             
-            IService loosServiceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
+            object loosServiceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
             ITagged tagProviderInstanceOnSourceObject =
                 loosServiceInstanceOnSourceObject is ITagged tagged ? tagged : null;
 
 
-            IEnumerable<Type> abstractTypes = Services.nonAbstractToILooseServiceTypeMap[concreteType]
+            IEnumerable<Type> abstractTypes = set.ServiceTypeProvider.GetServicesOfNonAbstractType(concreteType)
                 .Where(abstractType => !_allAbstractTypes.Contains(abstractType));
 
             foreach (Type abstractType in abstractTypes)
@@ -135,19 +129,19 @@ abstract class ServiceSource
         }
     }
     
-    protected abstract List<Type> GetNonAbstractTypes();
-    public abstract IService GetServiceOnSourceObject(Type type);
-
-    public abstract string NotInstantiatableReason { get; }
-    public abstract bool HasProtoTypeVersion { get; }
+    protected abstract List<Type> GetNonAbstractTypes(IServiceSourceSet set);
+    public abstract object GetServiceOnSourceObject(Type type);
+ 
+    public abstract ServiceSourceTypes SourceType { get; }
+    public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 
     protected abstract void ClearService();
 
-    public ICollection<object> GetAllTags()
+    public ICollection<object> GetAllTags(IServiceSourceSet set)
     {
 
         if (_typeToTagProviderOnSource == null)
-            Init();
+            Init(set);
 
         var tags = new List<object>();
         foreach (KeyValuePair<Type, ITagged> pair in _typeToTagProviderOnSource)
@@ -172,6 +166,6 @@ abstract class ServiceSource
         InstantiatedServices.Clear();
     }
 
-    public abstract Texture Icon { get; }
+    public Texture Icon => FileIconHelper.GetIconOfObject(SourceObject);
 }
 }

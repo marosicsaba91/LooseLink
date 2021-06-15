@@ -1,5 +1,4 @@
-﻿using System;
-using LooseServices;
+﻿using LooseServices;
 using MUtility;
 using UnityEngine;
 
@@ -19,6 +18,11 @@ public class Clock : MonoBehaviour
     void Awake()
     {
         _timeProviderBehaviour = Services.Get<ITimeProvider>(); 
+    }
+
+    void OnDrawGizmos()
+    {
+        transform.GetPose().DrawGizmo( Color.blue,0.5f);
     }
 
     void Start()

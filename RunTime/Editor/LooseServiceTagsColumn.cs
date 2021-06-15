@@ -35,13 +35,11 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
         columnInfo = new ColumnInfo
         {
             fixWidthGetter = GetTagWidth,
-            customHeaderDrawer = DrawHeader,
-            visibleGetter = IsColumnVisible,
+            customHeaderDrawer = DrawHeader
         };
         _window = window;
     }
-
-
+    
     public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
     {
         if (row.element.Category == LooseServiceRow.RowCategory.Installer) return;
@@ -51,7 +49,7 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
         IEnumerable<object> tagEnumerable;
 
         if (row.element.Category == LooseServiceRow.RowCategory.Source)
-            tagEnumerable = row.element.source.GetAllTags();
+            tagEnumerable = row.element.source.GetAllTags(row.element.set);
         else
             tagEnumerable = row.element.source.GetTagsFor(row.element.type).Distinct();
 
@@ -176,7 +174,8 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     }
 
     float GetTagWidth() => IsTagsOpen ? 138 : 36;
-    public bool ApplyTagSearchOnSource(ServiceSource source) => ApplyTagSearchOnTagArray(source.GetAllTags());
+    public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
+        ApplyTagSearchOnTagArray(source.GetAllTags(set));
 
     public bool ApplyTagSearchOnTagArray(IEnumerable<object> tagsOnService)
     {
@@ -195,11 +194,6 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     }
 
     public bool NoSearch => string.IsNullOrEmpty(SearchTagText);
-
-    bool IsColumnVisible() =>
-        Services.GetInstallers()
-            .Any(installer => installer.GetServiceSources().Any(source => source.GetAllTags().Any()));
-
 
     string[] GenerateSearchWords(string searchText)
     {

@@ -81,8 +81,7 @@ class LooseServiceWindow : EditorWindow
     void OnGUI()
     {
         GenerateServiceSourceTable(); 
-        
-        FoldoutColumn<LooseServiceRow>.inArray = false;
+         
         List<FoldableRow<LooseServiceRow>> rows = GenerateTreeView();
         _serviceTable.Draw(new Rect(x: 0, 0, position.width, position.height), rows);
     }
@@ -91,73 +90,55 @@ class LooseServiceWindow : EditorWindow
     List<FoldableRow<LooseServiceRow>> GenerateTreeView()
     {
         var roots = new List<TreeNode<LooseServiceRow>>();
-        foreach (IServiceInstaller installer in Services.GetInstallers())
+        foreach (IServiceSourceSet installer in Services.GetInstallers())
         {
-            var installerRow = new LooseServiceRow(LooseServiceRow.RowCategory.Installer)
-            {
-                installer = installer,
-            };
-            ServiceSource[] sources = installer.GetServiceSources().ToArray();
-            if (sources.Any(source => source.AllNonAbstractTypes.Any()))
-            {
-                List<TreeNode<LooseServiceRow>> children = GetSourceNodes(installer, sources, hiddenElements: null);
-                if (Enumerable.Any(children))
-                {
-                    var rootNode = new TreeNode<LooseServiceRow>(installerRow, children);
-                    roots.Add(rootNode);
-                }
-            }
-        }
-
-        IEnumerable<ServiceSource> noSettingServiceSources = Services.GetNoInstallerSources();
-
-        IEnumerable<ServiceSource> serviceSources = noSettingServiceSources as ServiceSource[] ?? noSettingServiceSources.ToArray();
-        if (serviceSources.Any())
-        {
-            var noInstallerRow = new LooseServiceRow(LooseServiceRow.RowCategory.Installer);
-            List<TreeNode<LooseServiceRow>> children = GetSourceNodes(installer: null, serviceSources);
-            if (Enumerable.Any(children))
-            {
-                var noInstallerNode = new TreeNode<LooseServiceRow>(noInstallerRow, children);
-                roots.Add(noInstallerNode);
-            }
+            TreeNode<LooseServiceRow> installerNode = GetInstallerNode(installer);
+            roots.Add(installerNode);
         }
 
         return FoldableRow<LooseServiceRow>.GetRows(roots, openedElements, row => row.ToString());
+    }
 
-        List<TreeNode<LooseServiceRow>> GetSourceNodes(
-            IServiceInstaller installer,
-            IEnumerable<ServiceSource> nodes,
-            ICollection<Type> hiddenElements = null
-        )
+    TreeNode<LooseServiceRow> GetInstallerNode(IServiceSourceSet set)
+    {
+        var installerRow = new LooseServiceRow(LooseServiceRow.RowCategory.Installer) {set = set};
+        List<TreeNode<LooseServiceRow>> children = GetChildNodes(set);  
+        return new TreeNode<LooseServiceRow>(installerRow, children); 
+    }
+
+    List<TreeNode<LooseServiceRow>> GetChildNodes(IServiceSourceSet iSet)
+    {
+        var nodes = new List<TreeNode<LooseServiceRow>>();
+        ServiceSourceSetting[] sourceSettings = iSet.GetServiceSourceSettings().ToArray();
+        foreach (ServiceSourceSetting sourceSetting in sourceSettings)
         {
-            var sources = new List<TreeNode<LooseServiceRow>>();
-            foreach (ServiceSource source in nodes)
+            if(!sourceSetting.enabled) continue;
+            ServiceSource source = sourceSetting.GetServiceSource(iSet);
+            if (source != null)
             {
-                if (hiddenElements != null)
-                    if (source.AllAbstractTypes.All(hiddenElements.Contains))
-                        continue;
-
                 var sourceRow = new LooseServiceRow(LooseServiceRow.RowCategory.Source)
                 {
-                    installer = installer,
+                    set = iSet,
                     source = source,
                     loadedInstance = source.InstantiatedObject,
-                    loadability = Loadability.Loadable
+                    loadability = new Loadability(Loadability.Type.Loadable)
                 };
+                
                 var abstractTypes = new List<TreeNode<LooseServiceRow>>();
-                var sourceNode = new TreeNode<LooseServiceRow>(sourceRow, abstractTypes); 
-                sourceRow.loadability = source.GetLoadability;
+                var sourceNode = new TreeNode<LooseServiceRow>(sourceRow, abstractTypes);
+                sourceRow.loadability = source.Loadability;
 
                 var typesShowed = 0;
-                foreach (Type serviceType in source.AllAbstractTypes)
+                foreach (Type serviceType in source.GetAllAbstractTypes(iSet))
                 {
                     var abstractTypeRow = new LooseServiceRow(LooseServiceRow.RowCategory.Service)
                     {
-                        installer = installer,
+                        set = iSet,
                         source = source,
                         type = serviceType,
                     };
+
+
                     if (source.InstantiatedServices.ContainsKey(serviceType))
                         abstractTypeRow.loadedInstance = source.InstantiatedObject;
 
@@ -167,26 +148,34 @@ class LooseServiceWindow : EditorWindow
                     if (!_servicesColumn.ApplyServiceSearchOnType(serviceType.ToString())) continue;
                     if (!_tagsColumn.ApplyTagSearchOnTagArray(source.GetTagsFor(serviceType))) continue;
                     abstractTypes.Add(abstractTypeNode);
-                    typesShowed++; 
+                    typesShowed++;
                 }
 
                 bool serviceMatchSearch = _servicesColumn.ApplyServiceSourceSearch(source);
-                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(source);
+                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iSet, source);
                 bool noServiceSearch = _servicesColumn.NoSearch;
-                bool noTagSearch =  _tagsColumn.NoSearch;
+                bool noTagSearch = _tagsColumn.NoSearch;
                 bool anyTypesShown = typesShowed != 0;
 
-                if (noTagSearch && noServiceSearch)
-                {
-                    if (anyTypesShown)
-                        sources.Add(sourceNode);
-                }
-                else if ((noServiceSearch || serviceMatchSearch) && (noTagSearch || tagMatchSearch))
-                    sources.Add(sourceNode);
-            }
+                if (anyTypesShown)
+                    nodes.Add(sourceNode);
 
-            return sources;
+                else if (noTagSearch && noServiceSearch)
+                    nodes.Add(sourceNode);
+
+                else if ((noServiceSearch || serviceMatchSearch) && (noTagSearch || tagMatchSearch))
+                    nodes.Add(sourceNode);
+            }
+            else
+            {
+                ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+                if (set == null) continue;
+                TreeNode<LooseServiceRow> installerNode = GetInstallerNode(set);
+                nodes.Add(installerNode);
+            }
         }
+
+        return nodes;
     }
 
     public static int GetLastControlId()

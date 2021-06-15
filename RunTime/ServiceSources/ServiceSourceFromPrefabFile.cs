@@ -1,6 +1,5 @@
-﻿﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic; 
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -11,21 +10,22 @@ class ServiceSourceFromPrefabFile : ServiceSource
 {
     public GameObject prefabFile;
 
-    protected override List<Type> GetNonAbstractTypes()
+    internal ServiceSourceFromPrefabFile(GameObject prefabFile)
     {
-        var result = new List<Type>();
-        if (prefabFile == null) return result;
-        
-        IService[] services = prefabFile.GetComponents<IService>();
-        result.AddRange(services.Select(service => service.GetType()));
-
-        return result;
+        this.prefabFile = prefabFile;
     }
 
-    public override Loadability GetLoadability => prefabFile == null ? Loadability.Error : Loadability.Loadable;
-    public override string NotInstantiatableReason =>"No Prefab";
+    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set) => 
+        set.ServiceTypeProvider.AllServiceComponents(prefabFile);
 
-    public override bool HasProtoTypeVersion => true;
+    public override Loadability Loadability => prefabFile == null
+        ? new Loadability(Loadability.Type.Error, "No Prefab") 
+        : Loadability.Loadable; 
+
+    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromPrefabFile;
+
+    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
+    { get { yield return ServiceSourceTypes.FromPrefabPrototype; } }
     
     protected override void ClearService() { }
     protected override bool NeedParentTransform => false;
@@ -35,12 +35,12 @@ class ServiceSourceFromPrefabFile : ServiceSource
     protected override object GetService(Type type, Object instantiatedObject) =>
         ((GameObject) instantiatedObject).GetComponent(type);
      
-    public override IService GetServiceOnSourceObject(Type type) => (IService) prefabFile.GetComponent(type);
+    public override object GetServiceOnSourceObject(Type type) => prefabFile.GetComponent(type);
 
     public override string Name => prefabFile != null ? prefabFile.name : string.Empty;
     public override Object SourceObject => prefabFile;
 
-    public override Texture Icon => FileIconHelper.GetIconOfSource(FileIconHelper.FileType.Prefab);
+    // public override Texture Icon => FileIconHelper.GetIconOfSource(FileIconHelper.FileType.Prefab); 
     
     
 }

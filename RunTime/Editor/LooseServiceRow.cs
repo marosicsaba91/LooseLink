@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
-using System; 
+using System;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -16,7 +17,7 @@ class LooseServiceRow
 
     public RowCategory Category { get; }
 
-    public IServiceInstaller installer; 
+    public IServiceSourceSet set; 
     public ServiceSource source;
     public Type type;
     public Object loadedInstance;
@@ -25,14 +26,13 @@ class LooseServiceRow
     public LooseServiceRow(RowCategory category)
     {
         Category = category;
-        installer = null;
+        set = null;
         source = null;
         type = null;
         
-        loadedInstance = null; 
-        loadability = Loadability.Loadable; 
+        loadedInstance = null;
+        loadability = new Loadability(Loadability.Type.Loadable);
     }
-
 
     public Object SelectionObject
     {
@@ -41,7 +41,7 @@ class LooseServiceRow
             switch (Category)
             {
                 case RowCategory.Installer:
-                    return installer?.Obj;
+                    return set?.Obj;
                 case RowCategory.Source:
                     return source.SourceObject;
                 case RowCategory.Service:
@@ -54,30 +54,28 @@ class LooseServiceRow
 
     public override string ToString()
     {
-        string i = installer == null ? "-" : installer.Name;
+        string i = set == null ? "-" : set.Name;
         string st = source == null ? "-" : source.GetType().ToString();
         string s = source == null ? "-" : source.Name;
-        string hash = source?.setting == null ? "-" : source.setting.GetHashCode().ToString();
+        // string hash = source?.setting == null ? "-" : source.setting.GetHashCode().ToString();
         string t = type == null ? "-" : type.Name; 
-        return $"{i},{st}:{s}:{hash},{t}";
+        return $"{i},{st}:{s},{t}";
     }
     
     public GUIContent GetGUIContent()
     {
         switch (Category)
         {
-            case RowCategory.Installer when installer == null:
-                return new GUIContent("All Services instantiatable without installer");
-            case RowCategory.Installer when installer.Obj is ScriptableObject:
-                return new GUIContent(installer.Name,
-                    FileIconHelper.GetIconOfSource(FileIconHelper.FileType.ScriptableObject));
-            case RowCategory.Installer when installer.Obj is GameObject:
-                return new GUIContent(installer.Name,
-                    FileIconHelper.GetIconOfSource(FileIconHelper.FileType.GameObject));
+            case RowCategory.Installer:
+                return new GUIContent(set.Name,
+                    FileIconHelper.GetIconOfObject(set.Obj)); 
             case RowCategory.Source:
                 return new GUIContent(source.Name, source.Icon);
             case RowCategory.Service:
-                return new GUIContent(type.ToString(), FileIconHelper.GetIconOfSource(FileIconHelper.FileType.CsFile));
+                Texture t = FileIconHelper.GetIconOfType(type);
+                if (t == null)
+                    t = FileIconHelper.GetIconOfSource(FileIconHelper.FileType.CsFile);
+                return new GUIContent(type.ToString(), t);
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -88,63 +86,99 @@ class LooseServiceRow
     {
         switch (Category)
         {
-            case RowCategory.Service when type.IsInterface:
-                return new GUIContent("Interface", image: null,
-                    "ILooseService: Interface");
-            case RowCategory.Service when type.IsAbstract:
-            {
-                if (type.IsSubclassOf(typeof(MonoBehaviour)))
-                    return new GUIContent("Abs. MB. class", image: null,
-                        "ILooseService: Abstract MonoBehaviour class");
-                if (type.IsSubclassOf(typeof(ScriptableObject)))
-                    return new GUIContent("Abs. SO. class", image: null,
-                        "ILooseService: Abstract ScriptableObject class");
-                break;
-            }
-            case RowCategory.Service when type.IsSubclassOf(typeof(MonoBehaviour)):
-                return new GUIContent("MB. class", image: null, "ILooseService: MonoBehaviour class");
-            case RowCategory.Service when type.IsSubclassOf(typeof(ScriptableObject)):
-                return new GUIContent("SO. class", image: null, "ILooseService: ScriptableObject class");
+            case RowCategory.Service :
+                return GetCategoryGUIContentForService(type);
             case RowCategory.Source:
-            {
-                Type serviceSourceType = source.GetType();
-                if (serviceSourceType == typeof(ServiceSourceFromPrefabPrototype))
-                    return new GUIContent("Source: Prefab Prototype", image: null,
-                        "Service Source: Creates an instance of a Prefab with ILooseService component(s) in the root");
-                if (serviceSourceType == typeof(ServiceSourceFromPrefabFile))
-                    return new GUIContent("Source: Prefab File", image: null,
-                        "Service Source: Gives back the Prefab File's Component");
-                if (serviceSourceType == typeof(ServiceSourceFromScriptableObjectInstance))
-                    return new GUIContent("Source: SO. File", image: null,
-                        "Service Source: File instance of a ScriptableObject that implements ILooseService");
-                if (serviceSourceType == typeof(ServiceSourceFromScriptableObjectPrototype))
-                    return new GUIContent("Source: SO. Proto.", image: null,
-                        "Service Source: Creates a copy of a ScriptableObject file instance that implements ILooseService");
-                if (serviceSourceType == typeof(ServiceSourceFromSceneObject))
-                    return new GUIContent("Source: Scene GO.", image: null,
-                        "Service Source: GameObject in Scene with ILooseService component(s)");
-                if (serviceSourceType == typeof(ServiceSourceFromScriptableObjectType))
-                    return new GUIContent("Source: SO. class", image: null,
-                        "Service Source: Creates a new default instance of an ILooseService ScriptableObject class");
-                if (serviceSourceType == typeof(ServiceSourceFromMonoBehaviourType))
-                    return new GUIContent("Source: MB. class", image: null,
-                        "Service Source: Creates a new default instance of an ILooseService MonoBehaviour class");
-                break;
-            } 
-            case RowCategory.Installer when installer != null && installer.GetType() == typeof(SceneInstaller):
-                return new GUIContent("Installer: Scene Context", image: null,
-                    "Scene Context Service Installer");
-            case RowCategory.Installer when installer != null && installer.GetType() == typeof(GlobalInstaller):
-                return new GUIContent(text: "Installer: Global Context", image: null,
-                    "Global Context Service Installer");
-            default:
-                return new GUIContent(text: "Installer: Non", image: null,
-                    "All non abstract implementations of ILooseService, without any user defined installed Service Source");
-        }
-
+                return GetCategoryGUIContentForServiceSource(source);
+            case RowCategory.Installer:
+                return GetCategoryGUIContentForInstaller(set); 
+        } 
         throw new ApplicationException("Unexpected Category!");
     }
 
+
+    internal static GUIContent GetCategoryGUIContentForInstaller(IServiceSourceSet iSet)
+    {
+        if(iSet is SceneServiceSet)
+            return new GUIContent("Scene Inst.", installerIcon,
+                "Scene Installer: Scene Context Service Installer");
+        if (iSet is ServiceSourceSet set)
+        {
+            if (set.useAsGlobalInstaller)
+                return new GUIContent("Global Inst.", installerIcon,
+                    "Global Installer: Global Context Service Installer");
+            return new GUIContent("Source Set", installerIcon,
+                "Service Source Set");
+        }
+
+        return UnexpectedCategoryGUIContent;
+    }
+
+    internal static GUIContent GetCategoryGUIContentForService(Type type)
+    {
+        if (type.IsInterface)
+            return new GUIContent("Interface", serviceIcon, "Service: Interface");
+        if (type.IsAbstract)
+        {
+            if (type.IsSubclassOf(typeof(MonoBehaviour)))
+                return new GUIContent("Abs. MB.", serviceIcon, "Service: Abstract MonoBehaviour class");
+            if (type.IsSubclassOf(typeof(ScriptableObject)))
+                return new GUIContent("Abs. SO.", serviceIcon, "Service: Abstract ScriptableObject class");
+            return new GUIContent("Abs. class", serviceIcon, "Service: Abstract ScriptableObject class");
+        }
+
+        if (type.IsSubclassOf(typeof(MonoBehaviour)))
+            return new GUIContent("MonoB.", serviceIcon, "Service: MonoBehaviour class");
+        if (type.IsSubclassOf(typeof(ScriptableObject)))
+            return new GUIContent("ScriptableObj.", serviceIcon, "Service: ScriptableObject class");
+        if (type.IsSubclassOf(typeof(Component)))
+            return new GUIContent("Component", serviceIcon, "Service: Component class");
+
+        if (type.IsClass)
+            return new GUIContent("Class", serviceIcon, "Service: Class"); 
+        
+        return UnexpectedCategoryGUIContent;
+    }
+    
+    internal static GUIContent GetCategoryGUIContentForServiceSource(ServiceSource source, bool withIcons = true) =>
+        GetCategoryGUIContentForServiceSource(source.SourceType, withIcons);
+
+    internal static GUIContent GetCategoryGUIContentForServiceSource(ServiceSourceTypes sourceType, bool withIcons = true)
+    {
+        Texture image = withIcons ? serviceSourceIcon : null;
+        switch (sourceType)
+        {
+            case ServiceSourceTypes.FromPrefabPrototype:
+                return new GUIContent("Prefab Proto.", image,
+                    "Service Source: Service Creates an instance of a Prefab with Service Type component(s) in the root");
+            case ServiceSourceTypes.FromPrefabFile:
+                return new GUIContent("Prefab File", image,
+                    "Service Source: Service Gives back the Prefab File's Component");
+            case ServiceSourceTypes.FromScriptableObjectFile:
+                return new GUIContent("SO. File", image,
+                    "Service Source: ScriptableObject File instance that implements any Service Type");
+            case ServiceSourceTypes.FromScriptableObjectPrototype:
+                return new GUIContent("SO. Proto.", image,
+                    "Service Source: Creates a copy of a ScriptableObject file instance that implements any Service Type");
+            case ServiceSourceTypes.FromSceneGameObject:
+                return new GUIContent("Scene GO.", image,
+                    "Service Source: GameObject in Scene with Service Type component(s)");
+            case ServiceSourceTypes.FromScriptableObjectType:
+                return new GUIContent("SO. script", image,
+                    "Service Source: Creates a new default instance of a Service Type ScriptableObject class");
+            case ServiceSourceTypes.FromMonoBehaviourType:
+                return new GUIContent("MB. script", image,
+                    "Service Source: Creates a new GameObject with a MonoBehaviour class that implements a Service Type");
+            default:
+                return UnexpectedCategoryGUIContent;
+        }
+    } 
+    static GUIContent UnexpectedCategoryGUIContent => 
+        new GUIContent("!!! Unknown !!!", image: null, "Error: Unexpected Category");
+
+    public static readonly Texture installerIcon =EditorGUIUtility.IconContent("VerticalLayoutGroup Icon").image;
+    public static readonly Texture serviceSourceIcon = EditorGUIUtility.IconContent("blendKeySelected").image;
+    public static readonly Texture serviceIcon = EditorGUIUtility.IconContent("curvekeyframe").image;
 } 
 }
 #endif

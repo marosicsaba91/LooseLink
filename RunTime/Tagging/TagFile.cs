@@ -1,7 +1,7 @@
 ﻿using LooseServices;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Tag", menuName = "Loose Link/Tag File")]
+[CreateAssetMenu(fileName = "Tag", menuName = "Loose Services/Tag File")]
 public class TagFile : ScriptableObject, ITag
 {
     [SerializeField] Color color;

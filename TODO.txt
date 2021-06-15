@@ -1,22 +1,22 @@
-Service is not marked by Interface
-	Instead:
-		1. [Service(instantiateAutomatically = false)] Attribute
-		2. Virtual method on intaller for suitable Types
-	[Ignore] Attribute not needed anymore.
-	Add IInitializableService interface
-		void InitBeforeFirstLocated();
-	Use Icons for individual objects. (Transform, Rigidbody...)
-	Should be used with custom types!
+Service Types work on the Service Source Setting level.
+    Editor Type Setting
+    Delete any other form of service type setting
 
-Publish Beta
-	Balázs
-	Tibi
-	Robi
-	Máté
 
-New Window for finding & creating services &  in sceen & project
-	Remove [+] form no Installer Services.
+Add Tags To Service Setting.
 
-Better UI fo Installers & ServiceSets
+Disable not working Setting in playtime or make them work
+Get rid of clear cache button.
 
-Add tags to ServiceSources.
+Cache init & tagged types
+
+Support for Generic Types
+
+Add Tests to Project
+Add Examples to Project
+Update Manual
+
+
+
+Publish Beta:
+	Balázs,	Tibi, Robi, Máté

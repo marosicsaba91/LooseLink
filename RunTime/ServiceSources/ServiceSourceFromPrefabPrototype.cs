@@ -1,6 +1,5 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq; 
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -11,28 +10,32 @@ class ServiceSourceFromPrefabPrototype : ServiceSource
 {
     public GameObject prototypePrefab;
   
-    protected override List<Type> GetNonAbstractTypes()
+    internal ServiceSourceFromPrefabPrototype( GameObject prototypePrefab)
     {
-        var result = new List<Type>();
-        if (prototypePrefab == null) return result;
-        
-        IService[] services = prototypePrefab.GetComponents<IService>();
-        result.AddRange(services.Select(service => service.GetType()));
-
-        return result;
+        this.prototypePrefab = prototypePrefab;
     }
-  
-    public override Loadability GetLoadability =>
-        prototypePrefab == null ? Loadability.Error
-        : !Application.isPlaying ? Loadability.Warning
-        : Loadability.Loadable;
     
+    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set) => 
+        set.ServiceTypeProvider.AllServiceComponents(prototypePrefab);
+   
+    public override Loadability Loadability
+    {
+        get
+        {
+            if (prototypePrefab == null)
+                return new Loadability(Loadability.Type.Error, "No Prefab");
+            if(!Application.isPlaying)
+                return new Loadability(
+                    Loadability.Type.Warning,
+                    "You can't instantiate prefab through Loose Services in Editor Time");
+            return Loadability.Loadable;
+        }
+    } 
     
-    public override string NotInstantiatableReason => prototypePrefab == null 
-        ? "No Prefab"
-        : "You can't instantiate prefab through Loose Link in Editor Time";
+    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromPrefabPrototype;
 
-    public override bool HasProtoTypeVersion => true;
+    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
+    { get { yield return ServiceSourceTypes.FromPrefabFile; } }
 
     protected override bool NeedParentTransform => true;
 
@@ -59,13 +62,12 @@ class ServiceSourceFromPrefabPrototype : ServiceSource
     protected override object GetService(Type type, Object instantiatedObject) =>
         ((GameObject) instantiatedObject).GetComponent(type);
 
-    public override IService GetServiceOnSourceObject(Type type) =>
-        (IService) prototypePrefab.GetComponent(type);
+    public override object GetServiceOnSourceObject(Type type) =>
+        prototypePrefab.GetComponent(type);
  
     public override string Name => prototypePrefab != null ? prototypePrefab.name : string.Empty;
     public override Object SourceObject => prototypePrefab;
-    
-    public override Texture Icon => FileIconHelper.GetIconOfSource(FileIconHelper.FileType.Prefab);
+     
 
 }
 }

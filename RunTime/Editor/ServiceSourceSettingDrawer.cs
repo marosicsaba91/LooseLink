@@ -4,154 +4,190 @@ using System.Collections.Generic;
 using System.Linq; 
 using MUtility;
 using UnityEditor;
-using UnityEngine;
+using UnityEngine; 
 using Object = UnityEngine.Object;
 
 namespace LooseServices.Editor
 {
-[CustomPropertyDrawer(typeof(ServiceSourceSetting))]
-public class ServiceSourceSettingDrawer : PropertyDrawer
+static class ServiceSourceSettingDrawer 
 {
-    GUITable<FoldableRow<LooseServiceRow>> _servicesTable;
-    readonly List<string> _openedElements = new List<string>();
-    List<FoldableRow<LooseServiceRow>> _lines;
-    
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    const float padding = 4;
+
+    static void DrawSourceSetting(
+        Rect position,
+        IServiceSourceSet iSet,
+        Object serializedObject,
+        List<ServiceSourceSetting> sourceSettings,
+        int index)
     {
-        float space = EditorGUIUtility.standardVerticalSpacing; 
-        const float foldoutW = 16;
-        const float toggleW = 135;
+        EditorHelper.DrawBox(position);
 
-        var sourceSetting = (ServiceSourceSetting) property.GetObjectOfProperty();
-        ServiceSource[] sources = sourceSetting.GetServiceSources().ToArray();
+        ServiceSourceSetting sourceSetting = sourceSettings[index];
 
-        if (sources.All(source => !source.AllNonAbstractTypes.Any()))
-            sources = new ServiceSource[0];
-        
-        if (_servicesTable == null)
-            _servicesTable = GenerateServiceSourceTable(EditorWindow.focusedWindow);
-        
-        _servicesTable.window = EditorWindow.focusedWindow;
+        position = new Rect(
+            position.x + padding, position.y += padding,
+            position.width - (padding * 2), position.height - (padding * 2));
+        float space = EditorGUIUtility.standardVerticalSpacing;
+        const float toggleW = 14;
+        const float foldoutW = 11;
+        const float serviceTypeW = 100;
 
-        var foldoutPos = new Rect(foldoutW + position.x, position.y, foldoutW, EditorGUIUtility.singleLineHeight);
-        property.isExpanded = EditorGUI.Foldout(foldoutPos,property.isExpanded, GUIContent.none);
-            
+        if (sourceSetting == null)
+            return;
 
-        float w = position.width - ( foldoutW + toggleW + space * 2);
-        var objectPos = new Rect(position.x + foldoutW + space, position.y, w, EditorGUIUtility.singleLineHeight);
+        ServiceSource source = sourceSetting.GetServiceSource(iSet);
+        ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+
+        var foldoutPos = new Rect(position.x + space + foldoutW, position.y, foldoutW,
+            EditorGUIUtility.singleLineHeight);
+
+        bool nonEmptySource = source != null && source.GetAllAbstractTypes(iSet).Any();
+        if (nonEmptySource)
+            sourceSetting.isExpanded = EditorGUI.Foldout(foldoutPos, sourceSetting.isExpanded, GUIContent.none);
+
+        var togglePos = new Rect(foldoutPos.x + space, position.y, toggleW, EditorGUIUtility.singleLineHeight);
+        bool enabled = EditorGUI.Toggle(togglePos, sourceSetting.enabled);
+        if (enabled != sourceSetting.enabled)
+        {
+            Undo.RecordObject(serializedObject, (enabled ? "Enables" : "Disabled") + " Service Source");
+            sourceSetting.enabled = enabled;
+            EditorUtility.SetDirty(serializedObject);
+        }
+
+
+        const float actionButtonWidth = 20;
+        float w = position.width - (toggleW + foldoutW + serviceTypeW + space * 4 + actionButtonWidth * 3);
+        var objectPos = new Rect(togglePos.xMax + space, position.y, w, EditorGUIUtility.singleLineHeight);
         Object obj = EditorGUI.ObjectField(
             objectPos,
             sourceSetting.serviceSourceObject,
-            typeof(Object), 
+            typeof(Object),
             allowSceneObjects: true);
 
-        bool asPrototype = sourceSetting.asPrototype;
+        var sourceTypePos =
+            new Rect(objectPos.xMax + space, position.y, serviceTypeW, EditorGUIUtility.singleLineHeight);
 
-        GUIContent categoryContent;
-        switch (sources.Length)
+        ServiceSourceTypes sourceType = sourceSetting.sourceType;
+        if (nonEmptySource)
         {
-            case 0:
-                categoryContent = new GUIContent("NO SERVICE SOURCE");
-                break;
-            case 1:
-                categoryContent = GenerateRow(sources[0]).node.GetCategoryGUIContent();
-                break;
-            default:
-                categoryContent = new GUIContent($"Source Set ({sources.Length})");
-                break;
+            sourceType = source.SourceType;
+            if (source.AlternativeSourceTypes.Any())
+            {
+                var options = new List<ServiceSourceTypes> {sourceType};
+                options.AddRange(source.AlternativeSourceTypes);
+                options.Sort();
+                int currentIndex = options.IndexOf(sourceType);
+
+                GUIContent[] guiContentOptions =
+                    options.Select(
+                            sst => LooseServiceRow.GetCategoryGUIContentForServiceSource(sst, withIcons: false))
+                        .ToArray();
+
+                int selectedIndex = EditorGUI.Popup(sourceTypePos, currentIndex, guiContentOptions);
+                sourceType = options[selectedIndex];
+            }
+            else
+            {
+                GUIContent content = LooseServiceRow.GetCategoryGUIContentForServiceSource(source, withIcons: false);
+                GUI.Label(sourceTypePos, content);
+            }
         }
+        else if (set != null)
+            GUI.Label(sourceTypePos,
+                new GUIContent($"Source Set ({set.GetServiceSources().Count()})"));
+        else
+            GUI.Label(sourceTypePos, new GUIContent("NO SERVICE"));
 
-        _lines = sources.Length == 1 ? GetAbstractTypeRows(sources) : GenerateTreeView(sources);
-
-        var togglePos = new Rect(objectPos.xMax + space, position.y, toggleW, EditorGUIUtility.singleLineHeight);
-        if (sources.Length == 1 && sources[0].HasProtoTypeVersion)
+        // Object or source Type changed
+        if (obj != sourceSetting.serviceSourceObject || sourceType != sourceSetting.sourceType)
         {
-            if (GUI.Button(togglePos, GUIContent.none))
-                asPrototype = !asPrototype;
-        }
+            Undo.RecordObject(serializedObject, "Setting Object Changed");
 
-        GUI.Label(togglePos, categoryContent, LooseServiceFoldoutColumn.CategoryStyle);
-        
-        
-        // Object changed
-        if (obj != sourceSetting.serviceSourceObject || asPrototype != sourceSetting.asPrototype )
-        {
-            Undo.RecordObject(property.serializedObject.targetObject, "Setting Object Changed");
-
-            if (property.serializedObject.targetObject is ServiceSourceSet set1 && obj is ServiceSourceSet set2)
+            if (serializedObject is ServiceSourceSet set1 && obj is ServiceSourceSet set2)
             {
                 if (!ServiceSourceSet.IsCircular(set1, set2))
                     sourceSetting.serviceSourceObject = obj;
-            }else
+            }
+            else
                 sourceSetting.serviceSourceObject = obj;
 
-            sourceSetting.asPrototype = asPrototype;
+            sourceSetting.sourceType = sourceType;
             sourceSetting.Clear();
-            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            EditorUtility.SetDirty(serializedObject);
         }
 
-        if( !property.isExpanded) return;
+        // Action Buttons 
+        var actionButtonPos = new Rect(sourceTypePos.xMax + space, position.y, actionButtonWidth,
+            EditorGUIUtility.singleLineHeight);
+        GUI.enabled = index > 0;
+        if (GUI.Button(actionButtonPos, GUIContent.none))
+        {
+            Undo.RecordObject(serializedObject, "Service Setting Moved Up");
+            sourceSettings.Swap(index, index - 1);
+            EditorUtility.SetDirty(serializedObject);
+        }
+
+        GUI.Label(actionButtonPos, upIcon, ActionButtonStyle);
+        actionButtonPos.x += actionButtonWidth - 1;
+        GUI.enabled = index < sourceSettings.Count - 1;
+        if (GUI.Button(actionButtonPos, GUIContent.none))
+        {
+            Undo.RecordObject(serializedObject, "Service Setting Moved Down");
+            sourceSettings.Swap(index, index + 1);
+            EditorUtility.SetDirty(serializedObject);
+        }
+
+        GUI.Label(actionButtonPos, downIcon, ActionButtonStyle);
+        actionButtonPos.x += actionButtonWidth - 1;
+        GUI.enabled = true;
+        if (GUI.Button(actionButtonPos, GUIContent.none))
+        {
+            Undo.RecordObject(serializedObject, "Service Setting Deleted");
+            sourceSettings.RemoveAt(index);
+            EditorUtility.SetDirty(serializedObject);
+        }
+
+        GUI.Label(actionButtonPos, deleteIcon, ActionButtonStyle);
+
+        if (!sourceSetting.isExpanded) return;
+
+
         var sourcesPos = new Rect(
-            position.x + foldoutW +space,
-            position.y + EditorGUIUtility.singleLineHeight,
-            position.width - foldoutW-space,
-            position.height - EditorGUIUtility.singleLineHeight);
-        
-        FoldoutColumn<LooseServiceRow>.inArray = true;
-        _servicesTable.Draw(sourcesPos, _lines);
-         
-    }
+            position.x + foldoutW + space,
+            position.y + EditorGUIUtility.singleLineHeight + padding,
+            position.width - foldoutW - space,
+            EditorGUIUtility.singleLineHeight);
 
-    List<FoldableRow<LooseServiceRow>> GetAbstractTypeRows(ServiceSource[] sources)
-    {
-        IEnumerable<TreeNode<LooseServiceRow>> a = GetAbstractTypeNodes(sources[0]);
-        return FoldableRow<LooseServiceRow>.GetRows(a, _openedElements, row => row.ToString());
-    }
-
-    static GUITable<FoldableRow<LooseServiceRow>> GenerateServiceSourceTable( EditorWindow window)
-    { 
-        var componentTypeColumns = new List<IColumn<FoldableRow<LooseServiceRow>>>
-        {
-            new LooseServiceFoldoutColumn(new ColumnInfo
+        if (source != null)
+            foreach (LooseServiceRow row in GetAbstractTypeRows(iSet, source))
             {
-                fixWidth = 0,
-                relativeWidthWeight = 1,
-            }),
-        };
+                LooseServiceFoldoutColumn.DrawCell(sourcesPos, row, selectElement: false);
+                sourcesPos.y += EditorGUIUtility.singleLineHeight;
+            }
 
-        return new GUITable<FoldableRow<LooseServiceRow>>(componentTypeColumns, window)
-        {
-            emptyCollectionTextGetter = () => "No Service Source",
-            drawHeader = false
-        };
     }
 
-    List<FoldableRow<LooseServiceRow>> GenerateTreeView(IEnumerable<ServiceSource> sources)
+
+    static readonly GUIStyle categoryPopupStyle = default;
+    public static GUIStyle CategoryPopupStyle => categoryPopupStyle ?? new GUIStyle ("Button")
     {
-        var roots = new List<TreeNode<LooseServiceRow>>();
-        foreach (ServiceSource source in sources)
-            roots.Add(GenerateRow(source));
+        fontSize = 10,
+        normal = {textColor = GUI.skin.label.normal.textColor},
+    };
 
-        return FoldableRow<LooseServiceRow>.GetRows(roots, _openedElements, row => row.ToString());
-    }
-
-    TreeNode<LooseServiceRow> GenerateRow(ServiceSource source)
+    
+    static readonly GUIStyle actionButtonStyle = default;
+    public static GUIStyle ActionButtonStyle => actionButtonStyle ?? new GUIStyle ("Label")
     {
-        var sourceRow = new LooseServiceRow(LooseServiceRow.RowCategory.Source)
-        {
-            installer = null,
-            source = source,
-        };
-        List<TreeNode<LooseServiceRow>> abstractTypes = GetAbstractTypeNodes(source);
-        var sourceNode = new TreeNode<LooseServiceRow>(sourceRow, abstractTypes); 
-
-        return sourceNode;
-    }
-
-    static List<TreeNode<LooseServiceRow>> GetAbstractTypeNodes(ServiceSource source)
+        fontSize = 10,
+        alignment = TextAnchor.MiddleCenter,
+        normal = {textColor = GUI.skin.label.normal.textColor}
+    };
+     
+    static List<LooseServiceRow> GetAbstractTypeRows(IServiceSourceSet set,ServiceSource source)
     {
-        var abstractTypes = new List<TreeNode<LooseServiceRow>>(); 
-        foreach (Type serviceType in source.AllAbstractTypes)
+        List<LooseServiceRow> result = new List<LooseServiceRow>();
+        foreach (Type serviceType in source.GetAllAbstractTypes(set))
         {
             var abstractTypeRow = new LooseServiceRow(LooseServiceRow.RowCategory.Service)
             {
@@ -161,28 +197,71 @@ public class ServiceSourceSettingDrawer : PropertyDrawer
             if (source.InstantiatedServices.ContainsKey(serviceType))
                 abstractTypeRow.loadedInstance = source.InstantiatedObject;
 
-
-            var abstractTypeNode = new TreeNode<LooseServiceRow>(abstractTypeRow, children: null);
-            abstractTypes.Add(abstractTypeNode);
+            result.Add(abstractTypeRow);
         }
 
-        return abstractTypes;
+        return result;
     }
 
 
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    static float HeightOfSourceSetting(ServiceSourceSetting sourceSetting, IServiceSourceSet iSet)
     {
-        if (!property.isExpanded)
-            return EditorGUIUtility.singleLineHeight;
-        
-        const float spacing = 10;
-        var sourceSetting = (ServiceSourceSetting) property.GetObjectOfProperty();
-        ServiceSource[] sources = sourceSetting.GetServiceSources().ToArray();
-        _lines = sources.Length == 1 ? GetAbstractTypeRows(sources) : GenerateTreeView(sources);
+        float oneLine = EditorGUIUtility.singleLineHeight + (2 * padding);
 
-        return EditorGUIUtility.singleLineHeight * (1 + Mathf.Max(1, _lines.Count)) + spacing;
+        if (sourceSetting == null || !sourceSetting.isExpanded) return oneLine;
+
+        ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+        if (set != null) return oneLine;
+
+        ServiceSource source = sourceSetting.GetServiceSource(iSet);
+        if (source == null) return oneLine;
+
+        List<LooseServiceRow> lines = GetAbstractTypeRows(iSet, source);
+        if (lines == null || lines.Count == 0) return oneLine;
+
+        return EditorGUIUtility.singleLineHeight * (1 + lines.Count) + (3 * padding);
     }
-    
+
+
+    public static void DrawServiceSources(
+        List<ServiceSourceSetting> list,
+        Object  targetObject, IServiceSourceSet set)
+    {  
+        if(list!= null)
+            for (var i = 0; i < list.Count; i++)
+            {
+                Rect rect = EditorGUILayout.GetControlRect();
+                DrawServiceSourceSetting(
+                    set, list, i, targetObject, rect.position, rect.width, out float height);
+
+                GUILayout.Space(height - EditorGUIUtility.singleLineHeight - 3);
+            }
+
+        if (GUILayout.Button("Add New Services Source"))
+        {
+            Undo.RecordObject(targetObject, "Add new service source setting.");
+            list.Add(new ServiceSourceSetting());
+            EditorUtility.SetDirty(targetObject);
+        } 
+    }
+
+    public static void DrawServiceSourceSetting(
+        IServiceSourceSet set,
+        List<ServiceSourceSetting> sourceSettings,
+        int index,
+        Object serializedObject,
+        Vector2 startPosition,
+        float width,
+        out float height)
+    {
+        height = HeightOfSourceSetting(sourceSettings[index], set);
+        var position = new Rect(startPosition, new Vector2(width, height));
+        DrawSourceSetting(position, set, serializedObject, sourceSettings, index);
+    }
+
+    public static readonly GUIContent upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
+    public static readonly GUIContent downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
+    public static readonly GUIContent deleteIcon = EditorGUIUtility.IconContent("winbtn_win_close");
 }
 }
 #endif

@@ -15,7 +15,7 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
         this.monoBehaviourType = monoBehaviourType;
     }
 
-    protected override List<Type> GetNonAbstractTypes()
+    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
     { 
         var result = new List<Type>();
         if (monoBehaviourType != null)
@@ -23,15 +23,20 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
 
         return result;
     }
- 
-    public override Loadability GetLoadability =>
-        monoBehaviourType == null ? Loadability.Error
-        : !Application.isPlaying ? Loadability.Warning
-        : Loadability.Loadable;
 
-    public override string NotInstantiatableReason =>  monoBehaviourType == null 
-        ? "No Type"
-        : "You can't instantiate MonoBehaviour through Loose Link in Editor Time";
+    public override Loadability Loadability
+    {
+        get
+        {
+            if (monoBehaviourType == null)
+                return new Loadability(Loadability.Type.Error, "No Type");
+            if(!Application.isPlaying)
+                return new Loadability(
+                        Loadability.Type.Warning,
+                    "You can't instantiate MonoBehaviour through Loose Services in Editor Time");
+            return Loadability.Loadable;
+        }
+    }
 
     protected override bool NeedParentTransform => true;
 
@@ -46,8 +51,10 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
         go.AddComponent(monoBehaviourType);
         return go;
     }
+    
+    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromMonoBehaviourType;
 
-    public override bool HasProtoTypeVersion => false;
+    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
 
     protected override void ClearService()
     {
@@ -60,7 +67,7 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
 
     protected override object GetService(Type type, Object instantiatedObject) => ((GameObject) instantiatedObject).GetComponent(type);
 
-    public override IService GetServiceOnSourceObject(Type type) => null;
+    public override object GetServiceOnSourceObject(Type type) => null;
  
     public override string Name => monoBehaviourType != null ? monoBehaviourType.Name : string.Empty;
     public override Object SourceObject {
@@ -73,7 +80,6 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
 #endif
         }
     }
-    
-    public override Texture Icon => FileIconHelper.GetIconOfSource(FileIconHelper.FileType.CsFile);
+     
 }
 }

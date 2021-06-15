@@ -97,22 +97,22 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
                 loadButtonWidth,
                 contentPos.height);
 
-            bool isLoadable = source != null && source.GetLoadability == Loadability.Loadable;
+            bool isLoadable = source != null && source.Loadability.IsLoadable;
             if (!isLoadable)
             {
                 // Loadability Error
-                GUIContent loadabilityError = row.element.loadability.GetGuiContent(source.NotInstantiatableReason);
+                GUIContent loadabilityError = row.element.loadability.GetGuiContent();
                 GUI.Label(actionButtonRect, loadabilityError, CategoryStyle);
             }
             else
             {
                 // Load Button 
                 if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
-                    foreach (Type type in row.element.source.AllAbstractTypes)
+                    foreach (Type type in row.element.source.GetAllAbstractTypes( row.element.set ))
                         row.element.source.TryGetService(
-                            type, 
-                            row.element.installer,
-                            conditionTags: null, 
+                            type,
+                            row.element.set,
+                            conditionTags: null,
                             out object _,
                             out bool _);
             }
@@ -166,7 +166,8 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
     static GUIStyle _headerLabelStyle;
     static GUIStyle HeaderLabelStyle => _headerLabelStyle = _headerLabelStyle ?? new GUIStyle
     {
-        alignment = TextAnchor.MiddleLeft
+        alignment = TextAnchor.MiddleLeft,
+        normal = {textColor = GUI.skin.label.normal.textColor}
     };
         
     static GUIStyle _buttonStyle;
@@ -181,7 +182,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
         const float indent = 4;
         const float margin = 2;
         position.x += indent;
-        position.width -= indent;
+        position.width -= indent; 
         GUI.Label(position, "Loaded", HeaderLabelStyle);
 
         var buttonRect = new Rect(

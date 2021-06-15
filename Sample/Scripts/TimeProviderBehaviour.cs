@@ -2,8 +2,7 @@
 using LooseServices;
 using UnityEngine;
 
-[IgnoreService]
-public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider
+public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged
 {
     float _time = 0;
 
@@ -13,7 +12,6 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider
     }
 
     public float GetTime => _time;
-    public void Initialize() { }
 
 
     [SerializeField] TagFile[] tags;
@@ -24,5 +22,6 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider
         if(tags == null) yield break;
         foreach (TagFile tagFile in tags)
             yield return tagFile;
+        
     }
 }

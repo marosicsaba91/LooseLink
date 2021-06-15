@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -15,7 +15,7 @@ class ServiceSourceFromScriptableObjectType : ServiceSource
         this.scriptableObjectType = scriptableObjectType;
     }
 
-    protected override List<Type> GetNonAbstractTypes()
+    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
     { 
         var result = new List<Type>();
         if (scriptableObjectType != null)
@@ -23,11 +23,10 @@ class ServiceSourceFromScriptableObjectType : ServiceSource
 
         return result;
     }
- 
-    public override Loadability GetLoadability =>
-        scriptableObjectType == null ? Loadability.Error : Loadability.Loadable;
+    public override Loadability Loadability => scriptableObjectType == null
+        ? new Loadability(Loadability.Type.Error,  "No Type") 
+        : Loadability.Loadable;
 
-    public override string NotInstantiatableReason => "No Type";
     protected override bool NeedParentTransform => false;
     protected override Object Instantiate(Transform parent)
     {
@@ -36,8 +35,10 @@ class ServiceSourceFromScriptableObjectType : ServiceSource
 
         return obj;
     }
+    
+    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectType;
 
-    public override bool HasProtoTypeVersion => false;
+    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
 
     protected override void ClearService()
     {
@@ -50,7 +51,7 @@ class ServiceSourceFromScriptableObjectType : ServiceSource
 
     protected override object GetService(Type type, Object instantiatedObject) => instantiatedObject;
 
-    public override IService GetServiceOnSourceObject(Type type) => null;
+    public override object GetServiceOnSourceObject(Type type) => null;
  
     public override string Name => scriptableObjectType != null ? scriptableObjectType.Name : string.Empty;
     public override Object SourceObject {
@@ -62,8 +63,6 @@ class ServiceSourceFromScriptableObjectType : ServiceSource
             return null;
 #endif
         }
-    }
-    
-    public override Texture Icon => FileIconHelper.GetIconOfSource(FileIconHelper.FileType.CsFile);
+    } 
 }
 }

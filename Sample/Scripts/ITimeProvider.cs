@@ -1,6 +1,7 @@
 ﻿using LooseServices;
 
-public interface ITimeProvider : IService, ITagged
+[GlobalServiceType]
+public interface ITimeProvider
 {
     float GetTime { get; }
 }
