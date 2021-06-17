@@ -35,8 +35,8 @@ static class ServiceSourceSettingDrawer
         if (sourceSetting == null)
             return;
 
-        ServiceSource source = sourceSetting.GetServiceSource(iSet);
-        ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+        ServiceSource source = sourceSetting.GetServiceSource();
+        ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
 
         var foldoutPos = new Rect(position.x + space + foldoutW, position.y, foldoutW,
             EditorGUIUtility.singleLineHeight);
@@ -210,10 +210,10 @@ static class ServiceSourceSettingDrawer
 
         if (sourceSetting == null || !sourceSetting.isExpanded) return oneLine;
 
-        ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+        ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
         if (set != null) return oneLine;
 
-        ServiceSource source = sourceSetting.GetServiceSource(iSet);
+        ServiceSource source = sourceSetting.GetServiceSource();
         if (source == null) return oneLine;
 
         List<LooseServiceRow> lines = GetAbstractTypeRows(iSet, source);

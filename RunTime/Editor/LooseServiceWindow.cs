@@ -113,7 +113,7 @@ class LooseServiceWindow : EditorWindow
         foreach (ServiceSourceSetting sourceSetting in sourceSettings)
         {
             if(!sourceSetting.enabled) continue;
-            ServiceSource source = sourceSetting.GetServiceSource(iSet);
+            ServiceSource source = sourceSetting.GetServiceSource();
             if (source != null)
             {
                 var sourceRow = new LooseServiceRow(LooseServiceRow.RowCategory.Source)
@@ -168,7 +168,7 @@ class LooseServiceWindow : EditorWindow
             }
             else
             {
-                ServiceSourceSet set = sourceSetting.GetServiceSourceSet(iSet);
+                ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
                 if (set == null) continue;
                 TreeNode<LooseServiceRow> installerNode = GetInstallerNode(set);
                 nodes.Add(installerNode);

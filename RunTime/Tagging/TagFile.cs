@@ -7,4 +7,5 @@ public class TagFile : ScriptableObject, ITag
     [SerializeField] Color color;
     public Color Color => color;
     public string Name => name;
+    public object TagObject => this;
 }

@@ -23,28 +23,31 @@ enum ServiceSourceTypes
 }
 
 [Serializable]
-class ServiceSourceSetting
+class ServiceSourceSetting 
 {
     public bool enabled = true;
     public Object serviceSourceObject;
     public ServiceSourceTypes sourceType;
-    
-    ServiceSource _source;  
-    ServiceSourceSet _set;  
+    public List<SerializableType> types;
+    public List<SerializableTag> tags;
+
+    ServiceSource _source;
+    ServiceSourceSet _set;
+    List<Type> _types;
 
     [SerializeField] internal bool isExpanded;
 
-    public ServiceSource GetServiceSource(IServiceSourceSet set)
+    public ServiceSource GetServiceSource()
     { 
             if (serviceSourceObject == null) return null; 
-            Init(set);
+            Init();
             return _source;
     }
 
-    public ServiceSourceSet GetServiceSourceSet (IServiceSourceSet set)
+    public ServiceSourceSet GetServiceSourceSet ()
     { 
         if (serviceSourceObject == null) return null; 
-        Init(set);
+        Init();
         if (_set == null || _set.useAsGlobalInstaller)
             return null;
         return _set;
@@ -53,7 +56,7 @@ class ServiceSourceSetting
     internal IEnumerable<ServiceSource> GetServiceSources(IServiceSourceSet set)
     {
         if (serviceSourceObject == null) yield break; 
-        Init(set);
+        Init();
 
         if (_source != null)
         {
@@ -67,7 +70,7 @@ class ServiceSourceSetting
         }
     }
 
-    void Init(IServiceSourceSet iSet)
+    void Init()
     {
         if (_source != null || _set != null) return;
 
@@ -77,7 +80,7 @@ class ServiceSourceSetting
                 _set = set;
         }
         else
-            _source = GetServiceSourceOf(serviceSourceObject, sourceType, iSet);
+            _source = GetServiceSourceOf(serviceSourceObject, sourceType);
     }
 
     public void Clear()
@@ -88,7 +91,7 @@ class ServiceSourceSetting
         _set = null;
     }
 
-    ServiceSource GetServiceSourceOf(Object obj, ServiceSourceTypes previousType, IServiceSourceSet set) // NO SOURCE SET
+    ServiceSource GetServiceSourceOf(Object obj, ServiceSourceTypes previousType) // NO SOURCE SET
     {
         if (obj is ScriptableObject so)
         {
