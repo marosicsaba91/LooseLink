@@ -12,4 +12,5 @@ public class SystemTimeProvider : ScriptableObject, ITimeProvider, ITagged
         yield return "Luke Skywalker";
         yield return "Yoda";
     }
+    public bool EnableCustomTags => true;
 }

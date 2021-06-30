@@ -2,14 +2,16 @@
     "name": "LooseServicesSample",
     "references": [
         "MUtility",
-        "LooseServices"
+        "LooseServices",
+        "SerializableCollections"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

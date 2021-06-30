@@ -156,7 +156,17 @@ MonoBehaviour:
   - enabled: 1
     serviceSourceObject: {fileID: 2824615768151413838}
     sourceType: 1
-    isExpanded: 1
+    serializedTypes: []
+    serializedTags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 0}
+    sourceType: 0
+    serializedTypes: []
+    serializedTags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
 --- !u!4 &450527955
 Transform:
   m_ObjectHideFlags: 0
@@ -350,6 +360,40 @@ MonoBehaviour:
   textMesh: {fileID: 1075936880}
   testFloatProperty:
     value: 0
+  dictionary:
+    keys:
+    - someString: 0110101hhh
+      someBool: 0
+    - someString: 011010
+      someBool: 1
+    - someString: 011010
+      someBool: 0
+    values:
+    - someInt: 0
+      someObject: {fileID: 0}
+      someBool: 0
+    - someInt: 0
+      someObject: {fileID: 0}
+      someBool: 1
+    - someInt: 0
+      someObject: {fileID: 11500000, guid: b66e3786a52645748aec0f3232a971b1, type: 3}
+      someBool: 1
+  matrix:
+    fields: f8fffffff8ffffff12000000ebffffff25000000f8ffffff0000000021000000f8ffffff2500000026000000260000001e00000000000000250000001600000009000000140000000e00000025000000160000000a000000efffffff1c00000000000000
+    width: 5
+  test2:
+    keys:
+    - {fileID: 11400000, guid: 1dfb053af9721194f8664171395e82c2, type: 2}
+    - {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad, type: 2}
+    - {fileID: 11400000, guid: b99fab03cb9cb0f4fb88f124346495f7, type: 2}
+    - {fileID: 0}
+    - {fileID: 11400000, guid: 35bd33d0edb831340842597ccf33bb6a, type: 2}
+    values:
+    - {x: -4.517918e+32, y: 0.21, z: 0.74}
+    - {x: 0, y: -7.10649e-40, z: 0.16}
+    - {x: 1.58, y: -0.69, z: 4.5178187e+15}
+    - {x: 9.36e-43, y: 2, z: 9.36e-43}
+    - {x: -7.10694e-40, y: 9.35e-43, z: 2}
 --- !u!4 &1075936883
 Transform:
   m_ObjectHideFlags: 0

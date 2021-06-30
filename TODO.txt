@@ -1,7 +1,7 @@
 Service Types work on the Service Source Setting level.
     Editor Type Setting
     Delete any other form of service type setting
-
+    IServiceTypeProvider is like ITagged
 
 Add Tags To Service Setting.
 

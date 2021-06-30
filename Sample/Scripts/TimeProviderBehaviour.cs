@@ -22,6 +22,7 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged
         if(tags == null) yield break;
         foreach (TagFile tagFile in tags)
             yield return tagFile;
-        
     }
+    
+    public bool EnableCustomTags => true;
 }

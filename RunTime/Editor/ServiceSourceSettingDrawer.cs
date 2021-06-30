@@ -1,10 +1,9 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using System.Linq; 
 using MUtility;
 using UnityEditor;
-using UnityEngine; 
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace LooseServices.Editor
@@ -17,19 +16,17 @@ static class ServiceSourceSettingDrawer
         Rect position,
         IServiceSourceSet iSet,
         Object serializedObject,
-        List<ServiceSourceSetting> sourceSettings,
+        IList<ServiceSourceSetting> sourceSettings,
         int index)
     {
         EditorHelper.DrawBox(position);
-
         ServiceSourceSetting sourceSetting = sourceSettings[index];
 
         position = new Rect(
             position.x + padding, position.y += padding,
             position.width - (padding * 2), position.height - (padding * 2));
         float space = EditorGUIUtility.standardVerticalSpacing;
-        const float toggleW = 14;
-        const float foldoutW = 11;
+        const float toggleW = 14; 
         const float serviceTypeW = 100;
 
         if (sourceSetting == null)
@@ -38,14 +35,9 @@ static class ServiceSourceSettingDrawer
         ServiceSource source = sourceSetting.GetServiceSource();
         ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
 
-        var foldoutPos = new Rect(position.x + space + foldoutW, position.y, foldoutW,
-            EditorGUIUtility.singleLineHeight);
-
         bool nonEmptySource = source != null && source.GetAllAbstractTypes(iSet).Any();
-        if (nonEmptySource)
-            sourceSetting.isExpanded = EditorGUI.Foldout(foldoutPos, sourceSetting.isExpanded, GUIContent.none);
 
-        var togglePos = new Rect(foldoutPos.x + space, position.y, toggleW, EditorGUIUtility.singleLineHeight);
+        var togglePos = new Rect(position.x + space, position.y, toggleW, EditorGUIUtility.singleLineHeight);
         bool enabled = EditorGUI.Toggle(togglePos, sourceSetting.enabled);
         if (enabled != sourceSetting.enabled)
         {
@@ -56,8 +48,8 @@ static class ServiceSourceSettingDrawer
 
 
         const float actionButtonWidth = 20;
-        float w = position.width - (toggleW + foldoutW + serviceTypeW + space * 4 + actionButtonWidth * 3);
-        var objectPos = new Rect(togglePos.xMax + space, position.y, w, EditorGUIUtility.singleLineHeight);
+        float w = position.width - (toggleW + serviceTypeW + space * 4 + actionButtonWidth * 3);
+        var objectPos = new Rect(togglePos.xMax + space*2, position.y, w, EditorGUIUtility.singleLineHeight);
         Object obj = EditorGUI.ObjectField(
             objectPos,
             sourceSetting.serviceSourceObject,
@@ -149,21 +141,32 @@ static class ServiceSourceSettingDrawer
 
         GUI.Label(actionButtonPos, deleteIcon, ActionButtonStyle);
 
-        if (!sourceSetting.isExpanded) return;
 
 
-        var sourcesPos = new Rect(
+        const float foldoutW = 11;
+        // Draw types
+        var typesPos = new Rect(
             position.x + foldoutW + space,
             position.y + EditorGUIUtility.singleLineHeight + padding,
             position.width - foldoutW - space,
             EditorGUIUtility.singleLineHeight);
 
+        if (nonEmptySource)
+            sourceSetting.isTypesExpanded = EditorGUI.Foldout(typesPos, sourceSetting.isTypesExpanded, "Types");
+        
+        typesPos.y += EditorGUIUtility.singleLineHeight;
+
         if (source != null)
-            foreach (LooseServiceRow row in GetAbstractTypeRows(iSet, source))
+            foreach (SerializableType type in sourceSetting.serializedTypes)
             {
-                LooseServiceFoldoutColumn.DrawCell(sourcesPos, row, selectElement: false);
-                sourcesPos.y += EditorGUIUtility.singleLineHeight;
+                GUI.Label(typesPos, type.Name, ActionButtonStyle);
+                typesPos.y += EditorGUIUtility.singleLineHeight;
             }
+        
+        // Draw tags
+        
+        if (nonEmptySource)
+            sourceSetting.isTagsExpanded = EditorGUI.Foldout(typesPos, sourceSetting.isTagsExpanded, "Tags");
 
     }
 
@@ -183,32 +186,13 @@ static class ServiceSourceSettingDrawer
         alignment = TextAnchor.MiddleCenter,
         normal = {textColor = GUI.skin.label.normal.textColor}
     };
-     
-    static List<LooseServiceRow> GetAbstractTypeRows(IServiceSourceSet set,ServiceSource source)
-    {
-        List<LooseServiceRow> result = new List<LooseServiceRow>();
-        foreach (Type serviceType in source.GetAllAbstractTypes(set))
-        {
-            var abstractTypeRow = new LooseServiceRow(LooseServiceRow.RowCategory.Service)
-            {
-                source = source,
-                type = serviceType,
-            };
-            if (source.InstantiatedServices.ContainsKey(serviceType))
-                abstractTypeRow.loadedInstance = source.InstantiatedObject;
+      
 
-            result.Add(abstractTypeRow);
-        }
-
-        return result;
-    }
-
-
-    static float HeightOfSourceSetting(ServiceSourceSetting sourceSetting, IServiceSourceSet iSet)
+    static float HeightOfSourceSetting(ServiceSourceSetting sourceSetting)
     {
         float oneLine = EditorGUIUtility.singleLineHeight + (2 * padding);
 
-        if (sourceSetting == null || !sourceSetting.isExpanded) return oneLine;
+        if (sourceSetting == null ) return oneLine;
 
         ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
         if (set != null) return oneLine;
@@ -216,10 +200,11 @@ static class ServiceSourceSettingDrawer
         ServiceSource source = sourceSetting.GetServiceSource();
         if (source == null) return oneLine;
 
-        List<LooseServiceRow> lines = GetAbstractTypeRows(iSet, source);
-        if (lines == null || lines.Count == 0) return oneLine;
-
-        return EditorGUIUtility.singleLineHeight * (1 + lines.Count) + (3 * padding);
+        var lineCount = 1;
+        lineCount += sourceSetting.isTagsExpanded ? (2 + sourceSetting.serializedTags.Count) : 1;
+        lineCount += sourceSetting.isTypesExpanded ? (2 + sourceSetting.serializedTypes.Count) : 1;
+         
+        return (EditorGUIUtility.singleLineHeight * lineCount) + (3 * padding);
     }
 
 
@@ -254,7 +239,7 @@ static class ServiceSourceSettingDrawer
         float width,
         out float height)
     {
-        height = HeightOfSourceSetting(sourceSettings[index], set);
+        height = HeightOfSourceSetting(sourceSettings[index]);
         var position = new Rect(startPosition, new Vector2(width, height));
         DrawSourceSetting(position, set, serializedObject, sourceSettings, index);
     }

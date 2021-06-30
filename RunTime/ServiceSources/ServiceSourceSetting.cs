@@ -28,14 +28,15 @@ class ServiceSourceSetting
     public bool enabled = true;
     public Object serviceSourceObject;
     public ServiceSourceTypes sourceType;
-    public List<SerializableType> types;
-    public List<SerializableTag> tags;
+    public List<SerializableType> serializedTypes;
+    public List<SerializableTag> serializedTags;
 
     ServiceSource _source;
     ServiceSourceSet _set;
     List<Type> _types;
 
-    [SerializeField] internal bool isExpanded;
+    [SerializeField] internal bool isTypesExpanded;
+    [SerializeField] internal bool isTagsExpanded;
 
     public ServiceSource GetServiceSource()
     { 

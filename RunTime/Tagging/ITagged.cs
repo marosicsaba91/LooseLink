@@ -5,5 +5,6 @@ namespace LooseServices
 public interface ITagged
 {
     IEnumerable<object> GetTags();
+    bool EnableCustomTags { get; }
 }
 }

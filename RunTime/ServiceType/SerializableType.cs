@@ -33,6 +33,8 @@ public class SerializableType : ISerializationCallbackReceiver
         }
     }
 
+    public string Name => typeName;
+
     public void OnBeforeSerialize()
     {
         if(_type == null) return;

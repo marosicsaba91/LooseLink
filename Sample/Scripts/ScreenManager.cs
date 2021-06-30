@@ -28,5 +28,6 @@ public class ScreenManager : MonoBehaviour, IScreenSizeProvider, ITagged
         yield return (nameof(id),id);
         yield return (nameof(age),age);
     }
-    
+
+    public bool EnableCustomTags => true;
 }
