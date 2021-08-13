@@ -19,6 +19,7 @@ readonly struct Loadability
 
     public bool IsLoadable => type == Type.Loadable;
     public static Loadability Loadable => new Loadability(Type.Loadable);
+    public static Loadability NoServiceSourceObject => new Loadability(Type.Error, "No Service Source Object!");
 
     public Loadability(Type type)
     {

@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace LooseServices
 {
 [Serializable]
-class ServiceSourceFromPrefabPrototype : ServiceSource
+class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSource
 {
     public GameObject prototypePrefab;
   
-    internal ServiceSourceFromPrefabPrototype( GameObject prototypePrefab)
+    internal DynamicServiceSourceFromPrefabPrototype( GameObject prototypePrefab)
     {
         this.prototypePrefab = prototypePrefab;
     }
     
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set) => 
-        set.ServiceTypeProvider.AllServiceComponents(prototypePrefab);
+    protected override List<Type> GetNonAbstractTypes() => 
+        prototypePrefab.GetComponents<Component>().Select(component => component.GetType()).ToList();
    
     public override Loadability Loadability
     {

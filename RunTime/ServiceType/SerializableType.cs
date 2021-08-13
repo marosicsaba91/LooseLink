@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
-using UnityEditor; 
-using UnityEngine; 
+using System.Linq; 
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace LooseServices
 {
@@ -11,24 +11,25 @@ public class SerializableType : ISerializationCallbackReceiver
     [SerializeField] string typeName;
     [SerializeField] string fullTypeName;
     [SerializeField] string assemblyQualifiedName;
-    [SerializeField] MonoScript monoScript;
-    
+    [SerializeField] Object monoScript;
+
+    bool _typeIsSet = false;
     Type _type;
 
     public Type Type
     {
         get
         {
-            if (_type != null)
+            if (_type != null || _typeIsSet)
                 return _type;
 
             _type = FindType();
-
+            
             return _type;
         }
         set
         {
-            _type = value;
+            _type = value; 
             UpdateSerializedValues();
         }
     }
@@ -47,19 +48,9 @@ public class SerializableType : ISerializationCallbackReceiver
         assemblyQualifiedName = _type?.AssemblyQualifiedName;
         fullTypeName = _type?.FullName;
         typeName = _type?.Name;
-
-        MonoScript[] monoScripts = Resources.FindObjectsOfTypeAll<MonoScript>();
-        foreach (MonoScript scriptFile in monoScripts)
-        {
-            Type type = scriptFile.GetClass();
-            if (type == _type)
-            {
-                monoScript = scriptFile;
-                return;
-            }
-        } 
-        monoScript = null;
+        monoScript = TypeToFileHelper.GetObject(_type);
     }
+    
 
     public void OnAfterDeserialize()
     {
@@ -68,9 +59,11 @@ public class SerializableType : ISerializationCallbackReceiver
 
     Type FindType()
     {
+        Type type;
+        _typeIsSet = true;
         try
         {
-            var type = Type.GetType(assemblyQualifiedName);
+            type = Type.GetType(assemblyQualifiedName);
             if (type != null) return type;
         }
         catch (Exception)
@@ -78,20 +71,21 @@ public class SerializableType : ISerializationCallbackReceiver
             /* ignored */
         }
 
+        type = TypeToFileHelper.GetType(monoScript);
+        if (type != null) return type;
+        
         try
         {
-            var type = Type.GetType(fullTypeName);
+            type = Type.GetType(fullTypeName);
             if (type != null) return type;
         }
         catch (Exception)
         {
             /* ignored */
         }
-
-        if (monoScript != null && monoScript.GetClass() != null)
-            return monoScript.GetClass();
-
-        return ServiceTypeHelper.allTypes.FirstOrDefault(type => type.Name == typeName);
+      
+        type = ServiceTypeHelper.allTypes.FirstOrDefault(t => t.Name == typeName);
+        return type;
     }
 }
 }

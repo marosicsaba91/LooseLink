@@ -7,16 +7,16 @@ namespace LooseServices
 {
 
 [Serializable]
-class ServiceSourceFromScriptableObjectInstance : ServiceSource
+class DynamicServiceSourceFromScriptableObjectFile : DynamicServiceSource
 {
     public ScriptableObject instance;
     
-    internal ServiceSourceFromScriptableObjectInstance(ScriptableObject instance)
+    internal DynamicServiceSourceFromScriptableObjectFile(ScriptableObject instance)
     {
         this.instance = instance;
     }
  
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
+    protected override List<Type> GetNonAbstractTypes()
     { 
         var result = new List<Type>();
         if (instance != null)

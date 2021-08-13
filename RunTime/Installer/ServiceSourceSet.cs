@@ -9,36 +9,24 @@ namespace LooseServices
 {
 [CreateAssetMenu(fileName = "Service Source Set", menuName = "Loose Services/Service Source Set", order = 1)]
 class ServiceSourceSet : ScriptableObject, IServiceSourceSet
-{
-    [SerializeField] ServiceTypeProvider typeProvider;
+{ 
     public bool useAsGlobalInstaller = false;
      
-    [SerializeField, HideInInspector] List<ServiceSourceSetting> serviceSources = default; 
+    [SerializeField, HideInInspector] List<ServiceSource> serviceSources = default; 
     [SerializeField] ResourcesWarningMessage warningMessage;
     [HideInInspector] public int priority = 0;
+    public List<ServiceSource> ServiceSources => serviceSources;
 
-    public List<ServiceSourceSetting> GetServiceSourceSettings() => serviceSources;
-
-    public IEnumerable<ServiceSource> GetServiceSources()
-    {
-        if (serviceSources == null) yield break;
-        foreach (ServiceSourceSetting serviceSourceSetting in serviceSources)
-            if (serviceSourceSetting.enabled)
-                foreach (ServiceSource serviceSource in serviceSourceSetting.GetServiceSources(this))
-                    yield return serviceSource;
-    }
     
     public string Name => name;
     public Object Obj => this;
+ 
 
-
-    public IServiceTypeProvider ServiceTypeProvider => typeProvider.SelfOrDefault();
-
-    public void Fresh()
+    public void ClearDynamicData()
     {
-        serviceSources = serviceSources ?? new List<ServiceSourceSetting>();
-        foreach (ServiceSourceSetting sourceSetting in serviceSources)
-            sourceSetting.Clear();
+        serviceSources = serviceSources ?? new List<ServiceSource>();
+        foreach (ServiceSource source in serviceSources)
+            source.ClearDynamicData();
     }
     
     
@@ -68,7 +56,7 @@ class ServiceSourceSet : ScriptableObject, IServiceSourceSet
     {
         if (this == set) return true;
 		
-        foreach (ServiceSourceSetting setting in serviceSources)
+        foreach (ServiceSource setting in serviceSources)
             if (setting.serviceSourceObject is ServiceSourceSet child)
                 if (child.Contains(set))
                     return true;

@@ -12,17 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bc99de804f79f54b800ab521cdaf7f0, type: 3}
   m_Name: Set
   m_EditorClassIdentifier: 
-  typeProvider: {fileID: 0}
   useAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
     serviceSourceObject: {fileID: 11500000, guid: 915e9cc4d6bc40c08edb38aba7b7d196,
       type: 3}
-    sourceType: 7
-    isExpanded: 1
+    preferredSourceType: 7
+    additionalTypes: []
+    additionalTags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
       type: 3}
-    sourceType: 6
-    isExpanded: 1
+    preferredSourceType: 6
+    additionalTypes: []
+    additionalTags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
   priority: 0

@@ -1,9 +1,5 @@
-Service Types work on the Service Source Setting level.
-    Editor Type Setting
-    Delete any other form of service type setting
-    IServiceTypeProvider is like ITagged
-
-Add Tags To Service Setting.
+Additional types & tags work.
+Additional Tag Warning.
 
 Disable not working Setting in playtime or make them work
 Get rid of clear cache button.

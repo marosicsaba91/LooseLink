@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace LooseServices.Editor
 {
 
-[CustomEditor(typeof(SceneServiceSet))]
+[CustomEditor(typeof(SceneServiceInstaller))]
 public class SceneInstallerEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
@@ -47,17 +48,18 @@ static class InstallerEditorHelper
     public static void DrawInstallerInspectorGUI(this UnityEditor.Editor editor, IServiceSourceSet set)
     {  
 
-        ServiceSourceSettingDrawer.DrawServiceSources(
-            set.GetServiceSourceSettings(),
-            editor.serializedObject.targetObject,
-            set);
-
-        GUILayout.Space(15);
+        ServiceSourceDrawer.DrawServiceSources(
+            set.ServiceSources,
+            editor.serializedObject.targetObject);
+        /*
+        // Button To manually clear cached data.
+        GUILayout.Space(pixels: 10);
         if (GUILayout.Button("Clear Cache"))
         {
             Undo.RecordObject(editor.serializedObject.targetObject, "Add new service source setting.");
-            set.Fresh();
+            set.ClearDynamicData();
         }
+        */
     }
 }
 }

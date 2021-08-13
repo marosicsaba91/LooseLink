@@ -136,7 +136,7 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
             EditorGUI.TextField(searchServicePos, SearchServiceText, GUI.skin.FindStyle("ToolbarSeachTextField"));
     }
 
-    public bool ApplyServiceSourceSearch(ServiceSource source) => ApplyServiceSearchOnType(source.Name);
+    public bool ApplyServiceSourceSearch(DynamicServiceSource source) => ApplyServiceSearchOnType(source.Name);
 
     public bool ApplyServiceSearchOnType(string text)
      {

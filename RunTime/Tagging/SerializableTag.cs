@@ -19,6 +19,31 @@ public class SerializableTag : ITag
     [SerializeField] string stringTag;
     [SerializeField] TagFile tagFile;
     [SerializeField] Object objectTag;
+    
+    internal TagType Type
+    {
+        get => tagType;
+        set => tagType = value;
+    }
+
+    internal string StringTag
+    {
+        get => stringTag;
+        set => stringTag = value;
+    }
+
+    internal TagFile TagFile
+    {
+        get => tagFile;
+        set => tagFile = value;
+    }
+
+    internal Object ObjectTag  
+    {
+        get => objectTag;
+        set => objectTag = value;
+    }
+    
 
     [SerializeField] bool initialized = false;
     [SerializeField] Color customColor;
@@ -39,6 +64,7 @@ public class SerializableTag : ITag
         }
     }
 
+    
     public string Name => TagObject.ToString();
 
     public object TagObject

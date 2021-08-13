@@ -42,22 +42,15 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     
     public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category == LooseServiceRow.RowCategory.Installer) return;
-        if (row.element.source is ServiceSourceFromScriptableObjectType) return;
-        if (row.element.source is ServiceSourceFromMonoBehaviourType) return;
-
-        IEnumerable<object> tagEnumerable;
-
-        if (row.element.Category == LooseServiceRow.RowCategory.Source)
-            tagEnumerable = row.element.source.GetAllTags(row.element.set);
-        else
-            tagEnumerable = row.element.source.GetTagsFor(row.element.type).Distinct();
-
-        object[] tags = tagEnumerable.ToArray();
-
+        if (row.element.Category != LooseServiceRow.RowCategory.Source) return;
+        if (row.element.source.SourceType == ServiceSourceTypes.FromScriptableObjectType) return;
+        if (row.element.source.SourceType == ServiceSourceTypes.FromMonoBehaviourType) return;
+        
+        object[] tags = row.element.source.GetTags().ToArray();
+        
         if (tags.IsNullOrEmpty())
         {
-            GUI.Label(position, "0", LabelStyle);
+            GUI.Label(position, "-", LabelStyle);
             return;
         }
 
@@ -103,13 +96,14 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
                 tagsToDrawInLine > 1);
     }
 
-    void DrawTag(Rect position, object tag)
+    public static void DrawTag(Rect position, object tag)
     {
         var iTag = tag.ToITag();
 
         Color color = iTag.Color;
-        Color borderColor = Color.Lerp(color, EditorGUIUtility.isProSkin ? Color.white : Color.black, t: 0.25f);
-        EditorHelper.DrawBox(position, color, borderColor);
+        Color borderColor =
+            Color.Lerp(color, Color.black, EditorGUIUtility.isProSkin ? 0.75f : 0.25f);
+        EditorHelper.DrawBox(position, color, borderColor, borderInside: true);
         var content = new GUIContent
         {
             text = iTag.ShortText(position.width),
@@ -174,8 +168,8 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     }
 
     float GetTagWidth() => IsTagsOpen ? 138 : 36;
-    public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
-        ApplyTagSearchOnTagArray(source.GetAllTags(set));
+    public bool ApplyTagSearchOnSource(IServiceSourceSet set, DynamicServiceSource source) =>
+        ApplyTagSearchOnTagArray(source.GetDynamicTags());
 
     public bool ApplyTagSearchOnTagArray(IEnumerable<object> tagsOnService)
     {

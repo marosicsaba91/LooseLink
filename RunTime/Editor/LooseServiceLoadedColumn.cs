@@ -25,7 +25,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
 
     public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category == LooseServiceRow.RowCategory.Installer) return;
+        if (row.element.Category == LooseServiceRow.RowCategory.Set) return;
 
         if (IsRowHighlighted(row))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
@@ -42,7 +42,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             position.width - 2,
             height: 16);
 
-        ServiceSource source = row.element.source;
+        DynamicServiceSource source = row.element.source.GetDynamicServiceSource();
 
         // Loaded Element
         if (loadedObject != null)
@@ -108,8 +108,8 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             {
                 // Load Button 
                 if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
-                    foreach (Type type in row.element.source.GetAllAbstractTypes( row.element.set ))
-                        row.element.source.TryGetService(
+                    foreach (Type type in row.element.source.GetAllReturnableTypes())
+                        row.element.source.GetDynamicServiceSource().TryGetService(
                             type,
                             row.element.set,
                             conditionTags: null,

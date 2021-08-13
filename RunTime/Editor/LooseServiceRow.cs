@@ -10,7 +10,7 @@ class LooseServiceRow
 {
     public enum RowCategory
     {
-        Installer,
+        Set,
         Source,
         Service
     }
@@ -40,10 +40,10 @@ class LooseServiceRow
         {
             switch (Category)
             {
-                case RowCategory.Installer:
+                case RowCategory.Set:
                     return set?.Obj;
                 case RowCategory.Source:
-                    return source.SourceObject;
+                    return source.GetDynamicServiceSource()?.SourceObject;
                 case RowCategory.Service:
                     return TypeToFileHelper.GetObject(type);
                 default:
@@ -56,8 +56,7 @@ class LooseServiceRow
     {
         string i = set == null ? "-" : set.Name;
         string st = source == null ? "-" : source.GetType().ToString();
-        string s = source == null ? "-" : source.Name;
-        // string hash = source?.setting == null ? "-" : source.setting.GetHashCode().ToString();
+        string s = source == null ? "-" : source.Name; 
         string t = type == null ? "-" : type.Name; 
         return $"{i},{st}:{s},{t}";
     }
@@ -66,7 +65,7 @@ class LooseServiceRow
     {
         switch (Category)
         {
-            case RowCategory.Installer:
+            case RowCategory.Set:
                 return new GUIContent(set.Name,
                     FileIconHelper.GetIconOfObject(set.Obj)); 
             case RowCategory.Source:
@@ -90,7 +89,7 @@ class LooseServiceRow
                 return GetCategoryGUIContentForService(type);
             case RowCategory.Source:
                 return GetCategoryGUIContentForServiceSource(source);
-            case RowCategory.Installer:
+            case RowCategory.Set:
                 return GetCategoryGUIContentForInstaller(set); 
         } 
         throw new ApplicationException("Unexpected Category!");
@@ -99,7 +98,7 @@ class LooseServiceRow
 
     internal static GUIContent GetCategoryGUIContentForInstaller(IServiceSourceSet iSet)
     {
-        if(iSet is SceneServiceSet)
+        if(iSet is SceneServiceInstaller)
             return new GUIContent("Scene Inst.", installerIcon,
                 "Scene Installer: Scene Context Service Installer");
         if (iSet is ServiceSourceSet set)

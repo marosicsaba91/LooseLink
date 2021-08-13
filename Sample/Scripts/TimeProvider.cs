@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using LooseServices;
 using UnityEngine;
- 
-[GlobalServiceType]
+
 public class TimeProvider : ScriptableObject, ITimeProvider
 {
     public float GetTime => Time.time;

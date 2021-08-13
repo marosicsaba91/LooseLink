@@ -6,16 +6,16 @@ using Object = UnityEngine.Object;
 namespace LooseServices
 {
 [Serializable]
-class ServiceSourceFromScriptableObjectType : ServiceSource
+class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource
 {
     public Type scriptableObjectType;
  
-    public ServiceSourceFromScriptableObjectType(Type scriptableObjectType)
+    public DynamicServiceSourceFromScriptableObjectType(Type scriptableObjectType)
     {
         this.scriptableObjectType = scriptableObjectType;
     }
 
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
+    protected override List<Type> GetNonAbstractTypes()
     { 
         var result = new List<Type>();
         if (scriptableObjectType != null)

@@ -38,6 +38,14 @@ static class TypeToFileHelper
             return AssetDatabase.LoadAssetAtPath(filePath, typeof(Object));
         }
     }
+
+    public static Type GetType(Object obj)
+    {
+        var monoScript = obj as MonoScript;
+        if (monoScript != null && monoScript.GetClass() != null)
+            return monoScript.GetClass();
+        return null;
+    }
 }
 }
 #endif

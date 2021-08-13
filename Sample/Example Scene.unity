@@ -150,21 +150,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 628ac3cbe0c80544691918f25cf45bdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  typeProvider: {fileID: 0}
   dontDestroyOnLoad: 1
   serviceSources:
   - enabled: 1
-    serviceSourceObject: {fileID: 2824615768151413838}
-    sourceType: 1
-    serializedTypes: []
-    serializedTags: []
-    isTypesExpanded: 0
+    serviceSourceObject: {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad,
+      type: 2}
+    preferredSourceType: 4
+    additionalTypes:
+    - typeName: SystemTimeProvider
+      fullTypeName: SystemTimeProvider
+      assemblyQualifiedName: SystemTimeProvider, LooseServicesSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: fe8a175c390b41a3a6ebedcabf046e4b, type: 3}
+    - typeName: IFormattable
+      fullTypeName: System.IFormattable
+      assemblyQualifiedName: System.IFormattable, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+    additionalTags: []
+    isTypesExpanded: 1
+    isTagsExpanded: 1
+  - enabled: 1
+    serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
+      type: 3}
+    preferredSourceType: 2
+    additionalTypes:
+    - typeName: ScreenManager
+      fullTypeName: ScreenManager
+      assemblyQualifiedName: ScreenManager, LooseServicesSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
+    additionalTags: []
+    isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
-    serviceSourceObject: {fileID: 0}
-    sourceType: 0
-    serializedTypes: []
-    serializedTags: []
+    serviceSourceObject: {fileID: 1075936879}
+    preferredSourceType: 1
+    additionalTypes:
+    - typeName: Transform
+      fullTypeName: UnityEngine.Transform
+      assemblyQualifiedName: UnityEngine.Transform, UnityEngine.CoreModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
+    - typeName: IEnumerable
+      fullTypeName: System.Collections.IEnumerable
+      assemblyQualifiedName: System.Collections.IEnumerable, mscorlib, Version=4.0.0.0,
+        Culture=neutral, PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+    - typeName: Collider
+      fullTypeName: UnityEngine.Collider
+      assemblyQualifiedName: UnityEngine.Collider, UnityEngine.PhysicsModule, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
+    additionalTags:
+    - tagType: 0
+      stringTag: SecondaryCamera
+      tagFile: {fileID: 0}
+      objectTag: {fileID: 0}
+      initialized: 0
+      customColor: {r: 0, g: 0, b: 0, a: 0}
+    isTypesExpanded: 1
+    isTagsExpanded: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 11400000, guid: 35bd33d0edb831340842597ccf33bb6a,
+      type: 2}
+    preferredSourceType: 0
+    additionalTypes: []
+    additionalTags: []
     isTypesExpanded: 0
     isTagsExpanded: 0
 --- !u!4 &450527955
@@ -175,7 +227,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 450527953}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.079993, y: -4.7087803, z: 8.373352}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2542751288459471919}
@@ -193,6 +245,7 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
+  - component: {fileID: 963194229}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -265,6 +318,32 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &963194229
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &1075936879
 GameObject:
   m_ObjectHideFlags: 0
@@ -274,8 +353,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1075936883}
-  - component: {fileID: 1075936882}
-  - component: {fileID: 1075936881}
   - component: {fileID: 1075936880}
   m_Layer: 0
   m_Name: Clock
@@ -284,116 +361,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!102 &1075936880
-TextMesh:
-  serializedVersion: 3
+--- !u!136 &1075936880
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1075936879}
-  m_Text: '10 : 20'
-  m_OffsetZ: 0
-  m_CharacterSize: 0.1
-  m_LineSpacing: 1
-  m_Anchor: 4
-  m_Alignment: 0
-  m_TabSize: 4
-  m_FontSize: 100
-  m_FontStyle: 0
-  m_RichText: 1
-  m_Font: {fileID: 0}
-  m_Color:
-    serializedVersion: 2
-    rgba: 4294967295
---- !u!23 &1075936881
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1075936879}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
---- !u!114 &1075936882
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1075936879}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  textMesh: {fileID: 1075936880}
-  testFloatProperty:
-    value: 0
-  dictionary:
-    keys:
-    - someString: 0110101hhh
-      someBool: 0
-    - someString: 011010
-      someBool: 1
-    - someString: 011010
-      someBool: 0
-    values:
-    - someInt: 0
-      someObject: {fileID: 0}
-      someBool: 0
-    - someInt: 0
-      someObject: {fileID: 0}
-      someBool: 1
-    - someInt: 0
-      someObject: {fileID: 11500000, guid: b66e3786a52645748aec0f3232a971b1, type: 3}
-      someBool: 1
-  matrix:
-    fields: f8fffffff8ffffff12000000ebffffff25000000f8ffffff0000000021000000f8ffffff2500000026000000260000001e00000000000000250000001600000009000000140000000e00000025000000160000000a000000efffffff1c00000000000000
-    width: 5
-  test2:
-    keys:
-    - {fileID: 11400000, guid: 1dfb053af9721194f8664171395e82c2, type: 2}
-    - {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad, type: 2}
-    - {fileID: 11400000, guid: b99fab03cb9cb0f4fb88f124346495f7, type: 2}
-    - {fileID: 0}
-    - {fileID: 11400000, guid: 35bd33d0edb831340842597ccf33bb6a, type: 2}
-    values:
-    - {x: -4.517918e+32, y: 0.21, z: 0.74}
-    - {x: 0, y: -7.10649e-40, z: 0.16}
-    - {x: 1.58, y: -0.69, z: 4.5178187e+15}
-    - {x: 9.36e-43, y: 2, z: 9.36e-43}
-    - {x: -7.10694e-40, y: 9.35e-43, z: 2}
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1075936883
 Transform:
   m_ObjectHideFlags: 0

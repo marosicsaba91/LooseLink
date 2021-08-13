@@ -47,7 +47,6 @@ public static class TagHelper
         string firstOrUpperLetters = FirstOrUpperLetters(text);
 
         return firstOrUpperLetters.Substring(0, Mathf.Min(maxCharacterCount, firstOrUpperLetters.Length));
-         
     }
 
     static string FirstOrUpperLetters(string input)

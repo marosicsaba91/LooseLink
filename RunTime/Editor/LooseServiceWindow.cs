@@ -101,7 +101,7 @@ class LooseServiceWindow : EditorWindow
 
     TreeNode<LooseServiceRow> GetInstallerNode(IServiceSourceSet set)
     {
-        var installerRow = new LooseServiceRow(LooseServiceRow.RowCategory.Installer) {set = set};
+        var installerRow = new LooseServiceRow(LooseServiceRow.RowCategory.Set) {set = set};
         List<TreeNode<LooseServiceRow>> children = GetChildNodes(set);  
         return new TreeNode<LooseServiceRow>(installerRow, children); 
     }
@@ -109,18 +109,19 @@ class LooseServiceWindow : EditorWindow
     List<TreeNode<LooseServiceRow>> GetChildNodes(IServiceSourceSet iSet)
     {
         var nodes = new List<TreeNode<LooseServiceRow>>();
-        ServiceSourceSetting[] sourceSettings = iSet.GetServiceSourceSettings().ToArray();
-        foreach (ServiceSourceSetting sourceSetting in sourceSettings)
+        ServiceSource[] sources = iSet.GetValidSources().ToArray();
+        foreach (ServiceSource source in sources)
         {
-            if(!sourceSetting.enabled) continue;
-            ServiceSource source = sourceSetting.GetServiceSource();
-            if (source != null)
+            if(!source.enabled) continue;
+            if (source.serviceSourceObject == null) continue;
+            if (source.GetDynamicServiceSource() != null)
             {
+                DynamicServiceSource dynamicSource = source.GetDynamicServiceSource();
                 var sourceRow = new LooseServiceRow(LooseServiceRow.RowCategory.Source)
                 {
                     set = iSet,
                     source = source,
-                    loadedInstance = source.InstantiatedObject,
+                    loadedInstance = source.GetDynamicServiceSource()?.InstantiatedObject,
                     loadability = new Loadability(Loadability.Type.Loadable)
                 };
                 
@@ -129,7 +130,7 @@ class LooseServiceWindow : EditorWindow
                 sourceRow.loadability = source.Loadability;
 
                 var typesShowed = 0;
-                foreach (Type serviceType in source.GetAllAbstractTypes(iSet))
+                foreach (Type serviceType in source.GetAllReturnableTypes())
                 {
                     var abstractTypeRow = new LooseServiceRow(LooseServiceRow.RowCategory.Service)
                     {
@@ -139,20 +140,20 @@ class LooseServiceWindow : EditorWindow
                     };
 
 
-                    if (source.InstantiatedServices.ContainsKey(serviceType))
-                        abstractTypeRow.loadedInstance = source.InstantiatedObject;
+                    if (dynamicSource.InstantiatedServices.ContainsKey(serviceType))
+                        abstractTypeRow.loadedInstance = dynamicSource.InstantiatedObject;
 
 
                     var abstractTypeNode = new TreeNode<LooseServiceRow>(abstractTypeRow, children: null);
 
                     if (!_servicesColumn.ApplyServiceSearchOnType(serviceType.ToString())) continue;
-                    if (!_tagsColumn.ApplyTagSearchOnTagArray(source.GetTagsFor(serviceType))) continue;
+                    if (!_tagsColumn.ApplyTagSearchOnTagArray(source.GetTags())) continue;
                     abstractTypes.Add(abstractTypeNode);
                     typesShowed++;
                 }
 
-                bool serviceMatchSearch = _servicesColumn.ApplyServiceSourceSearch(source);
-                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iSet, source);
+                bool serviceMatchSearch = dynamicSource != null && _servicesColumn.ApplyServiceSourceSearch(dynamicSource);
+                bool tagMatchSearch =  dynamicSource != null && _tagsColumn.ApplyTagSearchOnSource(iSet, dynamicSource);
                 bool noServiceSearch = _servicesColumn.NoSearch;
                 bool noTagSearch = _tagsColumn.NoSearch;
                 bool anyTypesShown = typesShowed != 0;
@@ -168,7 +169,7 @@ class LooseServiceWindow : EditorWindow
             }
             else
             {
-                ServiceSourceSet set = sourceSetting.GetServiceSourceSet();
+                ServiceSourceSet set = source.GetServiceSourceSet();
                 if (set == null) continue;
                 TreeNode<LooseServiceRow> installerNode = GetInstallerNode(set);
                 nodes.Add(installerNode);

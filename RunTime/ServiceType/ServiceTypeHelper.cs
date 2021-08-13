@@ -8,9 +8,34 @@ namespace LooseServices
 {
 public static class ServiceTypeHelper
 { 
-    public static readonly List<Type> allTypes =
-        AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
+    public static readonly List<Type> allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
+    static readonly List<Type> serviceTypes;
+    static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
+    static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap;
+
+    static ServiceTypeHelper()
+    {
+        allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
+        serviceTypes = AllGlobalServiceTypes(allTypes).ToList(); 
+        
+        SetupServiceDictionaries(
+            serviceTypes,
+            out serviceToNonAbstractTypeMap, 
+            out nonAbstractToServiceTypeMap); 
+    }
     
+    static IEnumerable<Type> AllGlobalServiceTypes(IEnumerable<Type> allTypes)
+    {
+        foreach (Type type in allTypes)
+        {
+            if (type.ContainsGenericParameters) continue;
+            var attribute = (ServiceTypeAttribute)
+                Attribute.GetCustomAttribute(type, typeof(ServiceTypeAttribute), inherit: false);
+            if (attribute != null)
+                yield return type;
+        }
+    } 
+
     internal static void SetupServiceDictionaries( 
         IEnumerable<Type> abstractServiceTypes,
         out Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap ,
@@ -45,15 +70,6 @@ public static class ServiceTypeHelper
         } 
     }
 
-    static IEnumerable<Type> GetAllSubclassOf(Type parent)
-    {
-        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-        foreach (Type t in assembly.GetTypes())
-            if (t.GetInterfaces().Contains(parent))
-                yield return t;
-    } 
-    
-    
     static bool IsSubClassOrSelf(Type parent, Type child)
     {
         if (parent == child) return true;
@@ -76,33 +92,11 @@ public static class ServiceTypeHelper
         return true;
     } 
 
-    internal static IServiceTypeProvider SelfOrDefault(this IServiceTypeProvider provider) => 
-        provider ?? GlobalServiceTypeProvider.Instance;
+    internal static bool IsServiceType(this Type type) => serviceTypes.Contains(type);
 
-    internal static bool IsServiceType(this IServiceTypeProvider provider, Type type) =>
-        provider.ServiceTypes.Contains(type);
-    internal static bool IsNonAbstractServiceType(this IServiceTypeProvider provider, Type type) => 
-        provider.NonAbstractToServiceTypeMap.ContainsKey(type);
-    
-    internal static List<Type> AllServiceComponents( this IServiceTypeProvider provider, GameObject gameObject )
+    internal static IEnumerable<Type> GetServicesOfNonAbstractType(Type type)
     {
-        var result = new List<Type>();
-        if (gameObject == null) return result;
-        
-        Component[] components = gameObject.GetComponents<Component>();
-        foreach (Component component in components)
-        {
-            Type type = component.GetType();
-            if(provider.IsNonAbstractServiceType(type)) 
-                result.Add(type); 
-        }  
-        return result;
-    }
-   
-     
-    internal static IEnumerable<Type> GetServicesOfNonAbstractType(this IServiceTypeProvider provider, Type type)
-    {
-        if (provider.NonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> serviceTypes))
+        if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> serviceTypes))
             foreach (Type serviceType in serviceTypes)
                 yield return serviceType;
     }

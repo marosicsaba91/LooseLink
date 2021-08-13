@@ -6,16 +6,16 @@ using Object = UnityEngine.Object;
 namespace LooseServices
 {
 [Serializable]
-class ServiceSourceFromMonoBehaviourType : ServiceSource
+class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
 {
     public Type monoBehaviourType;
  
-    public ServiceSourceFromMonoBehaviourType(Type monoBehaviourType)
+    public DynamicServiceSourceFromMonoBehaviourType(Type monoBehaviourType)
     {
         this.monoBehaviourType = monoBehaviourType;
     }
 
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
+    protected override List<Type> GetNonAbstractTypes()
     { 
         var result = new List<Type>();
         if (monoBehaviourType != null)
@@ -64,7 +64,7 @@ class ServiceSourceFromMonoBehaviourType : ServiceSource
         else
             Object.DestroyImmediate(InstantiatedObject);
     }
-
+ 
     protected override object GetService(Type type, Object instantiatedObject) => ((GameObject) instantiatedObject).GetComponent(type);
 
     public override object GetServiceOnSourceObject(Type type) => null;

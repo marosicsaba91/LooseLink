@@ -3,7 +3,7 @@
 namespace LooseServices
 {
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-public class GlobalServiceTypeAttribute : Attribute
+public class ServiceTypeAttribute : Attribute
 {
 }
 }

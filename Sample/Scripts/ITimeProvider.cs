@@ -1,6 +1,6 @@
 ﻿using LooseServices;
 
-[GlobalServiceType]
+[ServiceType]
 public interface ITimeProvider
 {
     float GetTime { get; }

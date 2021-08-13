@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace LooseServices
 {
 [Serializable]
-class ServiceSourceFromSceneObject : ServiceSource
+class DynamicServiceSourceFromSceneObject : DynamicServiceSource
 {
     public GameObject sceneGameObject;
   
-    internal ServiceSourceFromSceneObject( GameObject sceneGameObject)
+    internal DynamicServiceSourceFromSceneObject( GameObject sceneGameObject)
     {
         this.sceneGameObject = sceneGameObject;
     }
     
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set) => 
-        set.ServiceTypeProvider.AllServiceComponents(sceneGameObject);
+    protected override List<Type> GetNonAbstractTypes() => 
+        sceneGameObject.GetComponents<Component>().Select(component => component.GetType()).ToList();
 
     public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromSceneGameObject;
 

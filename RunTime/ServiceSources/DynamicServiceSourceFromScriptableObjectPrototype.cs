@@ -6,11 +6,11 @@ using Object = UnityEngine.Object;
 namespace LooseServices
 {
 [Serializable]
-class ServiceSourceFromScriptableObjectPrototype : ServiceSource
+class DynamicServiceSourceFromScriptableObjectPrototype : DynamicServiceSource
 {
     public ScriptableObject prototype;
  
-    protected override List<Type> GetNonAbstractTypes(IServiceSourceSet set)
+    protected override List<Type> GetNonAbstractTypes()
     { 
         var result = new List<Type>();
         if (prototype !=null)
@@ -19,7 +19,7 @@ class ServiceSourceFromScriptableObjectPrototype : ServiceSource
         return result;
     }
 
-    internal ServiceSourceFromScriptableObjectPrototype(ScriptableObject prototype)
+    internal DynamicServiceSourceFromScriptableObjectPrototype(ScriptableObject prototype)
     {
         this.prototype = prototype;
     }
