@@ -50,7 +50,7 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
         
         if (tags.IsNullOrEmpty())
         {
-            GUI.Label(position, "-", LabelStyle);
+            GUI.Label(position, "-", ServicesEditorHelper.SmallLabelStyle);
             return;
         }
 
@@ -111,8 +111,8 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
         };
         bool isColorDark = (color.a + color.g + color.b) / 3f <= 0.6;
         Color textColor = Color.Lerp(color, isColorDark ? Color.white : Color.black, t: 0.75f);
-        TagLabelStyle.normal.textColor = textColor;
-        if (GUI.Button(position, content, TagLabelStyle))
+        ServicesEditorHelper.SmallLabelStyle.normal.textColor = textColor;
+        if (GUI.Button(position, content,  ServicesEditorHelper.SmallLabelStyle))
             TryPing(tag);
         
     }
@@ -124,18 +124,12 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
             selectedIndex: -1,
             tagsToDrawInPopup.Select(tag => tag.ToITag().TextWithType()).ToArray(),
             new GUIStyle(GUI.skin.button));
-        GUI.Label(position, $"{(plus ? "+" : "")}{tagsToDrawInPopup.Count}", LabelStyle);
+        GUI.Label(position, $"{(plus ? "+" : "")}{tagsToDrawInPopup.Count}", ServicesEditorHelper.SmallLabelStyle);
 
         if (index >= -0)
             TryPing(tagsToDrawInPopup[index]);
     }
-
-    static void TryPing(object pingable)
-    {
-        if (pingable is Object pingableObj)
-            EditorGUIUtility.PingObject(pingableObj);
-    }
-
+    
     void DrawHeader(Rect pos)
     {
         const float fullButtonWidth = 40;
@@ -145,7 +139,7 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
             pos.y + 2,
             buttonWidth,
             pos.height - 4);
-        if (GUI.Button(buttonPos, "Tag"))
+        if (GUI.Button(buttonPos, "Tags"))
             IsTagsOpen = !IsTagsOpen;
 
         if (!IsTagsOpen)
@@ -168,9 +162,15 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     }
 
     float GetTagWidth() => IsTagsOpen ? 138 : 36;
-    public bool ApplyTagSearchOnSource(IServiceSourceSet set, DynamicServiceSource source) =>
-        ApplyTagSearchOnTagArray(source.GetDynamicTags());
+    public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
+        ApplyTagSearchOnTagArray(source.GetTags());
 
+    public static void TryPing(object pingable)
+    {
+        if (pingable is Object pingableObj)
+            EditorGUIUtility.PingObject(pingableObj);
+    } 
+    
     public bool ApplyTagSearchOnTagArray(IEnumerable<object> tagsOnService)
     {
         if (string.IsNullOrEmpty(SearchTagText)) return true;
@@ -196,26 +196,6 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
     }
 
     protected override GUIStyle GetDefaultStyle() => null;
-
-    static GUIStyle _labelStyle;
-
-    static GUIStyle LabelStyle => _labelStyle = _labelStyle ?? new GUIStyle
-    {
-        alignment = TextAnchor.MiddleCenter,
-        padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
-        normal = {textColor = GUI.skin.label.normal.textColor},
-        fontSize = 10
-    };
-
-    static GUIStyle _tagLabelStyle;
-
-    static GUIStyle TagLabelStyle => _tagLabelStyle = _tagLabelStyle ?? new GUIStyle
-    {
-        alignment = TextAnchor.MiddleCenter,
-        padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
-        normal = {textColor = GUI.skin.label.normal.textColor},
-        fontSize = 10
-    };
 }
 }
 #endif

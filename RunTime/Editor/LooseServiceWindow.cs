@@ -14,14 +14,16 @@ class LooseServiceWindow : EditorWindow
     const string editorPrefsKey = "LooseServicesWindowState";
 
     LooseServiceFoldoutColumn _servicesColumn;
+    LooseServiceTypesColumn _typesColumn;
     LooseServiceTagsColumn _tagsColumn;
     LooseServiceLoadedColumn _loadedColumn;
     GUITable<FoldableRow<LooseServiceRow>> _serviceTable; 
      
      
     [SerializeField] List<string> openedElements = new List<string>();
-    public bool isTagsOpen = false;
+    public bool isTagsOpen = false; 
     public string searchTagText = string.Empty;
+    public string searchTypeText = string.Empty;
     public string searchServiceText = string.Empty; 
 
     [MenuItem("Tools/Loose Services")]
@@ -35,8 +37,8 @@ class LooseServiceWindow : EditorWindow
     public void OnEnable()
     {
         wantsMouseMove = true;
-        Services.SceneContextInstallersChanged += OnSceneContextInstallersChanged;
-        Services.LoadedInstancesChanged += Repaint;
+        ServiceLocator.SceneContextInstallersChanged += OnSceneContextInstallersChanged;
+        ServiceLocator.LoadedInstancesChanged += Repaint;
 
         string data = EditorPrefs.GetString(
             editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
@@ -46,8 +48,8 @@ class LooseServiceWindow : EditorWindow
 
     public void OnDisable()
     {
-        Services.LoadedInstancesChanged -= OnSceneContextInstallersChanged;
-        Services.LoadedInstancesChanged -= Repaint;
+        ServiceLocator.LoadedInstancesChanged -= OnSceneContextInstallersChanged;
+        ServiceLocator.LoadedInstancesChanged -= Repaint;
 
         string data = JsonUtility.ToJson(this, prettyPrint: false);
         EditorPrefs.SetString(editorPrefsKey, data);
@@ -66,10 +68,11 @@ class LooseServiceWindow : EditorWindow
         
         _servicesColumn = new LooseServiceFoldoutColumn(this);
         _tagsColumn = new LooseServiceTagsColumn(this);
+        _typesColumn = new LooseServiceTypesColumn(this);
         _loadedColumn = new LooseServiceLoadedColumn(this);
         var componentTypeColumns = new List<IColumn<FoldableRow<LooseServiceRow>>>
         {
-            _servicesColumn, _tagsColumn, _loadedColumn,
+            _servicesColumn, _typesColumn, _tagsColumn, _loadedColumn,
         };
 
         _serviceTable = new GUITable<FoldableRow<LooseServiceRow>>(componentTypeColumns, this)
@@ -90,7 +93,7 @@ class LooseServiceWindow : EditorWindow
     List<FoldableRow<LooseServiceRow>> GenerateTreeView()
     {
         var roots = new List<TreeNode<LooseServiceRow>>();
-        foreach (IServiceSourceSet installer in Services.GetInstallers())
+        foreach (IServiceSourceSet installer in ServiceLocator.GetInstallers())
         {
             TreeNode<LooseServiceRow> installerNode = GetInstallerNode(installer);
             roots.Add(installerNode);
@@ -124,13 +127,14 @@ class LooseServiceWindow : EditorWindow
                     loadedInstance = source.GetDynamicServiceSource()?.InstantiatedObject,
                     loadability = new Loadability(Loadability.Type.Loadable)
                 };
-                
+
                 var abstractTypes = new List<TreeNode<LooseServiceRow>>();
                 var sourceNode = new TreeNode<LooseServiceRow>(sourceRow, abstractTypes);
                 sourceRow.loadability = source.Loadability;
 
+                /*
                 var typesShowed = 0;
-                foreach (Type serviceType in source.GetAllReturnableTypes())
+                foreach (Type serviceType in source.GetServiceTypes())
                 {
                     var abstractTypeRow = new LooseServiceRow(LooseServiceRow.RowCategory.Service)
                     {
@@ -148,23 +152,29 @@ class LooseServiceWindow : EditorWindow
 
                     if (!_servicesColumn.ApplyServiceSearchOnType(serviceType.ToString())) continue;
                     if (!_tagsColumn.ApplyTagSearchOnTagArray(source.GetTags())) continue;
+                    if (!_typesColumn.ApplyTypeSearchOnTypeArray(source.GetServiceTypes())) continue;
                     abstractTypes.Add(abstractTypeNode);
                     typesShowed++;
                 }
+                */
 
-                bool serviceMatchSearch = dynamicSource != null && _servicesColumn.ApplyServiceSourceSearch(dynamicSource);
-                bool tagMatchSearch =  dynamicSource != null && _tagsColumn.ApplyTagSearchOnSource(iSet, dynamicSource);
+                bool serviceMatchSearch = _servicesColumn.ApplyServiceSourceSearch(source);
+                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iSet, source);
+                bool typeMatchSearch = _typesColumn.ApplyTypeSearchOnSource(iSet, source);
                 bool noServiceSearch = _servicesColumn.NoSearch;
                 bool noTagSearch = _tagsColumn.NoSearch;
-                bool anyTypesShown = typesShowed != 0;
+                bool noTypeSearch = _typesColumn.NoSearch;
 
-                if (anyTypesShown)
+                // if (typesShowed != 0)
+                //    nodes.Add(sourceNode);
+                // else 
+
+                if (noServiceSearch && noTypeSearch && noTagSearch)
                     nodes.Add(sourceNode);
 
-                else if (noTagSearch && noServiceSearch)
-                    nodes.Add(sourceNode);
-
-                else if ((noServiceSearch || serviceMatchSearch) && (noTagSearch || tagMatchSearch))
+                else if ((noServiceSearch || serviceMatchSearch) &&
+                         (noTagSearch || tagMatchSearch) &&
+                         (noTypeSearch || typeMatchSearch))
                     nodes.Add(sourceNode);
             }
             else

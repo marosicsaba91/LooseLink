@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 namespace LooseServices
 {
 
-public static class Services
+public static class ServiceLocator
 {
     internal static readonly List<SceneServiceInstaller> sceneInstallers =
         new List<SceneServiceInstaller>();

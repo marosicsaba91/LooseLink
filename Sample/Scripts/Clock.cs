@@ -45,7 +45,7 @@ public class Clock : MonoBehaviour
 
     void Awake()
     {
-        _timeProviderBehaviour = Services.Get<ITimeProvider>(); 
+        _timeProviderBehaviour = ServiceLocator.Get<ITimeProvider>(); 
     }
 
     void OnDrawGizmos()

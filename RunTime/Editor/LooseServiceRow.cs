@@ -71,10 +71,7 @@ class LooseServiceRow
             case RowCategory.Source:
                 return new GUIContent(source.Name, source.Icon);
             case RowCategory.Service:
-                Texture t = FileIconHelper.GetIconOfType(type);
-                if (t == null)
-                    t = FileIconHelper.GetIconOfSource(FileIconHelper.FileType.CsFile);
-                return new GUIContent(type.ToString(), t);
+                return FileIconHelper.GetGUIContentToType(type);
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -86,7 +83,7 @@ class LooseServiceRow
         switch (Category)
         {
             case RowCategory.Service :
-                return GetCategoryGUIContentForService(type);
+                return GUIContent.none;
             case RowCategory.Source:
                 return GetCategoryGUIContentForServiceSource(source);
             case RowCategory.Set:
@@ -113,32 +110,6 @@ class LooseServiceRow
         return UnexpectedCategoryGUIContent;
     }
 
-    internal static GUIContent GetCategoryGUIContentForService(Type type)
-    {
-        if (type.IsInterface)
-            return new GUIContent("Interface", serviceIcon, "Service: Interface");
-        if (type.IsAbstract)
-        {
-            if (type.IsSubclassOf(typeof(MonoBehaviour)))
-                return new GUIContent("Abs. MB.", serviceIcon, "Service: Abstract MonoBehaviour class");
-            if (type.IsSubclassOf(typeof(ScriptableObject)))
-                return new GUIContent("Abs. SO.", serviceIcon, "Service: Abstract ScriptableObject class");
-            return new GUIContent("Abs. class", serviceIcon, "Service: Abstract ScriptableObject class");
-        }
-
-        if (type.IsSubclassOf(typeof(MonoBehaviour)))
-            return new GUIContent("MonoB.", serviceIcon, "Service: MonoBehaviour class");
-        if (type.IsSubclassOf(typeof(ScriptableObject)))
-            return new GUIContent("ScriptableObj.", serviceIcon, "Service: ScriptableObject class");
-        if (type.IsSubclassOf(typeof(Component)))
-            return new GUIContent("Component", serviceIcon, "Service: Component class");
-
-        if (type.IsClass)
-            return new GUIContent("Class", serviceIcon, "Service: Class"); 
-        
-        return UnexpectedCategoryGUIContent;
-    }
-    
     internal static GUIContent GetCategoryGUIContentForServiceSource(ServiceSource source, bool withIcons = true) =>
         GetCategoryGUIContentForServiceSource(source.SourceType, withIcons);
 
@@ -177,7 +148,6 @@ class LooseServiceRow
 
     public static readonly Texture installerIcon =EditorGUIUtility.IconContent("VerticalLayoutGroup Icon").image;
     public static readonly Texture serviceSourceIcon = EditorGUIUtility.IconContent("blendKeySelected").image;
-    public static readonly Texture serviceIcon = EditorGUIUtility.IconContent("curvekeyframe").image;
 } 
 }
 #endif

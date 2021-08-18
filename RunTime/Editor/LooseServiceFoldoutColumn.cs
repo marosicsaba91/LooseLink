@@ -21,7 +21,12 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
 
     public LooseServiceFoldoutColumn(LooseServiceWindow window)
     {
-        columnInfo = new ColumnInfo {customHeaderDrawer = DrawServiceSourcesHeader, relativeWidthWeight = 2f};
+        columnInfo = new ColumnInfo
+        {
+            customHeaderDrawer = DrawServiceSourcesHeader,
+            fixWidth = 120,
+            relativeWidthWeight = 0.75f
+        };
         _window =window;
     }
 
@@ -34,10 +39,12 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
         EditorGUI.indentLevel = 0;
         position = DrawFoldout(position, row);
         EditorGUI.indentLevel = indent;  
+        if(row.element.Category == LooseServiceRow.RowCategory.Service)
+            return;
         DrawCell(position, row.element, selectElement: true);
     }
     
-    public static void DrawCell(Rect position, LooseServiceRow row, bool selectElement)
+    static void DrawCell(Rect position, LooseServiceRow row, bool selectElement)
     {
         if (IsRowHighlighted(row))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
@@ -121,7 +128,7 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
         const float margin = 2;
         position.x += indent;
         position.width -= indent;
-        GUI.Label(position, "Installers, Service Sources & Services", LabelStyle);
+        GUI.Label(position, "Service Sources", LabelStyle);
 
         
         bool modernUI = EditorHelper.IsModernEditorUI; 
@@ -136,7 +143,7 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
             EditorGUI.TextField(searchServicePos, SearchServiceText, GUI.skin.FindStyle("ToolbarSeachTextField"));
     }
 
-    public bool ApplyServiceSourceSearch(DynamicServiceSource source) => ApplyServiceSearchOnType(source.Name);
+    public bool ApplyServiceSourceSearch(ServiceSource source) => ApplyServiceSearchOnType(source.Name);
 
     public bool ApplyServiceSearchOnType(string text)
      {

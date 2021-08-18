@@ -63,7 +63,7 @@ abstract class DynamicServiceSource
             {
                 parentObject = set != null && set.GetType().IsSubclassOf(typeof(Component))
                     ? ((Component) set).transform
-                    : Services.ParentObject;
+                    : ServiceLocator.ParentObject;
             }
             
             InstantiatedObject = Instantiate(parentObject);
@@ -179,22 +179,17 @@ abstract class DynamicServiceSource
 
     protected abstract void ClearService();
 
-    public ICollection<object> GetDynamicTags()
+    public IEnumerable<object> GetDynamicTags()
     {
-
         if (_typeToTagProviderOnSource == null)
             Init();
 
-        var tags = new List<object>();
         foreach (KeyValuePair<Type, ITagged> pair in _typeToTagProviderOnSource)
             if (pair.Value != null)
             {
                 foreach (object tag in pair.Value.GetTags())
-                    if (!tags.Contains(tag))
-                        tags.Add(tag);
-            }
-
-        return tags;
+                    yield return tag;
+            } 
     }
 
     public void ClearInstances()

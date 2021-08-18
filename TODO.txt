@@ -1,18 +1,16 @@
-Additional types & tags work.
-Additional Tag Warning.
-
+Types in new Column
+Rename to Unity Service Locator (not Loose Service)
+combined Search Works
+More Info than "NO SERVICE"
 Disable not working Setting in playtime or make them work
-Get rid of clear cache button.
-
 Cache init & tagged types
-
-Support for Generic Types
 
 Add Tests to Project
 Add Examples to Project
 Update Manual
 
-
+Rename to Unity Service Locator
+Support for Generic Types
 
 Publish Beta:
 	Balázs,	Tibi, Robi, Máté

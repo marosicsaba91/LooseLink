@@ -16,7 +16,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
         {
             customHeaderDrawer = DrawHeader,
             relativeWidthWeight = 0.5f,
-            fixWidth = 100,
+            fixWidth = 75,
         };
         _window = window;
     }
@@ -108,7 +108,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             {
                 // Load Button 
                 if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
-                    foreach (Type type in row.element.source.GetAllReturnableTypes())
+                    foreach (Type type in row.element.source.GetServiceTypes())
                         row.element.source.GetDynamicServiceSource().TryGetService(
                             type,
                             row.element.set,
@@ -191,7 +191,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             buttonW,
             position.height - 2 * margin);
         if (GUI.Button(buttonRect, "Clear"))
-            Services.ClearAllCachedData();
+            ServiceLocator.ClearAllCachedData();
     }
 }
 }

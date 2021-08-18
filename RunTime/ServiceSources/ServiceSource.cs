@@ -44,7 +44,7 @@ class ServiceSource
     public Texture Icon => GetDynamicServiceSource()?.Icon;
     public ServiceSourceTypes SourceType => GetDynamicServiceSource()?.SourceType ?? preferredSourceType;
     public Loadability Loadability => GetDynamicServiceSource()?.Loadability ?? Loadability.NoServiceSourceObject;
-    
+
     void InitIfNeeded()
     {
         const double forcedInitDuration = 2.5;
@@ -110,7 +110,7 @@ class ServiceSource
         return null;
     }
 
-    public IEnumerable<Type> GetAllReturnableTypes()
+    public IEnumerable<Type> GetServiceTypes()
     {     
         if (serviceSourceObject == null) yield break; 
         InitIfNeeded();
@@ -129,22 +129,22 @@ class ServiceSource
         }
     }
 
-    public IEnumerable<object> GetTags( )
+    public IEnumerable<object> GetTags()
     {
-            if (serviceSourceObject == null) yield break; 
-            InitIfNeeded();
-            if(_dynamicSource == null)
-                yield break;
+        if (serviceSourceObject == null) yield break;
+        InitIfNeeded();
+        if (_dynamicSource != null)
             foreach (object serviceTypes in _dynamicSource?.GetDynamicTags())
             {
-                if (serviceTypes != null)     
+                if (serviceTypes != null)
                     yield return serviceTypes;
             }
-            foreach (SerializableTag tagSetting in additionalTags)
-            {
-                object tag = tagSetting.TagObject; 
-                    yield return tag;
-            }
+
+        foreach (SerializableTag tagSetting in additionalTags)
+        {
+            object tag = tagSetting.TagObject;
+            yield return tag;
+        }
     }
 }
 }

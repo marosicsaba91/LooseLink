@@ -49,6 +49,7 @@ static class InstallerEditorHelper
     {  
 
         ServiceSourceDrawer.DrawServiceSources(
+            set,
             set.ServiceSources,
             editor.serializedObject.targetObject);
         /*

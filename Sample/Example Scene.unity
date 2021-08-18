@@ -167,9 +167,15 @@ MonoBehaviour:
       assemblyQualifiedName: System.IFormattable, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
       monoScript: {fileID: 0}
-    additionalTags: []
-    isTypesExpanded: 1
-    isTagsExpanded: 1
+    additionalTags:
+    - tagType: 0
+      stringTag: Obi-Wan Kenobi
+      tagFile: {fileID: 0}
+      objectTag: {fileID: 0}
+      initialized: 0
+      customColor: {r: 0, g: 0, b: 0, a: 0}
+    isTypesExpanded: 0
+    isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
       type: 3}
@@ -181,7 +187,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
     additionalTags: []
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 1075936879}
@@ -209,7 +215,7 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 11400000, guid: 35bd33d0edb831340842597ccf33bb6a,
