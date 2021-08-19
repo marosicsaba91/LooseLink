@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 public static class ServiceTypeHelper
 { 

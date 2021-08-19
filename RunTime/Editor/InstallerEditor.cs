@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace LooseServices.Editor
+namespace UnityServiceLocator.Editor
 {
 
 [CustomEditor(typeof(SceneServiceInstaller))]

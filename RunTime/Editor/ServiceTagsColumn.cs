@@ -7,42 +7,42 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
-class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
+class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
     const float minTagWidth = 25;
     const float spacing = 2;
 
-    readonly LooseServiceWindow _window;
+    readonly ServiceLocatorWindow _serviceLocatorWindow;
 
     bool IsTagsOpen
     {
-        get => _window.isTagsOpen;
-        set => _window.isTagsOpen = value;
+        get => _serviceLocatorWindow.isTagsOpen;
+        set => _serviceLocatorWindow.isTagsOpen = value;
     }
 
     string SearchTagText
     {
-        get => _window.searchTagText;
-        set => _window.searchTagText = value;
+        get => _serviceLocatorWindow.searchTagText;
+        set => _serviceLocatorWindow.searchTagText = value;
     }
 
     string[] _tagSearchWords = null;
 
-    public LooseServiceTagsColumn(LooseServiceWindow window)
+    public ServiceTagsColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {
             fixWidthGetter = GetTagWidth,
             customHeaderDrawer = DrawHeader
         };
-        _window = window;
+        _serviceLocatorWindow = serviceLocatorWindow;
     }
     
-    public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
+    public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category != LooseServiceRow.RowCategory.Source) return;
+        if (row.element.Category != ServiceLocatorRow.RowCategory.Source) return;
         if (row.element.source.SourceType == ServiceSourceTypes.FromScriptableObjectType) return;
         if (row.element.source.SourceType == ServiceSourceTypes.FromMonoBehaviourType) return;
         
@@ -161,7 +161,7 @@ class LooseServiceTagsColumn : Column<FoldableRow<LooseServiceRow>>
         _tagSearchWords = GenerateSearchWords(SearchTagText);
     }
 
-    float GetTagWidth() => IsTagsOpen ? 138 : 36;
+    float GetTagWidth() => IsTagsOpen ? 138 : 42;
     public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
         ApplyTagSearchOnTagArray(source.GetTags());
 

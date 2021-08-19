@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine; 
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 [DefaultExecutionOrder(order: -1000000)]
 class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet

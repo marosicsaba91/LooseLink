@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 public interface ITagged
 {

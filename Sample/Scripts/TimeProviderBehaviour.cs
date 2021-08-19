@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using LooseServices;
+using UnityServiceLocator;
 using UnityEngine;
 
-[ServiceType]
 public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged
 {
     float _time = 0;

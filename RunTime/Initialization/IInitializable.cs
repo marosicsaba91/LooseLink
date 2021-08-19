@@ -1,4 +1,4 @@
-﻿namespace LooseServices
+﻿namespace UnityServiceLocator
 {
 public interface IInitializable
 {

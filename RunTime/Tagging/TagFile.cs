@@ -1,4 +1,4 @@
-﻿using LooseServices;
+﻿using UnityServiceLocator;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Tag", menuName = "Loose Services/Tag File")]

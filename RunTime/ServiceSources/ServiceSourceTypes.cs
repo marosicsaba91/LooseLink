@@ -1,4 +1,4 @@
-﻿namespace LooseServices
+﻿namespace UnityServiceLocator
 {
 enum ServiceSourceTypes
 {

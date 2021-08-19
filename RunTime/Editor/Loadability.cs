@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 
 readonly struct Loadability

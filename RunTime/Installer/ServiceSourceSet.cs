@@ -5,7 +5,7 @@ using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 [CreateAssetMenu(fileName = "Service Source Set", menuName = "Loose Services/Service Source Set", order = 1)]
 class ServiceSourceSet : ScriptableObject, IServiceSourceSet

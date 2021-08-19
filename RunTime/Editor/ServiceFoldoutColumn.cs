@@ -6,20 +6,20 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
-class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
+class ServiceFoldoutColumn : FoldoutColumn<ServiceLocatorRow>
 {
-    readonly LooseServiceWindow _window;
+    readonly ServiceLocatorWindow _serviceLocatorWindow;
 
     string SearchServiceText
     {
-        get => _window.searchServiceText;
-        set => _window.searchServiceText = value;
+        get => _serviceLocatorWindow.searchServiceText;
+        set => _serviceLocatorWindow.searchServiceText = value;
     }
-    public LooseServiceFoldoutColumn(ColumnInfo columnInfo) : base(columnInfo) { }
+    public ServiceFoldoutColumn(ColumnInfo columnInfo) : base(columnInfo) { }
 
-    public LooseServiceFoldoutColumn(LooseServiceWindow window)
+    public ServiceFoldoutColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {
@@ -27,49 +27,41 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
             fixWidth = 120,
             relativeWidthWeight = 0.75f
         };
-        _window =window;
+        _serviceLocatorWindow =serviceLocatorWindow;
     }
 
-    public override void DrawContent(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
+    public override void DrawContent(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     { }
 
-    public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
+    public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
         int indent = EditorGUI.indentLevel;
         EditorGUI.indentLevel = 0;
         position = DrawFoldout(position, row);
-        EditorGUI.indentLevel = indent;  
-        if(row.element.Category == LooseServiceRow.RowCategory.Service)
-            return;
+        EditorGUI.indentLevel = indent;
         DrawCell(position, row.element, selectElement: true);
     }
     
-    static void DrawCell(Rect position, LooseServiceRow row, bool selectElement)
+    static void DrawCell(Rect position, ServiceLocatorRow locatorRow, bool selectElement)
     {
-        if (IsRowHighlighted(row))
+        if (IsRowHighlighted(locatorRow))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
 
         GUI.color = Color.white;
  
         position.y += (position.height - 16) / 2f;
         position.height = 16;
-        EditorGUI.LabelField(position, row.GetGUIContent());
-
-        const float categoryWidth = 100;
-        var categoryPosition = new Rect(position.xMax-categoryWidth, position.y, categoryWidth, position.height);
-        
-        GUI.Label(categoryPosition, row.GetCategoryGUIContent(), CategoryStyle);
-        bool isRowSelectable = row.SelectionObject != null;
+        EditorGUI.LabelField(position, locatorRow.GetGUIContent());
+ 
+        bool isRowSelectable = locatorRow.SelectionObject != null;
         if (isRowSelectable && position.Contains(Event.current.mousePosition))
             EditorGUI.DrawRect(position, EditorHelper.tableHoverColor);
-
-        // base.DrawCell(position, row, style, onChanged);
 
         if (_rowButtonStyle == null)
             _rowButtonStyle = new GUIStyle(GUI.skin.label);
         
         if (GUI.Button(position, GUIContent.none, _rowButtonStyle))
-            OnRowClick(row, selectElement);
+            OnRowClick(locatorRow, selectElement);
     }
 
     static void CreateScriptableObjectFile(Type type)
@@ -102,9 +94,9 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
         }
     }
 
-    static void OnRowClick(LooseServiceRow row, bool selectElement)
+    static void OnRowClick(ServiceLocatorRow locatorRow, bool selectElement)
     {
-        Object obj = row.SelectionObject;
+        Object obj = locatorRow.SelectionObject;
 
         if (selectElement)
         {
@@ -117,13 +109,13 @@ class LooseServiceFoldoutColumn : FoldoutColumn<LooseServiceRow>
             EditorGUIUtility.PingObject(obj);
     }
 
-    static bool IsRowHighlighted(LooseServiceRow row) =>
-        row.SelectionObject != null &&
-        Selection.objects.Contains(row.SelectionObject);
+    static bool IsRowHighlighted(ServiceLocatorRow locatorRow) =>
+        locatorRow.SelectionObject != null &&
+        Selection.objects.Contains(locatorRow.SelectionObject);
 
     void DrawServiceSourcesHeader(Rect position)
     {
-        const float searchTextW = 200;
+        float searchTextW = Mathf.Min(200f, position.width - 110f);
         const float indent = 4;
         const float margin = 2;
         position.x += indent;

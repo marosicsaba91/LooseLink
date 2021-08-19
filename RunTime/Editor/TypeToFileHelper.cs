@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 static class TypeToFileHelper
 {

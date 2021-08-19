@@ -3,7 +3,7 @@
 using System.Linq; 
 using UnityEngine;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 static class ServicesEditorHelper
 {

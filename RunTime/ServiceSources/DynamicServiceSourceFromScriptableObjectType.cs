@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 [Serializable]
 class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LooseServices;
+using UnityServiceLocator;
 using UnityEngine;
 
 public class TimeProvider : ScriptableObject, ITimeProvider

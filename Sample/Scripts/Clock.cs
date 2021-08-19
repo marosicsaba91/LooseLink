@@ -1,5 +1,5 @@
 ﻿using System;
-using LooseServices;
+using UnityServiceLocator;
 using MUtility;
 using UnityEngine;
 using Utility.SerializableCollection;

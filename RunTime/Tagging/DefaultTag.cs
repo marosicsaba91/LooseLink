@@ -2,7 +2,7 @@
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 public class DefaultTag : ITag
 {

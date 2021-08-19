@@ -8,23 +8,23 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
-class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
+class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
 
-    readonly LooseServiceWindow _window;
+    readonly ServiceLocatorWindow _serviceLocatorWindow;
  
     string SearchTypeText
     {
-        get => _window.searchTypeText;
-        set => _window.searchTypeText = value;
+        get => _serviceLocatorWindow.searchTypeText;
+        set => _serviceLocatorWindow.searchTypeText = value;
     }
 
     string[] _typeSearchWords = null;
     public bool NoSearch => string.IsNullOrEmpty(SearchTypeText); 
 
-    public LooseServiceTypesColumn(LooseServiceWindow window)
+    public ServiceTypesColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {
@@ -32,18 +32,18 @@ class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
             fixWidth = 75,
             customHeaderDrawer = DrawHeader
         };
-        _window = window;
+        _serviceLocatorWindow = serviceLocatorWindow;
     }
     
-    public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
+    public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category != LooseServiceRow.RowCategory.Source) return;
+        if (row.element.Category != ServiceLocatorRow.RowCategory.Source) return;
         
         List<Type> types = row.element.source.GetServiceTypes().ToList();
         
         if (types.IsNullOrEmpty())
         {
-            GUI.Label(position, "NON!", ServicesEditorHelper.SmallLabelStyle);
+            GUI.Label(position, "-");
             return;
         }
  
@@ -62,10 +62,10 @@ class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
             DrawTypePopup(
                 new Rect(position.xMax - popupWidth, position.y, popupWidth, position.height),
                 types);
-            position.width -= popupWidth;
+            position.width -= popupWidth + 1;
         }
 
-        DrawType(position, types[0]);
+        DrawType(position, types[0]); 
     }
 
     public static void DrawType(Rect position, Type type)
@@ -77,7 +77,9 @@ class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
 
     void DrawTypePopup(Rect position, IReadOnlyList<Type> typesToDrawInPopup)
     {
-
+        position.y += 1;
+        position.height -= 2;
+        position.x -= 1;
         var contents = new string[typesToDrawInPopup.Count];
         for (var i = 0; i < typesToDrawInPopup.Count; i++)
             contents[i] = FileIconHelper.GetGUIContentToType(typesToDrawInPopup[i]).tooltip;
@@ -92,8 +94,8 @@ class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
 
         if (index >= -0)
             TryPing(typesToDrawInPopup[index]);
-    }
-    
+    } 
+         
 
     public static void TryPing(Type pingable)
     {
@@ -115,10 +117,11 @@ class LooseServiceTypesColumn : Column<FoldableRow<LooseServiceRow>>
         
         bool modernUI = EditorHelper.IsModernEditorUI; 
 
+        float searchTextW = Mathf.Min(200f, pos.width - 52f);
         var searchTypePos = new Rect(
-            pos.x + 2 + labelWidth,
+            pos.xMax - searchTextW - 2,
             pos.y + 3 + (modernUI ? 0 : 1),
-            pos.width - labelWidth - 4 + (modernUI ? 0 : 1),
+            searchTextW,
             pos.height - 5);
         SearchTypeText = EditorGUI.TextField(searchTypePos, SearchTypeText, GUI.skin.FindStyle("ToolbarSeachTextField"));
 

@@ -1,4 +1,4 @@
-﻿using LooseServices;
+﻿using UnityServiceLocator;
 using UnityEngine;
 
 public class ScreenSizeUI : MonoBehaviour

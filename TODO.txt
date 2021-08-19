@@ -1,7 +1,6 @@
-Types in new Column
-Rename to Unity Service Locator (not Loose Service)
-combined Search Works
-More Info than "NO SERVICE"
+BUG: Dynamic source Update deletes Loaded object
+Types clickable
+Lost Type Cells are !RED!
 Disable not working Setting in playtime or make them work
 Cache init & tagged types
 

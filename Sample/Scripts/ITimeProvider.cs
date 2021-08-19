@@ -1,4 +1,4 @@
-﻿using LooseServices;
+﻿using UnityServiceLocator;
 
 [ServiceType]
 public interface ITimeProvider

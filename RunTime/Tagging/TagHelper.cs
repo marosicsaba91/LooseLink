@@ -4,7 +4,7 @@ using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
 public static class TagHelper
 {

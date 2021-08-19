@@ -5,12 +5,12 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 
-namespace LooseServices
+namespace UnityServiceLocator
 {
-class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
+class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
 {
-    LooseServiceWindow _window;
-    public LooseServiceLoadedColumn(LooseServiceWindow window)
+    ServiceLocatorWindow _serviceLocatorWindow;
+    public ServiceLoadedColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {
@@ -18,14 +18,14 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             relativeWidthWeight = 0.5f,
             fixWidth = 75,
         };
-        _window = window;
+        _serviceLocatorWindow = serviceLocatorWindow;
     }
 
     GUIStyle _rowButtonStyle;
 
-    public override void DrawCell(Rect position, FoldableRow<LooseServiceRow> row, GUIStyle style, Action onChanged)
+    public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category == LooseServiceRow.RowCategory.Set) return;
+        if (row.element.Category == ServiceLocatorRow.RowCategory.Set) return;
 
         if (IsRowHighlighted(row))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
@@ -49,7 +49,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
         { 
             const float unloadButtonWidth = 23;
             contentPos.width -= unloadButtonWidth;
-            if (row.element.Category == LooseServiceRow.RowCategory.Source)
+            if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
             {
                 var loadedContent = new GUIContent(loadedObject.name, LoadedObjectIcon(loadedObject.GetType()));
                 GUI.Label(contentPos, loadedContent, LabelStyle);
@@ -73,7 +73,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
                 OnRowClick(row);
 
             // Load / Unload Button
-            if (row.element.Category == LooseServiceRow.RowCategory.Source)
+            if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
             {
                 var unloadButtonRect = new Rect(
                     contentPos.xMax,
@@ -88,13 +88,12 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
 
             
         }
-        else if (row.element.Category == LooseServiceRow.RowCategory.Source)
-        {
-            const float loadButtonWidth = 75;
+        else if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
+        { 
             var actionButtonRect = new Rect(
-                contentPos.x + ((contentPos.width - loadButtonWidth) / 2),
+                contentPos.x ,
                 contentPos.y,
-                loadButtonWidth,
+                position.width-2,
                 contentPos.height);
 
             bool isLoadable = source != null && source.Loadability.IsLoadable;
@@ -133,7 +132,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
     protected override GUIStyle GetDefaultStyle() => null;
 
 
-    static void OnRowClick(FoldableRow<LooseServiceRow> row)
+    static void OnRowClick(FoldableRow<ServiceLocatorRow> row)
     { 
         Object obj = row.element.loadedInstance;
         if (Selection.objects.Length == 1 && Selection.objects[0] == obj)
@@ -142,7 +141,7 @@ class LooseServiceLoadedColumn: Column<FoldableRow<LooseServiceRow>>
             Selection.objects = new[] {obj};
     }
 
-    static bool IsRowHighlighted(FoldableRow<LooseServiceRow> row) => 
+    static bool IsRowHighlighted(FoldableRow<ServiceLocatorRow> row) => 
         row.element.loadedInstance!=null && Selection.objects.Contains(row.element.loadedInstance);
     
     

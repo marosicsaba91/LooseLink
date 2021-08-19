@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace LooseServices.Editor
+namespace UnityServiceLocator.Editor
 {
 static class ServiceSourceDrawer
 {
@@ -21,15 +21,18 @@ static class ServiceSourceDrawer
     static readonly float space = EditorGUIUtility.standardVerticalSpacing;
     static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
 
-    public static readonly GUIContent noServiceContent = new GUIContent("NO SERVICE",
+    public static readonly GUIContent invalidObjectContent = new GUIContent("Invalid Object", typeTooltip);
+    public static readonly GUIContent noObjectContent = new GUIContent("Select an Object", typeTooltip);
+
+    const string typeTooltip =
         "Selected object should be one of these:\n" +
         "   In Scene Game Object\n" +
         "   Prefab\n" +
         "   Scriptable Object\n" +
         "   Non abstract MonoBehaviour Script\n" +
         "   Non abstract ScriptableObject Script\n" +
-        "   Service Set File");
-
+        "   Service Set File";
+    
     static readonly GUIStyle categoryPopupStyle = default;
 
     public static GUIStyle LeftAlignedButtonStyle => categoryPopupStyle ?? new GUIStyle("Button")
@@ -79,7 +82,7 @@ static class ServiceSourceDrawer
                 GUILayout.Space(height - lineHeight - 3);
             }
 
-        GUILayout.Space(10);
+        GUILayout.Space(pixels: 10);
         if (GUILayout.Button("Add New Services Source"))
         {
             Undo.RecordObject(targetObject, "Add new service source setting.");
@@ -198,7 +201,9 @@ static class ServiceSourceDrawer
         var sourceTypePos = new Rect(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
 
         ServiceSourceTypes sourceType = _source.preferredSourceType;
-        if (_dynamicSource != null)
+        if (_source.serviceSourceObject== null)
+            GUI.Label(sourceTypePos, noObjectContent);
+        else if (_dynamicSource != null)
         {
             sourceType = _dynamicSource.SourceType;
             if (_dynamicSource.AlternativeSourceTypes.Any())
@@ -208,17 +213,24 @@ static class ServiceSourceDrawer
                 options.Sort();
                 int currentIndex = options.IndexOf(sourceType);
 
-                GUIContent[] guiContentOptions = new GUIContent[options.Count];
+                var guiContentOptions = new GUIContent[options.Count];
                 for (var i = 0; i < options.Count; i++)
+                {
+                    ServiceSourceTypes option = options[i];
                     guiContentOptions[i] =
-                        LooseServiceRow.GetCategoryGUIContentForServiceSource(options[i], withIcons: false);
+                        new GUIContent(FileIconHelper.GetShortNameForServiceSource(option),
+                            image: null,
+                            FileIconHelper.GetTooltipForServiceSource(option));
+                }
 
                 int selectedIndex = EditorGUI.Popup(sourceTypePos, currentIndex, guiContentOptions);
                 sourceType = options[selectedIndex];
             }
             else
             {
-                GUIContent content = LooseServiceRow.GetCategoryGUIContentForServiceSource(_source, withIcons: false);
+                var content = new GUIContent( FileIconHelper.GetShortNameForServiceSource(_source.SourceType),
+                    image: null,
+                    FileIconHelper.GetTooltipForServiceSource(_source.SourceType));
                 GUI.Label(sourceTypePos, content);
             }
         }
@@ -226,7 +238,7 @@ static class ServiceSourceDrawer
             GUI.Label(sourceTypePos,
                 new GUIContent($"Source Set ({_insideSet.GetValidSources().Count()})"));
         else
-            GUI.Label(sourceTypePos, noServiceContent);
+            GUI.Label(sourceTypePos, invalidObjectContent); 
 
         // Object or source Type changed
         if (obj != _source.serviceSourceObject || sourceType != _source.preferredSourceType)
@@ -303,7 +315,7 @@ static class ServiceSourceDrawer
         buttonPos.width -= actionBarWidth + space;
         if (DrawButton(buttonPos, ListAction.Add, isAnyNotUsedType))
         {
-            var st = new SerializableType {Type = notUsedAdditionalTypes[0]};
+            var st = new SerializableType {Type = notUsedAdditionalTypes[index: 0]};
             _source.additionalTypes.Add(st);
             _anyChange = true;
         }
@@ -412,7 +424,7 @@ static class ServiceSourceDrawer
     {
         position.width -= 3 * actionButtonWidth;
         if (position.width <= 0) return;
-        LooseServiceTagsColumn.DrawTag(position, tag);
+        ServiceTagsColumn.DrawTag(position, tag);
     }
 
     static void DrawSerializableTag(
@@ -431,7 +443,7 @@ static class ServiceSourceDrawer
         position.width = editing ? tagWidth : position.width - editButtonWidth + space;
         if (position.width <= 0) return;
 
-        LooseServiceTagsColumn.DrawTag(position, serializableTag.TagObject);
+        ServiceTagsColumn.DrawTag(position, serializableTag.TagObject);
 
         if (editing)
         {
