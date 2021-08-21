@@ -2,7 +2,7 @@
 using UnityServiceLocator;
 using UnityEngine;
 
-public class TimeProvider : ScriptableObject, ITimeProvider
+public class TimeProvider : ScriptableObject, ITimeProviderLongName
 {
     public float GetTime => Time.time;
     public void Initialize() { } 

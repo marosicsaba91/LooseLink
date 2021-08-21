@@ -24,8 +24,8 @@ class ServiceFoldoutColumn : FoldoutColumn<ServiceLocatorRow>
         columnInfo = new ColumnInfo
         {
             customHeaderDrawer = DrawServiceSourcesHeader,
-            fixWidth = 120,
-            relativeWidthWeight = 0.75f
+            fixWidth = 150,
+            relativeWidthWeight = 0.75f,
         };
         _serviceLocatorWindow =serviceLocatorWindow;
     }

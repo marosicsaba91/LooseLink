@@ -28,7 +28,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
     {
         columnInfo = new ColumnInfo
         {
-            relativeWidthWeight = 0.5f,
+            relativeWidthWeight = 1,
             fixWidth = 75,
             customHeaderDrawer = DrawHeader
         };
@@ -37,7 +37,11 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
     
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category != ServiceLocatorRow.RowCategory.Source) return;
+        if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
+        {
+            ServicesEditorHelper.DrawLine(position);
+            return;
+        }
         
         List<Type> types = row.element.source.GetServiceTypes().ToList();
         
@@ -52,30 +56,62 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
 
     void DrawTypes(Rect position, IReadOnlyList<Type> types)
-    { 
+    {
+        const float space = 4;
+        const float iconWidth = 20;
         const float popupWidth = 25;
         if (types.Count <= 0) return;
-        
-        bool morThanOneType = types.Count > 1;
-        if (morThanOneType)
+
+        Rect typePosition = position;
+        typePosition.y += 1;
+        typePosition.height = 16;
+        bool overflow = false;
+        int overflowIndex = -1;
+        for (var i = 0; i < types.Count; i++)
         {
-            DrawTypePopup(
-                new Rect(position.xMax - popupWidth, position.y, popupWidth, position.height),
-                types);
-            position.width -= popupWidth + 1;
+            Type type = types[i];
+            GUIContent content = FileIconHelper.GetGUIContentToType(types[i]);
+            float w = ServicesEditorHelper.SmallLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
+
+            overflow = i == types.Count - 1
+                ? typePosition.x + w > position.xMax
+                : typePosition.x + w > position.xMax - popupWidth;
+
+            if (overflow)
+            {
+                overflowIndex = i;
+                break;
+            }
+
+            typePosition.width = w - space;
+            DrawType(typePosition, content, type);
+            typePosition.x += w + space;
         }
 
-        DrawType(position, types[0]); 
+        if (!overflow) return;
+
+        int overflowCount = types.Count - overflowIndex;
+        var overflownTypes = new List<Type>(overflowCount);
+        for (int i = overflowIndex; i < types.Count; i++)
+            overflownTypes.Add(types[i]);
+
+        bool allOverflown = overflowCount == types.Count;
+        Rect popupRect = allOverflown
+            ? position
+            : new Rect(position.xMax - popupWidth, position.y, popupWidth, position.height);
+
+        DrawTypePopup(popupRect, overflownTypes, !allOverflown);
+        position.width -= popupWidth + 1;
+
     }
 
-    public static void DrawType(Rect position, Type type)
+    public static void DrawType(Rect position, GUIContent content, Type type )
     {
-        GUIContent content = FileIconHelper.GetGUIContentToType(type);
-        if (GUI.Button(position, content, new GUIStyle("Label")))
+        if (GUI.Button(position, content, ServicesEditorHelper.SmallLabelStyle))
             TryPing(type); 
     }
 
-    void DrawTypePopup(Rect position, IReadOnlyList<Type> typesToDrawInPopup)
+    void DrawTypePopup(Rect position, IReadOnlyList<Type> typesToDrawInPopup, bool drawPlus)
     {
         position.y += 1;
         position.height -= 2;
@@ -89,8 +125,8 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             selectedIndex: -1,
             contents,
             new GUIStyle(GUI.skin.button));
-
-        GUI.Label(position, $"+{typesToDrawInPopup.Count}", ServicesEditorHelper.SmallLabelStyle);
+ 
+        GUI.Label(position, $"{(drawPlus?"+":"")}{typesToDrawInPopup.Count}", ServicesEditorHelper.SmallLabelStyle);
 
         if (index >= -0)
             TryPing(typesToDrawInPopup[index]);
@@ -127,6 +163,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
         _typeSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchTypeText);
     }
+    
     public bool ApplyTypeSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
         ApplyTypeSearchOnTypeArray(source.GetServiceTypes());
 
@@ -148,6 +185,8 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
     protected override GUIStyle GetDefaultStyle() => null;
 
+    static GUIStyle _labelStyle;
+    public static GUIStyle LabelStyle => _labelStyle = _labelStyle ?? new GUIStyle("Label"); 
 }
 }
 #endif

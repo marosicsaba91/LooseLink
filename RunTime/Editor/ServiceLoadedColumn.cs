@@ -25,7 +25,11 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
 
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category == ServiceLocatorRow.RowCategory.Set) return;
+        if (row.element.Category == ServiceLocatorRow.RowCategory.Set) 
+        {
+            ServicesEditorHelper.DrawLine(position);
+            return;
+        }
 
         if (IsRowHighlighted(row))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
@@ -107,13 +111,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
             {
                 // Load Button 
                 if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
-                    foreach (Type type in row.element.source.GetServiceTypes())
-                        row.element.source.GetDynamicServiceSource().TryGetService(
-                            type,
-                            row.element.set,
-                            conditionTags: null,
-                            out object _,
-                            out bool _);
+                    row.element.source?.LoadAllType();
             }
 
             GUI.enabled = true;

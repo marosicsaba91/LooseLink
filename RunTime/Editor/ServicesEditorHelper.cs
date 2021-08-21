@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 
-using System.Linq; 
+using System.Linq;
+using MUtility;
 using UnityEngine;
 
 namespace UnityServiceLocator
@@ -22,6 +23,14 @@ static class ServicesEditorHelper
     {
         string[] rawKeywords = searchText.Split(',');
         return rawKeywords.Select(keyword => keyword.Trim().ToLower()).ToArray();
+    }
+
+    public static void DrawLine(Rect position)
+    {  
+        EditorHelper.DrawLine(position, 
+            new Vector2(0.025f, 0.5f), 
+            new Vector2(0.975f, 0.5f),
+            new Color(0.6f,0.6f,0.6f, 0.5f));
     }
 }
 }

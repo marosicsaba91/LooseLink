@@ -58,11 +58,11 @@ class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
 
     protected override void ClearService()
     {
-        if (InstantiatedObject == null) return;
+        if (LoadedObject == null) return;
         if(Application.isPlaying)
-            Object.Destroy(InstantiatedObject);
+            Object.Destroy(LoadedObject);
         else
-            Object.DestroyImmediate(InstantiatedObject);
+            Object.DestroyImmediate(LoadedObject);
     }
  
     protected override object GetService(Type type, Object instantiatedObject) => ((GameObject) instantiatedObject).GetComponent(type);

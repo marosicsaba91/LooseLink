@@ -16,7 +16,7 @@ abstract class DynamicServiceSource
     Dictionary<Type, ITagged> _typeToTagProviderOnSource;
     ServiceSource _setting; 
  
-    public Object InstantiatedObject { get; private set; } // GameObject or ScriptableObject
+    public Object LoadedObject { get; private set; } // GameObject or ScriptableObject
 
     public Dictionary<Type, object> InstantiatedServices { get; private set; } =
         new Dictionary<Type, object>();
@@ -55,7 +55,7 @@ abstract class DynamicServiceSource
             }
         }
 
-        if (InstantiatedObject == null)
+        if (LoadedObject == null)
         {
             Transform parentObject = null;
 
@@ -66,12 +66,12 @@ abstract class DynamicServiceSource
                     : ServiceLocator.ParentObject;
             }
             
-            InstantiatedObject = Instantiate(parentObject);
+            LoadedObject = Instantiate(parentObject);
             newInstance = true;
         }
 
         if (!InstantiatedServices.ContainsKey(type))
-            InstantiatedServices.Add(type,  GetService(type, InstantiatedObject));
+            InstantiatedServices.Add(type,  GetService(type, LoadedObject));
 
         service = InstantiatedServices[type];
         return true;
@@ -125,9 +125,9 @@ abstract class DynamicServiceSource
         _possibleAdditionalTypes = new List<Type>(); 
         foreach (Type concreteType in _allNonAbstractTypes)
         { 
-            object loosServiceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
+            object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
             ITagged tagProviderInstanceOnSourceObject =
-                loosServiceInstanceOnSourceObject is ITagged tagged ? tagged : null;
+                serviceInstanceOnSourceObject is ITagged tagged ? tagged : null;
 
 
             IEnumerable<Type> abstractTypes = ServiceTypeHelper.GetServicesOfNonAbstractType(concreteType)
@@ -136,7 +136,7 @@ abstract class DynamicServiceSource
             foreach (Type abstractType in abstractTypes)
             {
                 _allAbstractTypes.Add(abstractType);
-                _typeToServiceOnSource.Add(abstractType, loosServiceInstanceOnSourceObject);
+                _typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject);
                 _typeToTagProviderOnSource.Add(abstractType, tagProviderInstanceOnSourceObject);
             }
             
@@ -195,7 +195,7 @@ abstract class DynamicServiceSource
     public void ClearInstances()
     {
         ClearService();
-        InstantiatedObject = null;
+        LoadedObject = null;
         InstantiatedServices.Clear();
     }
 

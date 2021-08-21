@@ -4,7 +4,7 @@ using UnityServiceLocator;
 using UnityEngine;
  
 
-public class SystemTimeProvider : ScriptableObject, ITimeProvider, ITagged, IComparer<int>, IFormattable
+public class SystemTimeProvider : ScriptableObject, ITimeProviderLongName, ITagged, IComparer<int>, IFormattable
 {
     public float GetTime => DateTime.Now.Second;
 

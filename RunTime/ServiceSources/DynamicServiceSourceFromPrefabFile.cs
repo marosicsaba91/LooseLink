@@ -34,8 +34,12 @@ class DynamicServiceSourceFromPrefabFile : DynamicServiceSource
 
     protected override object GetService(Type type, Object instantiatedObject) =>
         ((GameObject) instantiatedObject).GetComponent(type);
-     
-    public override object GetServiceOnSourceObject(Type type) => prefabFile.GetComponent(type);
+
+    public override object GetServiceOnSourceObject(Type type)
+    {
+        Component result = prefabFile.GetComponent(type);
+        return result;
+    }
 
     public override string Name => prefabFile != null ? prefabFile.name : string.Empty;
     public override Object SourceObject => prefabFile;

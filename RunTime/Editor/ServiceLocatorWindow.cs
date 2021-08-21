@@ -132,7 +132,7 @@ class ServiceLocatorWindow : EditorWindow
                 {
                     set = iSet,
                     source = source,
-                    loadedInstance = source.GetDynamicServiceSource()?.InstantiatedObject,
+                    loadedInstance = source.GetDynamicServiceSource()?.LoadedObject,
                     loadability = new Loadability(Loadability.Type.Loadable)
                 };
 

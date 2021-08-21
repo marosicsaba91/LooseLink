@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityServiceLocator;
 using UnityEngine;
 
-public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged
+public class TimeProviderBehaviour : MonoBehaviour, ITimeProviderLongName, ITagged, IEquatable<TimeProviderBehaviour>
 {
     float _time = 0;
 
@@ -25,4 +26,8 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged
     }
     
     public bool EnableCustomTags => true;
+    public bool Equals(TimeProviderBehaviour other)
+    {
+        return other == this;
+    }
 }

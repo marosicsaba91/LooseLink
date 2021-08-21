@@ -1,15 +1,11 @@
-BUG: Dynamic source Update deletes Loaded object
-Types clickable
-Lost Type Cells are !RED!
+Lost Type Cells are !RED! 
+Cache init & tagged types 
 Disable not working Setting in playtime or make them work
-Cache init & tagged types
 
-Add Tests to Project
 Add Examples to Project
 Update Manual
-
-Rename to Unity Service Locator
-Support for Generic Types
+Add Tests to Project
+    Generic Types
 
 Publish Beta:
 	Balázs,	Tibi, Robi, Máté

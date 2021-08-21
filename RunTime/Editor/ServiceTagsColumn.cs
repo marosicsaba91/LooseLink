@@ -33,18 +33,28 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     public ServiceTagsColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
-        {
+        { 
             fixWidthGetter = GetTagWidth,
+            relativeWidthWeightGetter = GetRelativeWidthWidth,
             customHeaderDrawer = DrawHeader
         };
         _serviceLocatorWindow = serviceLocatorWindow;
     }
     
+    
+    float GetTagWidth() => IsTagsOpen ? 75f : 55f;
+    float GetRelativeWidthWidth() => IsTagsOpen ? 1f : 0f;
+    
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category != ServiceLocatorRow.RowCategory.Source) return;
+        if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
+        {
+            ServicesEditorHelper.DrawLine(position);
+            return;
+        }
         if (row.element.source.SourceType == ServiceSourceTypes.FromScriptableObjectType) return;
         if (row.element.source.SourceType == ServiceSourceTypes.FromMonoBehaviourType) return;
+        
         
         object[] tags = row.element.source.GetTags().ToArray();
         
@@ -111,8 +121,8 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         };
         bool isColorDark = (color.a + color.g + color.b) / 3f <= 0.6;
         Color textColor = Color.Lerp(color, isColorDark ? Color.white : Color.black, t: 0.75f);
-        ServicesEditorHelper.SmallLabelStyle.normal.textColor = textColor;
-        if (GUI.Button(position, content,  ServicesEditorHelper.SmallLabelStyle))
+        ColoredLabelStyle.normal.textColor = textColor;
+        if (GUI.Button(position, content,  ColoredLabelStyle))
             TryPing(tag);
         
     }
@@ -132,15 +142,14 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     
     void DrawHeader(Rect pos)
     {
-        const float fullButtonWidth = 40;
+        const float fullButtonWidth = 45;
         float buttonWidth = IsTagsOpen ? fullButtonWidth : pos.width - 4;
         var buttonPos = new Rect(
-            pos.x + pos.width - buttonWidth - 2,
-            pos.y + 2,
+            pos.x + 4,
+            pos.y ,
             buttonWidth,
-            pos.height - 4);
-        if (GUI.Button(buttonPos, "Tags"))
-            IsTagsOpen = !IsTagsOpen;
+            pos.height );
+        IsTagsOpen = EditorGUI.Foldout(buttonPos, IsTagsOpen, "Tags");
 
         if (!IsTagsOpen)
         {
@@ -148,20 +157,21 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
                 _tagSearchWords = new string[0];
             return;
         }
-
+        
         bool modernUI = EditorHelper.IsModernEditorUI; 
 
+        float searchTextW = Mathf.Min(200f, pos.width - 52f);
         var searchTagPos = new Rect(
-            pos.x +4,
+            pos.xMax - searchTextW - 2,
             pos.y + 3 + (modernUI ? 0 : 1),
-            pos.width - buttonWidth - 7 + + (modernUI ? 0 : 1),
+            searchTextW,
             pos.height - 5);
+         
         SearchTagText = EditorGUI.TextField(searchTagPos, SearchTagText, GUI.skin.FindStyle("ToolbarSeachTextField"));
 
-        _tagSearchWords = GenerateSearchWords(SearchTagText);
+        _tagSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchTagText);
     }
 
-    float GetTagWidth() => IsTagsOpen ? 138 : 42;
     public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
         ApplyTagSearchOnTagArray(source.GetTags());
 
@@ -188,14 +198,19 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     }
 
     public bool NoSearch => string.IsNullOrEmpty(SearchTagText);
-
-    string[] GenerateSearchWords(string searchText)
-    {
-        string[] rawKeywords = searchText.Split(',');
-        return rawKeywords.Select(keyword => keyword.Trim().ToLower()).ToArray();
-    }
-
+ 
     protected override GUIStyle GetDefaultStyle() => null;
+    
+    
+    static GUIStyle _coloredLabelStyle;
+
+    public static GUIStyle ColoredLabelStyle => _coloredLabelStyle = _coloredLabelStyle ?? new GUIStyle
+    {
+        alignment = TextAnchor.MiddleCenter,
+        padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
+        normal = {textColor = GUI.skin.label.normal.textColor},
+        fontSize = 10
+    };
 }
 }
 #endif

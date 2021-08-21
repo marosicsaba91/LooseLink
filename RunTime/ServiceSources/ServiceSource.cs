@@ -47,10 +47,8 @@ class ServiceSource
 
     void InitIfNeeded()
     {
-        const double forcedInitDuration = 2.5;
-        if (!Application.isPlaying && (DateTime.Now - _dynamicContentLastGenerated).TotalSeconds >= forcedInitDuration)
-            ClearDynamicData();
-        
+        TestTimeout();
+
         bool initNeeded = _dynamicSource == null && _sourceSet == null;
         if(!initNeeded) return;
         
@@ -63,6 +61,20 @@ class ServiceSource
         }
         else
             _dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
+    }
+
+    void TestTimeout()
+    {
+        # if UNITY_EDITOR
+        const double forcedInitDuration = 2.5;
+        if (Application.isPlaying || (DateTime.Now - _dynamicContentLastGenerated).TotalSeconds < forcedInitDuration) 
+            return;
+
+        Object loaded = _dynamicSource?.LoadedObject;
+        ClearDynamicData();
+        if (loaded != null)
+             LoadAllType();
+        # endif
     }
 
     public void ClearDynamicData()
@@ -145,6 +157,19 @@ class ServiceSource
             object tag = tagSetting.TagObject;
             yield return tag;
         }
+    }
+
+    public void LoadAllType()
+    {
+        DynamicServiceSource dynamicServiceSource = GetDynamicServiceSource();
+        if (dynamicServiceSource == null)
+            return;
+        foreach (Type type in GetServiceTypes())
+            dynamicServiceSource.TryGetService(
+                type, null,
+                conditionTags: null,
+                out object _,
+                out bool _);
     }
 }
 }
