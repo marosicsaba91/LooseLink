@@ -1,7 +1,7 @@
 ﻿using UnityServiceLocator;
 
 [ServiceType]
-public interface ITimeProviderLongName
+public interface ITimeProvider
 {
     float GetTime { get; }
 }

@@ -96,9 +96,14 @@ public static class ServiceTypeHelper
 
     internal static IEnumerable<Type> GetServicesOfNonAbstractType(Type type)
     {
-        if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> serviceTypes))
-            foreach (Type serviceType in serviceTypes)
+        if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
+            foreach (Type serviceType in value)
                 yield return serviceType;
     }
+
+    public static Type SearchTypeWithName(string name) => allTypes.FirstOrDefault(t => t.Name == name);
+
+    public static Type SearchTypeWithFullName(string fullName) =>
+        allTypes.FirstOrDefault(t => t.FullName == fullName);
 }
 }

@@ -125,15 +125,17 @@ public static class ServiceLocator
         foreach ((IServiceSourceSet installer, ServiceSource source) in SceneAndGlobalContextServiceSources)
         {   
             DynamicServiceSource dynamicSource = source?.GetDynamicServiceSource();
-            if (dynamicSource == null) break;
+            if (dynamicSource == null) continue;
             bool typeEnabled = dynamicSource.GetAllAbstractTypes().Contains(looseServiceType);
             
-            foreach (SerializableType variable in source.additionalTypes)
-            {
-                if(typeEnabled) break;
-                if (variable.Type == looseServiceType) typeEnabled = true;
-            }
-            if (!typeEnabled) break;
+            if(!typeEnabled)
+                foreach (SerializableType variable in source.additionalTypes)
+                {
+                    if (typeEnabled) break;
+                    if (variable.Type == looseServiceType) typeEnabled = true;
+                }
+
+            if (!typeEnabled) continue;
             
             if (TryGetServiceInSource(looseServiceType, installer, dynamicSource, tags, out object serv))
             {
@@ -182,6 +184,16 @@ public static class ServiceLocator
 
         foreach (ServiceSourceSet globalInstaller in globalInstallers)
             yield return globalInstaller;
+    }
+
+    public static HashSet<Type> GetAllInstalledTypes()
+    {
+        var types = new HashSet<Type>();
+        foreach ((IServiceSourceSet _, ServiceSource source) in SceneAndGlobalContextServiceSources)
+        foreach (Type type in source.GetServiceTypes())
+            types.Add(type);
+        // TODO: MIÉRT NINCS EBBEN  TIMEPROVIDERBEHAVIOUR
+        return types;
     }
 }
 }

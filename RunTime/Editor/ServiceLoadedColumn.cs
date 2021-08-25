@@ -110,6 +110,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
             else
             {
                 // Load Button 
+                
                 if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
                     row.element.source?.LoadAllType();
             }
@@ -146,7 +147,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
     static GUIStyle _categoryStyle;
     static GUIStyle CategoryStyle => _categoryStyle = _categoryStyle ?? new GUIStyle
     {
-        alignment = TextAnchor.MiddleLeft,
+        alignment = TextAnchor.MiddleCenter,
         fontSize = 10,
         padding = new RectOffset(left: 2, right: 2,top: 0,bottom: 0),
         normal = {textColor = GUI.skin.label.normal.textColor},

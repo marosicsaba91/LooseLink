@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityServiceLocator;
 using UnityEngine;
 
-public class TimeProviderBehaviour : MonoBehaviour, ITimeProviderLongName, ITagged, IEquatable<TimeProviderBehaviour>
+public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged, IEquatable<TimeProviderBehaviour>
 {
     float _time = 0;
 

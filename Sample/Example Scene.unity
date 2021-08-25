@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 450527955}
   - component: {fileID: 450527954}
+  - component: {fileID: 450527956}
   m_Layer: 0
   m_Name: My Scene Installer
   m_TagString: Untagged
@@ -171,21 +172,29 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
       type: 3}
-    preferredSourceType: 2
+    preferredSourceType: 3
     additionalTypes:
-    - typeName: ScreenManager
-      fullTypeName: ScreenManager
-      assemblyQualifiedName: ScreenManager, LooseServicesSample, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      monoScript: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
-    additionalTags: []
-    isTypesExpanded: 1
-    isTagsExpanded: 1
+    - typeName: IEquatable`1
+      fullTypeName: System.IEquatable`1[[TimeProviderBehaviour, LooseServicesSample,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]
+      assemblyQualifiedName: System.IEquatable`1[[TimeProviderBehaviour, LooseServicesSample,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0,
+        Culture=neutral, PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+    additionalTags:
+    - tagType: 0
+      stringTag: Bvcb
+      tagFile: {fileID: 0}
+      objectTag: {fileID: 0}
+      initialized: 0
+      customColor: {r: 0, g: 0, b: 0, a: 0}
+    isTypesExpanded: 0
+    isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 963194225}
     preferredSourceType: 1
@@ -195,6 +204,11 @@ MonoBehaviour:
       assemblyQualifiedName: UnityEngine.Camera, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
+    - typeName: Collider2D
+      fullTypeName: UnityEngine.Collider2D
+      assemblyQualifiedName: UnityEngine.Collider2D, UnityEngine.Physics2DModule,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
     additionalTags:
     - tagType: 0
       stringTag: SecondaryCamera
@@ -202,11 +216,11 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
-    serviceSourceObject: {fileID: 11400000, guid: 1dfb053af9721194f8664171395e82c2,
-      type: 2}
+    serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
+      type: 3}
     preferredSourceType: 6
     additionalTypes: []
     additionalTags: []
@@ -226,6 +240,88 @@ Transform:
   - {fileID: 2542751288459471919}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!328 &450527956
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450527953}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 0}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 0}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: _MainTex
+  m_RenderMode: 2
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 2
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 1
+  m_SkipOnDrop: 1
+  m_Looping: 0
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+--- !u!1 &537690889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 537690891}
+  - component: {fileID: 537690890}
+  m_Layer: 0
+  m_Name: TESTER
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &537690890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537690889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695295c1d770a0d468f7d9c596c41e32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  typeName:
+    value: TimeProviderBehaviour
+  locatedProperty:
+    value: 
+  timeInTicks: 0
+--- !u!4 &537690891
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537690889}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -309,7 +405,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &963194229
 BoxCollider2D:
@@ -365,7 +461,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1776523160
 GameObject:
@@ -459,7 +555,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1776523164
 MonoBehaviour:

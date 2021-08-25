@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq; 
+﻿using System; 
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -84,7 +83,9 @@ public class SerializableType : ISerializationCallbackReceiver
             /* ignored */
         }
       
-        type = ServiceTypeHelper.allTypes.FirstOrDefault(t => t.Name == typeName);
+        type = ServiceTypeHelper.SearchTypeWithName(typeName);
+        if (type != null) return type;
+        type = ServiceTypeHelper.SearchTypeWithFullName(typeName);
         return type;
     }
 }

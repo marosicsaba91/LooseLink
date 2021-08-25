@@ -14,12 +14,19 @@ interface IServiceSourceSet
 
 static class ServiceSourceSetHelper
 {
-    public static IEnumerable<ServiceSource> GetValidSources(this IServiceSourceSet set) 
+    public static IEnumerable<ServiceSource> GetValidSources(this IServiceSourceSet set)
     {
         if (set.ServiceSources == null) yield break;
         foreach (ServiceSource serviceSource in set.ServiceSources)
-            if (serviceSource.enabled)
+        {
+            if (!serviceSource.enabled)
+                continue;
+            if (serviceSource.IsSource)
                 yield return serviceSource;
+            else if (serviceSource.IsSet)
+                foreach (ServiceSource subSource in serviceSource.GetServiceSourceSet().GetValidSources())
+                    yield return subSource;
+        }
     }
 }
 }

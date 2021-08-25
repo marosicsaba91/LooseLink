@@ -15,14 +15,6 @@ MonoBehaviour:
   useAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
-    serviceSourceObject: {fileID: 11500000, guid: 915e9cc4d6bc40c08edb38aba7b7d196,
-      type: 3}
-    preferredSourceType: 7
-    additionalTypes: []
-    additionalTags: []
-    isTypesExpanded: 0
-    isTagsExpanded: 0
-  - enabled: 1
     serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
       type: 3}
     preferredSourceType: 6
@@ -34,5 +26,13 @@ MonoBehaviour:
       monoScript: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
     additionalTags: []
     isTypesExpanded: 1
+    isTagsExpanded: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 11500000, guid: 915e9cc4d6bc40c08edb38aba7b7d196,
+      type: 3}
+    preferredSourceType: 7
+    additionalTypes: []
+    additionalTags: []
+    isTypesExpanded: 0
     isTagsExpanded: 0
   priority: 0

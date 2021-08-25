@@ -29,7 +29,7 @@ public class TestDictionary2 : SerializableDictionary<ScriptableObject, Vector3>
 public class Clock : MonoBehaviour
 {
     [SerializeField] TextMesh textMesh;
-    ITimeProviderLongName _timeProviderBehaviour;
+    ITimeProvider _timeProviderBehaviour;
 
     [SerializeField] FloatProperty testFloatProperty = new FloatProperty {valueChanged = ValueChanged};
     [SerializeField] TestDictionary1 dictionary;
@@ -45,7 +45,7 @@ public class Clock : MonoBehaviour
 
     void Awake()
     {
-        _timeProviderBehaviour = ServiceLocator.Get<ITimeProviderLongName>(); 
+        _timeProviderBehaviour = ServiceLocator.Get<ITimeProvider>(); 
     }
 
     void OnDrawGizmos()

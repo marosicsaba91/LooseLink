@@ -30,6 +30,24 @@ class ServiceSource
         return _dynamicSource;
     }
 
+    public bool IsSet
+    {
+        get
+        {
+            InitIfNeeded();
+            return _sourceSet != null;
+        }
+    }
+
+    public bool IsSource
+    {
+        get
+        {
+            InitIfNeeded();
+            return _dynamicSource != null;
+        }
+    }
+
     public ServiceSourceSet GetServiceSourceSet ()
     { 
         if (serviceSourceObject == null) return null; 
