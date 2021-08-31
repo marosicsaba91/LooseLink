@@ -11,8 +11,8 @@ namespace UnityServiceLocator
 {
 class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
-    const float minTagWidth = 25;
-    const float spacing = 2;
+    const int minTagWidth = 25;
+    const int spacing = 2;
 
     readonly ServiceLocatorWindow _serviceLocatorWindow;
 
@@ -79,18 +79,24 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         int tagCount = tags.Count;
         int tagPlacesToDraw =
             Mathf.Min(maxTagsToDraw, tagCount);
-        float tagWidth = ((position.width + spacing) / tagPlacesToDraw) - 2;
+        int tagWidth = (int) ((position.width + spacing) / tagPlacesToDraw) - 2;
         int tagsToDrawInLine = tagCount > maxTagsToDraw ? maxTagsToDraw - 1 : tagPlacesToDraw;
+        bool hasPopup = tags.Count > tagsToDrawInLine;
+        int maxXForTags = hasPopup
+            ? (int) (position.xMax - minTagWidth - spacing)
+            : (int) position.xMax;
 
         var tagsToDrawInPopup = new List<object>();
-        float startPos = position.x;
+        int startPos = (int) position.x;
 
         var i = 0;
         foreach (object tag in tags)
         {
             if (i < tagsToDrawInLine)
             {
-                DrawTag(new Rect(startPos, position.y, tagWidth, position.height), tag);
+                bool isLastTag = i >= tagsToDrawInLine - 1; 
+                int w = isLastTag ? maxXForTags - startPos : tagWidth;
+                DrawTag(new Rect(startPos, position.y, w, position.height), tag);
                 startPos += tagWidth + spacing;
             }
             else
@@ -100,10 +106,13 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         }
 
         if (tagsToDrawInPopup.Count > 0)
+        {
+            int w = tagsToDrawInLine <= 0 ? tagWidth : minTagWidth;
             DrawTagPopup(
-                new Rect(startPos, position.y, tagWidth, position.height),
+                new Rect(position.xMax - w, position.y, w, position.height),
                 tagsToDrawInPopup,
                 tagsToDrawInLine > 1);
+        }
     }
 
     public static void DrawTag(Rect position, object tag)
@@ -111,8 +120,9 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         var iTag = tag.ToITag();
 
         Color color = iTag.Color;
-        Color borderColor =
-            Color.Lerp(color, Color.black, EditorGUIUtility.isProSkin ? 0.75f : 0.25f);
+        Color borderColor = EditorGUIUtility.isProSkin
+            ? Color.Lerp(color, Color.white, 0.5f)
+            : Color.Lerp(color, Color.black, 0.25f);
         EditorHelper.DrawBox(position, color, borderColor, borderInside: true);
         var content = new GUIContent
         {

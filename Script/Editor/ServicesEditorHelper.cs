@@ -2,6 +2,7 @@
 
 using System.Linq;
 using MUtility;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityServiceLocator
@@ -25,12 +26,13 @@ static class ServicesEditorHelper
         return rawKeywords.Select(keyword => keyword.Trim().ToLower()).ToArray();
     }
 
-    public static void DrawLine(Rect position)
+    public static void DrawLine(Rect position,float start = -0.01f, float end = 1.01f)
     {  
-        EditorHelper.DrawLine(position, 
-            new Vector2(0.025f, 0.5f), 
-            new Vector2(0.975f, 0.5f),
-            new Color(0.6f,0.6f,0.6f, 0.5f));
+        float lineBrightness = EditorGUIUtility.isProSkin ? 0.3f : 0.7f;
+        EditorHelper.DrawLine(position,
+            new Vector2(start, y: 0.5f),
+            new Vector2(end, y: 0.5f),
+            new Color(lineBrightness, lineBrightness, lineBrightness, a: 1));
     }
 }
 }

@@ -1,6 +1,6 @@
 Lost Type Cells are !RED! 
-Cache init & tagged types 
-Disable not working Setting in playtime or make them work
+Cache init & tagged types
+Disable not working Setting in playtime
 
 Add Examples to Project
 Update Manual

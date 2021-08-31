@@ -143,9 +143,33 @@ static class FileIconHelper
             case ServiceSourceTypes.FromSceneGameObject:
                 return "Scene GameObject: GameObject in Scene with Service Type component(s)";
             case ServiceSourceTypes.FromScriptableObjectType:
-                return "ScriptableObject script: Creates a new default instance of a Service Type ScriptableObject class";
+                return "ScriptableObject Script: Creates a new default instance of a Service Type ScriptableObject class";
             case ServiceSourceTypes.FromMonoBehaviourType:
-                return "MonoBehaviour script: Creates a new GameObject with a MonoBehaviour class that implements a Service Type"; 
+                return "MonoBehaviour Script: Creates a new GameObject with a MonoBehaviour class that implements a Service Type"; 
+            default:
+                return unexpectedCategoryText;
+        } 
+    } 
+    
+    
+    internal static string  GetShortNameForServiceSourceCategory(ServiceSourceTypes sourceType)
+    {
+        switch (sourceType)
+        {
+            case ServiceSourceTypes.FromPrefabPrototype:
+                return "Prefab Prototype";
+            case ServiceSourceTypes.FromPrefabFile:
+                return "Prefab File";
+            case ServiceSourceTypes.FromScriptableObjectFile:
+                return "ScriptableObj. File";
+            case ServiceSourceTypes.FromScriptableObjectPrototype:
+                return "ScriptableO. Proto.";
+            case ServiceSourceTypes.FromSceneGameObject:
+                return "Scene GameObject";
+            case ServiceSourceTypes.FromScriptableObjectType:
+                return "ScriptableO. Script";
+            case ServiceSourceTypes.FromMonoBehaviourType:
+                return "MonoBehaviour Script"; 
             default:
                 return unexpectedCategoryText;
         } 

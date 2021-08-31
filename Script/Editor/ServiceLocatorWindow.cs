@@ -11,8 +11,10 @@ namespace UnityServiceLocator
 class ServiceLocatorWindow : EditorWindow
 {
     const string editorPrefsKey = "ServiceLocatorWindowState";
+    static readonly Vector2 minimumSize = new Vector2(500, 100);
 
     ServiceFoldoutColumn _servicesColumn;
+    ServiceSourceCategoryColumn _categoryColumn;
     ServiceTypesColumn _typesColumn;
     ServiceTagsColumn _tagsColumn;
     ServiceLoadedColumn _loadedColumn;
@@ -23,18 +25,21 @@ class ServiceLocatorWindow : EditorWindow
     public bool isTagsOpen = false; 
     public string searchTagText = string.Empty;
     public string searchTypeText = string.Empty;
-    public string searchServiceText = string.Empty; 
+    public string searchServiceText = string.Empty;
+    
 
     [MenuItem("Tools/Unity Service Locator")]
     static void ShowWindow()
     {
         var window = GetWindow<ServiceLocatorWindow>();
+        window.minSize = minimumSize;
         window.titleContent = new GUIContent("Service Locator");
         window.Show();
     }
     
     public void OnEnable()
     {
+        minSize = minimumSize;
         wantsMouseMove = true;
         ServiceLocator.SceneContextInstallersChanged += OnSceneContextInstallersChanged;
         ServiceLocator.LoadedInstancesChanged += Repaint;
@@ -68,10 +73,11 @@ class ServiceLocatorWindow : EditorWindow
         _servicesColumn = new ServiceFoldoutColumn(this);
         _tagsColumn = new ServiceTagsColumn(this);
         _typesColumn = new ServiceTypesColumn(this);
+        _categoryColumn = new ServiceSourceCategoryColumn(this);
         _loadedColumn = new ServiceLoadedColumn(this);
         var componentTypeColumns = new List<IColumn<FoldableRow<ServiceLocatorRow>>>
         {
-            _servicesColumn, _typesColumn, _tagsColumn, _loadedColumn,
+            _servicesColumn, _categoryColumn, _typesColumn, _tagsColumn, _loadedColumn,
         };
 
         _serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)

@@ -68,6 +68,21 @@ class ServiceLocatorRow
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    } 
+    
+    public GUIContent GetGUIContentForCategory()
+    {
+        switch (Category)
+        {
+            case RowCategory.Set:
+                return new GUIContent(FileIconHelper.GetTooltipForISet(set)); 
+            case RowCategory.Source:
+                return new GUIContent(
+                    FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType),
+                    FileIconHelper.GetTooltipForServiceSource(source.SourceType));
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 } 
 }

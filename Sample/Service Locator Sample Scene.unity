@@ -158,6 +158,12 @@ MonoBehaviour:
       type: 2}
     preferredSourceType: 4
     additionalTypes:
+    - typeName: SystemTimeProvider
+      fullTypeName: SystemTimeProvider
+      assemblyQualifiedName: SystemTimeProvider, UnityServicesLocatorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: fe8a175c390b41a3a6ebedcabf046e4b, type: 3}
+      switchable: 1
     - typeName: IComparer`1
       fullTypeName: System.Collections.Generic.IComparer`1[[System.Int32, mscorlib,
         Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
@@ -165,6 +171,7 @@ MonoBehaviour:
         mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]],
         mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
       monoScript: {fileID: 0}
+      switchable: 0
     additionalTags:
     - tagType: 0
       stringTag: Obi-Wan Kenobi
@@ -172,20 +179,25 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
       type: 3}
     preferredSourceType: 3
     additionalTypes:
-    - typeName: IEquatable`1
-      fullTypeName: System.IEquatable`1[[TimeProviderBehaviour, LooseServicesSample,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]
-      assemblyQualifiedName: System.IEquatable`1[[TimeProviderBehaviour, LooseServicesSample,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0,
+    - typeName: TimeProviderBehaviour
+      fullTypeName: TimeProviderBehaviour
+      assemblyQualifiedName: TimeProviderBehaviour, UnityServicesLocatorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
+      switchable: 1
+    - typeName: IEnumerable
+      fullTypeName: System.Collections.IEnumerable
+      assemblyQualifiedName: System.Collections.IEnumerable, mscorlib, Version=4.0.0.0,
         Culture=neutral, PublicKeyToken=b77a5c561934e089
       monoScript: {fileID: 0}
+      switchable: 0
     additionalTags:
     - tagType: 0
       stringTag: Bvcb
@@ -204,11 +216,13 @@ MonoBehaviour:
       assemblyQualifiedName: UnityEngine.Camera, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
-    - typeName: Collider2D
-      fullTypeName: UnityEngine.Collider2D
-      assemblyQualifiedName: UnityEngine.Collider2D, UnityEngine.Physics2DModule,
+      switchable: 0
+    - typeName: BoxCollider2D
+      fullTypeName: UnityEngine.BoxCollider2D
+      assemblyQualifiedName: UnityEngine.BoxCollider2D, UnityEngine.Physics2DModule,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
+      switchable: 0
     additionalTags:
     - tagType: 0
       stringTag: SecondaryCamera
@@ -305,7 +319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeName:
-    value: TimeProviderBehaviour
+    value: ITimeProvider
   locatedProperty:
     value: 
   timeInTicks: 0
@@ -442,6 +456,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1075936883}
+  - component: {fileID: 1075936880}
   m_Layer: 0
   m_Name: Clock
   m_TagString: Untagged
@@ -449,6 +464,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1075936880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075936879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ba5897a838d17a4c8d8d0c55777732a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  position:
+    x: 0
+    y: 0
+    z: 0
+    gridSize: {x: 1, y: 1, z: 1}
+  rotation:
+    x: 0
+    y: 0
+    z: 0
+    gridSize: {x: 45, y: 45, z: 45}
+  scale:
+    x: 0
+    y: 0
+    z: 0
+    gridSize: {x: 0.1, y: 0.1, z: 0.1}
 --- !u!4 &1075936883
 Transform:
   m_ObjectHideFlags: 0

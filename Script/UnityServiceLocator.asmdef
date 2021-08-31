@@ -1,9 +1,7 @@
 {
-    "name": "LooseServicesSample",
+    "name": "UnityServiceLocator",
     "references": [
-        "MUtility",
-        "LooseServices",
-        "SerializableCollections"
+        "GUID:76ed6a8ac8c031d4cb0db0999e3ad548"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

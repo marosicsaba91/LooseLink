@@ -149,7 +149,7 @@ static class ServiceSourceDrawer
     {
         Color color = _sourceIndex % 2 != 0 ? EditorHelper.tableBackgroundColor : EditorHelper.tableEvenLineColor;
         EditorHelper.DrawBox(position, color);
-
+ 
         Undo.RecordObject(_serializedObject, "Service Setting Modified");
         _anyChange = false;
         Rect typesPos = DrawHeader(position);
@@ -164,7 +164,7 @@ static class ServiceSourceDrawer
 
             // Draw tags  
             DrawTags(tagsPosition);
-        }
+        } 
 
         if (_anyChange)
         {

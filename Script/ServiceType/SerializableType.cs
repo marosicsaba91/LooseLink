@@ -11,15 +11,18 @@ public class SerializableType : ISerializationCallbackReceiver
     [SerializeField] string fullTypeName;
     [SerializeField] string assemblyQualifiedName;
     [SerializeField] Object monoScript;
-
-    bool _typeIsSet = false;
+    
     Type _type;
+    bool _isTypeSet = false;
+    
+    // This is a hack:
+    [SerializeField] bool switchable = false;
 
     public Type Type
     {
         get
         {
-            if (_type != null || _typeIsSet)
+            if (_type != null || _isTypeSet)
                 return _type;
 
             _type = FindType();
@@ -30,6 +33,7 @@ public class SerializableType : ISerializationCallbackReceiver
         {
             _type = value; 
             UpdateSerializedValues();
+            switchable = !switchable;
         }
     }
 
@@ -51,15 +55,17 @@ public class SerializableType : ISerializationCallbackReceiver
     }
     
 
+
     public void OnAfterDeserialize()
     {
-        _type = FindType();
+        _isTypeSet = false;
+        _type = null; 
     }
-
+    
     Type FindType()
     {
         Type type;
-        _typeIsSet = true;
+        _isTypeSet = true;
         try
         {
             type = Type.GetType(assemblyQualifiedName);

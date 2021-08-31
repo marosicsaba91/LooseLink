@@ -27,7 +27,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
     {
         if (row.element.Category == ServiceLocatorRow.RowCategory.Set) 
         {
-            ServicesEditorHelper.DrawLine(position);
+            ServicesEditorHelper.DrawLine(position, start: 0,end: 0.95f);
             return;
         }
 
