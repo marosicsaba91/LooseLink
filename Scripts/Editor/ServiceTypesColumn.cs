@@ -14,7 +14,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
 
     readonly ServiceLocatorWindow _serviceLocatorWindow;
- 
+
     string SearchTypeText
     {
         get => _serviceLocatorWindow.searchTypeText;
@@ -22,7 +22,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
     }
 
     string[] _typeSearchWords = null;
-    public bool NoSearch => string.IsNullOrEmpty(SearchTypeText); 
+    public bool NoSearch => string.IsNullOrEmpty(SearchTypeText);
 
     public ServiceTypesColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
@@ -34,7 +34,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
         };
         _serviceLocatorWindow = serviceLocatorWindow;
     }
-    
+
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
         if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
@@ -42,38 +42,37 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             ServicesEditorHelper.DrawLine(position);
             return;
         }
-        
-        List<Type> types = row.element.source.GetServiceTypes().ToList();
-        
+
+        List<ServiceTypeInfo> types = row.element.source.GetAllServicesWithName().ToList();
+
         if (types.IsNullOrEmpty())
         {
             GUI.Label(position, "-");
             return;
         }
- 
+
         DrawTypes(position, types);
     }
 
-
-    void DrawTypes(Rect position, IReadOnlyList<Type> types)
+    void DrawTypes(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfos)
     {
         const float space = 4;
         const float iconWidth = 20;
         const float popupWidth = 25;
-        if (types.Count <= 0) return;
+        if (typeInfos.Count <= 0) return;
 
         Rect typePosition = position;
         typePosition.y += 1;
         typePosition.height = 16;
         bool overflow = false;
         int overflowIndex = -1;
-        for (var i = 0; i < types.Count; i++)
+        for (var i = 0; i < typeInfos.Count; i++)
         {
-            Type type = types[i];
-            GUIContent content = FileIconHelper.GetGUIContentToType(types[i]);
+            Type type = typeInfos[i].type;
+            GUIContent content = FileIconHelper.GetGUIContentToType(typeInfos[i]);
             float w = ServicesEditorHelper.SmallLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
 
-            overflow = i == types.Count - 1
+            overflow = i == typeInfos.Count - 1
                 ? typePosition.x + w > position.xMax
                 : typePosition.x + w > position.xMax - popupWidth;
 
@@ -84,18 +83,18 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             }
 
             typePosition.width = w - space;
-            DrawType(typePosition, content, type);
+            DrawType(typePosition, content, type, typeInfos[i].isMissing);
             typePosition.x += w + space;
         }
 
         if (!overflow) return;
 
-        int overflowCount = types.Count - overflowIndex;
-        var overflownTypes = new List<Type>(overflowCount);
-        for (int i = overflowIndex; i < types.Count; i++)
-            overflownTypes.Add(types[i]);
+        int overflowCount = typeInfos.Count - overflowIndex;
+        var overflownTypes = new List<ServiceTypeInfo>(overflowCount);
+        for (int i = overflowIndex; i < typeInfos.Count; i++)
+            overflownTypes.Add(typeInfos[i]);
 
-        bool allOverflown = overflowCount == types.Count;
+        bool allOverflown = overflowCount == typeInfos.Count;
         Rect popupRect = allOverflown
             ? position
             : new Rect(position.xMax - popupWidth, position.y, popupWidth, position.height);
@@ -105,36 +104,48 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
     }
 
-    public static void DrawType(Rect position, GUIContent content, Type type )
+    public static void DrawType(Rect position, GUIContent content, Type type, bool error )
     {
+        if (error)
+        { 
+            var pos = new Rect(position.x + 10, position.y +1, position.width - 6 , position.height -3);
+            EditorHelper.DrawBox(pos, EditorHelper.ErrorBackgroundColor);
+        }
+
         if (GUI.Button(position, content, ServicesEditorHelper.SmallLabelStyle))
             TryPing(type); 
     }
 
-    void DrawTypePopup(Rect position, IReadOnlyList<Type> typesToDrawInPopup, bool drawPlus)
+    void DrawTypePopup(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfos, bool drawPlus)
     {
         position.y += 1;
         position.height -= 2;
         position.x -= 1;
-        var contents = new string[typesToDrawInPopup.Count];
-        for (var i = 0; i < typesToDrawInPopup.Count; i++)
-            contents[i] = FileIconHelper.GetGUIContentToType(typesToDrawInPopup[i]).tooltip;
-
+        var contents = new string[typeInfos.Count];
+        for (var i = 0; i < typeInfos.Count; i++)
+            contents[i] = FileIconHelper.GetGUIContentToType(typeInfos[i]).tooltip;
+        
+        if (typeInfos.Any(info => info.isMissing))
+            GUI.color = EditorHelper.ErrorBackgroundColor;
+        
         int index = EditorGUI.Popup(
             position,
             selectedIndex: -1,
             contents,
             new GUIStyle(GUI.skin.button));
- 
-        GUI.Label(position, $"{(drawPlus?"+":"")}{typesToDrawInPopup.Count}", ServicesEditorHelper.SmallLabelStyle);
+        
+        GUI.Label(position, $"{(drawPlus ? "+" : "")}{typeInfos.Count}", ServicesEditorHelper.SmallLabelStyle);
+        
+        GUI.color = Color.white;
 
         if (index >= -0)
-            TryPing(typesToDrawInPopup[index]);
-    } 
-         
+            TryPing(typeInfos[index].type);
+    }
+
 
     public static void TryPing(Type pingable)
     {
+        if(pingable == null) return;
         Object obj = TypeToFileHelper.GetObject(pingable);
         if(obj!= null)
             EditorGUIUtility.PingObject(obj);

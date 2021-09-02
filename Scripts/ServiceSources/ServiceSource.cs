@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
+using System.Linq;
+using MUtility;
 using UnityEditor;
 using UnityEngine; 
 using Object = UnityEngine.Object;
@@ -64,9 +66,7 @@ class ServiceSource
     public Loadability Loadability => GetDynamicServiceSource()?.Loadability ?? Loadability.NoServiceSourceObject;
 
     void InitIfNeeded()
-    {
-        TestTimeout();
-
+    { 
         bool initNeeded = _dynamicSource == null && _sourceSet == null;
         if(!initNeeded) return;
         
@@ -79,21 +79,7 @@ class ServiceSource
         }
         else
             _dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
-    }
-
-    void TestTimeout()
-    {
-        # if UNITY_EDITOR
-        const double forcedInitDuration = 2.5;
-        if (Application.isPlaying || (DateTime.Now - _dynamicContentLastGenerated).TotalSeconds < forcedInitDuration) 
-            return;
-
-        Object loaded = _dynamicSource?.LoadedObject;
-        ClearDynamicData();
-        if (loaded != null)
-             LoadAllType();
-        # endif
-    }
+    } 
 
     public void ClearDynamicData()
     {
@@ -157,6 +143,37 @@ class ServiceSource
             if (type != null)
                 yield return type;
         }
+    } 
+
+    internal IEnumerable<ServiceTypeInfo> GetAllServicesWithName()
+    {
+        if (serviceSourceObject == null) yield break; 
+        InitIfNeeded();
+        
+        if(_dynamicSource == null) yield break;
+        foreach (Type serviceType in _dynamicSource.GetAllAbstractTypes())
+        {
+            if (serviceType != null)     
+                yield return new ServiceTypeInfo{
+                    type = serviceType, 
+                    name = serviceType.Name, 
+                    fullName = serviceType.FullName,
+                    isMissing = false
+                };
+        }
+
+        if (additionalTypes.IsNullOrEmpty())
+            yield break;
+
+        IReadOnlyList<Type> possibleTypes = _dynamicSource.GetPossibleAdditionalTypes();
+        foreach (SerializableType typeSetting in additionalTypes)
+        {
+            Type type = typeSetting.Type;
+            string name = type == null ? typeSetting.Name : type.Name;
+            string fullName = type == null ? typeSetting.FullName : type.FullName;
+            bool isMissing = type == null || !possibleTypes.Contains(type);
+            yield return new ServiceTypeInfo{type = type, name = name, fullName = fullName, isMissing = isMissing};
+        }
     }
 
     public IEnumerable<object> GetTags()
@@ -183,11 +200,16 @@ class ServiceSource
         if (dynamicServiceSource == null)
             return;
         foreach (Type type in GetServiceTypes())
+        {
             dynamicServiceSource.TryGetService(
                 type, null,
                 conditionTags: null,
-                out object _,
-                out bool _);
+                out object service,
+                out bool newInstance);
+            
+            if (newInstance) 
+                ServiceLocator.InvokeLoadedInstancesChanged(); 
+        }
     }
 }
 }

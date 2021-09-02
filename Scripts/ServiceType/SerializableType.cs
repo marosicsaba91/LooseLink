@@ -38,6 +38,7 @@ public class SerializableType : ISerializationCallbackReceiver
     }
 
     public string Name => typeName;
+    public string FullName => fullTypeName;
 
     public void OnBeforeSerialize()
     {

@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityServiceLocator;
 using UnityEngine;
 
 public interface IScreenSizeProvider

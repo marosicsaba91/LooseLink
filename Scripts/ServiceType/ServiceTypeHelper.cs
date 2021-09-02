@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using UnityEngine;
 
 namespace UnityServiceLocator
 {
@@ -81,17 +79,8 @@ public static class ServiceTypeHelper
     
     // EXTENSION
 
-    internal static bool TryInitialize(this object service)
-    {
-        if (service == null) return false;
-        Type nonAbstractType = service.GetType();
-        if (!nonAbstractType.GetInterfaces().Contains(typeof(IInitializable))) return false;
-
-        var initialize = (IInitializable) service;
-        initialize.Initialize();
-        return true;
-    } 
-
+    public static Type initableType = typeof(IInitable);
+    
     internal static bool IsServiceType(this Type type) => serviceTypes.Contains(type);
 
     internal static IEnumerable<Type> GetServicesOfNonAbstractType(Type type)

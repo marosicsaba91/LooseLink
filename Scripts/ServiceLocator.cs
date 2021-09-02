@@ -92,7 +92,7 @@ public static class ServiceLocator
     internal static void ClearAllCachedData()
     {
         foreach (var installerSourcePair in SceneAndGlobalContextServiceSources)
-            installerSourcePair.source.GetDynamicServiceSource()?.ClearInstances();
+            installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes();
 
         LoadedInstancesChanged?.Invoke();
     }
@@ -153,17 +153,10 @@ public static class ServiceLocator
     {
         service = null;
 
-        if (!source.TryGetService(looseServiceType, set, tags, out object sys, out bool newInstance))
+        if (!source.TryGetService(looseServiceType, set, tags, out service, out bool newInstance))
             return false;
-        if (!newInstance)
-        {
-            service = sys;
-            return true;
-        }
-
-        sys.TryInitialize();
-        LoadedInstancesChanged?.Invoke();
-        service = sys;
+        if (newInstance)
+            LoadedInstancesChanged?.Invoke();
         return true;
     }
 
@@ -192,8 +185,10 @@ public static class ServiceLocator
         foreach ((IServiceSourceSet _, ServiceSource source) in SceneAndGlobalContextServiceSources)
         foreach (Type type in source.GetServiceTypes())
             types.Add(type);
-        // TODO: MIÉRT NINCS EBBEN  TIMEPROVIDERBEHAVIOUR
         return types;
     }
+    
+
+    internal static void InvokeLoadedInstancesChanged() => LoadedInstancesChanged?.Invoke();
 }
 }

@@ -198,6 +198,12 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=b77a5c561934e089
       monoScript: {fileID: 0}
       switchable: 0
+    - typeName: ITimeProvider2
+      fullTypeName: ITimeProvider2
+      assemblyQualifiedName: ITimeProvider2, UnityServicesLocatorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
+      switchable: 0
     additionalTags:
     - tagType: 0
       stringTag: Bvcb
@@ -205,7 +211,7 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 963194225}
@@ -230,15 +236,26 @@ MonoBehaviour:
       objectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
-    serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
-      type: 3}
-    preferredSourceType: 6
-    additionalTypes: []
+    serviceSourceObject: {fileID: 1075936879}
+    preferredSourceType: 1
+    additionalTypes:
+    - typeName: EdgeCollider2D
+      fullTypeName: UnityEngine.EdgeCollider2D
+      assemblyQualifiedName: UnityEngine.EdgeCollider2D, UnityEngine.Physics2DModule,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
+      switchable: 1
+    - typeName: Clock
+      fullTypeName: Clock
+      assemblyQualifiedName: Clock, UnityServicesLocatorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
+      switchable: 0
     additionalTags: []
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
 --- !u!4 &450527955
 Transform:
@@ -300,7 +317,7 @@ GameObject:
   - component: {fileID: 537690891}
   - component: {fileID: 537690890}
   m_Layer: 0
-  m_Name: TESTER
+  m_Name: Service Locator TESTER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -319,10 +336,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeName:
-    value: ITimeProvider
+    value: Clock
   locatedProperty:
     value: 
-  timeInTicks: 0
+  timeInTicks: 9929
 --- !u!4 &537690891
 Transform:
   m_ObjectHideFlags: 0
@@ -456,6 +473,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1075936883}
+  - component: {fileID: 1075936882}
+  - component: {fileID: 1075936881}
   - component: {fileID: 1075936880}
   m_Layer: 0
   m_Name: Clock
@@ -464,7 +483,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1075936880
+--- !u!68 &1075936880
+EdgeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075936879}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_EdgeRadius: 0
+  m_Points:
+  - {x: -0.5, y: 0}
+  - {x: 0.5, y: 0}
+--- !u!114 &1075936881
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -473,24 +510,52 @@ MonoBehaviour:
   m_GameObject: {fileID: 1075936879}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ba5897a838d17a4c8d8d0c55777732a, type: 3}
+  m_Script: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  position:
-    x: 0
-    y: 0
-    z: 0
-    gridSize: {x: 1, y: 1, z: 1}
-  rotation:
-    x: 0
-    y: 0
-    z: 0
-    gridSize: {x: 45, y: 45, z: 45}
-  scale:
-    x: 0
-    y: 0
-    z: 0
-    gridSize: {x: 0.1, y: 0.1, z: 0.1}
+  textMesh: {fileID: 0}
+  testFloatProperty:
+    value: 0
+  dictionary:
+    keys: []
+    values: []
+  matrix:
+    fields: 00000000
+    width: 1
+  test2:
+    keys:
+    - {fileID: 0}
+    - {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad, type: 2}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    values:
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 0, z: 0}
+  testBool: 0
+--- !u!114 &1075936882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075936879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 989f500333aee864fbf98ab999c11e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  matrix3DBool:
+    fields: 00
+    width: 1
+    height: 1
+  matrix3DInt:
+    fields: 00000000
+    width: 1
+    height: 1
 --- !u!4 &1075936883
 Transform:
   m_ObjectHideFlags: 0

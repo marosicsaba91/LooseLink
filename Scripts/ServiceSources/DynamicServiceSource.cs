@@ -14,7 +14,8 @@ abstract class DynamicServiceSource
     List<Type> _possibleAdditionalTypes;
     Dictionary<Type, object> _typeToServiceOnSource;
     Dictionary<Type, ITagged> _typeToTagProviderOnSource;
-    ServiceSource _setting; 
+    ServiceSource _setting;
+    bool _isDynamicDataInitialized = false;
  
     public Object LoadedObject { get; private set; } // GameObject or ScriptableObject
 
@@ -68,15 +69,43 @@ abstract class DynamicServiceSource
             
             LoadedObject = Instantiate(parentObject);
             newInstance = true;
+            TryInitializeService();
         }
 
         if (!InstantiatedServices.ContainsKey(type))
             InstantiatedServices.Add(type,  GetService(type, LoadedObject));
 
         service = InstantiatedServices[type];
-        return true;
+        return true; 
     }
+    
+    void TryInitializeService()
+    {
+        if (LoadedObject == null) return; 
+        foreach (Type type in _allNonAbstractTypes)
+        { 
+            if (!(type.GetInterfaces().Contains(typeof(IInitable)))) continue;
 
+            switch (LoadedObject)
+            {
+                case ScriptableObject so:
+                {
+                    ((IInitable) so).Initialize(); 
+                    break;
+                }
+                case GameObject go:
+                {
+                    IInitable[] initables = go.GetComponents<IInitable>();
+                    foreach (IInitable initable in initables) 
+                        initable.Initialize();  
+
+                    break;
+                }
+            }
+        }
+    }  
+    
+    
     protected abstract bool NeedParentTransform { get; }
 
     protected abstract Object Instantiate(Transform parent);
@@ -88,36 +117,34 @@ abstract class DynamicServiceSource
     public abstract Object SourceObject { get; }
 
     public IReadOnlyList<Type> GetAllNonAbstractTypes()
-    {
-        if (_allNonAbstractTypes == null)
-            Init();
+    { 
+            InitDynamicDataIfNeeded();
         return _allNonAbstractTypes;
     }
 
     public IReadOnlyList<Type> GetAllAbstractTypes()
-    {
-        if (_allAbstractTypes == null)
-            Init();
+    { 
+            InitDynamicDataIfNeeded();
         return _allAbstractTypes;
     }
 
     public IReadOnlyList<Type> GetPossibleAdditionalTypes()
-    {        
-        if (_possibleAdditionalTypes == null)
-            Init();
+    {         
+            InitDynamicDataIfNeeded();
         return _possibleAdditionalTypes;
     }
 
     public object GetServiceOnSource(Type serviceType)
-    {
-        if (_typeToServiceOnSource == null)
-            Init();
+    { 
+            InitDynamicDataIfNeeded();
         return _typeToServiceOnSource[serviceType];
     } 
 
 
-    void Init()
+    void InitDynamicDataIfNeeded()
     { 
+        if (_isDynamicDataInitialized) return; // XYZ
+        
         _allNonAbstractTypes = GetNonAbstractTypes();
         _allAbstractTypes = new List<Type>();
         _typeToServiceOnSource = new Dictionary<Type, object>();
@@ -144,6 +171,8 @@ abstract class DynamicServiceSource
             foreach (Type subclass in AllPossibleAdditionalSubclassesOf(concreteType))
                 _possibleAdditionalTypes.Add(subclass);
         }
+
+        _isDynamicDataInitialized = true;
     }
 
     IEnumerable<Type> AllPossibleAdditionalSubclassesOf(Type type, bool includeInterfaces = true )
@@ -155,7 +184,7 @@ abstract class DynamicServiceSource
         if (includeInterfaces)
         {
             foreach (Type interfaceType in type.GetInterfaces())
-                if (interfaceType != typeof(ITagged) && interfaceType != typeof(IInitializable))
+                if (interfaceType != typeof(ITagged) && interfaceType != typeof(IInitable))
                     yield return interfaceType;
         }
 
@@ -181,8 +210,7 @@ abstract class DynamicServiceSource
 
     public IEnumerable<object> GetDynamicTags()
     {
-        if (_typeToTagProviderOnSource == null)
-            Init();
+        InitDynamicDataIfNeeded();
 
         foreach (KeyValuePair<Type, ITagged> pair in _typeToTagProviderOnSource)
             if (pair.Value != null)
@@ -192,11 +220,19 @@ abstract class DynamicServiceSource
             } 
     }
 
-    public void ClearInstances()
+    public void ClearInstancesAndCachedTypes()
     {
         ClearService();
         LoadedObject = null;
         InstantiatedServices.Clear();
+        ClearCachedTypes();
+    }
+
+    public void ClearCachedTypes()
+    {
+        if(Application.isPlaying)
+            return;
+        _isDynamicDataInitialized = false;
     }
 
     public Texture Icon => FileIconHelper.GetIconOfObject(SourceObject);

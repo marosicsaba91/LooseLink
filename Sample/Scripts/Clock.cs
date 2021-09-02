@@ -26,7 +26,7 @@ public class TestDictionary1 : SerializableDictionary<SomeStructKey, SomeStruct>
 [Serializable]
 public class TestDictionary2 : SerializableDictionary<ScriptableObject, Vector3> { } 
 
-public class Clock : MonoBehaviour
+public class Clock : MonoBehaviour, IInitable
 {
     [SerializeField] TextMesh textMesh;
     ITimeProvider _timeProviderBehaviour;
@@ -36,6 +36,7 @@ public class Clock : MonoBehaviour
      
     [SerializeField] Matrix2DInt matrix;
     [SerializeField] TestDictionary2 test2;
+    [SerializeField] bool testBool;
 
     static void ValueChanged(object parent, float oldValue, float newValue)
     {
@@ -61,5 +62,10 @@ public class Clock : MonoBehaviour
     void Update()
     {
         textMesh.text = $"Time: {_timeProviderBehaviour.GetTime}";
-    }  
+    }
+
+    public void Initialize()
+    {
+        testBool = !testBool;
+    }
 }

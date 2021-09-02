@@ -87,7 +87,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
                 GUIContent unloadContent =
                     EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin ? "d_winbtn_win_close" : "winbtn_win_close");
                 if (GUI.Button(unloadButtonRect, unloadContent))
-                    source.ClearInstances();
+                    source.ClearInstancesAndCachedTypes();
             }
 
             

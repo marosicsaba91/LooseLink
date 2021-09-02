@@ -1,6 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Linq;
- using MUtility;
+using MUtility;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -87,7 +87,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             : (int) position.xMax;
 
         var tagsToDrawInPopup = new List<object>();
-        int startPos = (int) position.x;
+        var startPos = (int) position.x;
 
         var i = 0;
         foreach (object tag in tags)

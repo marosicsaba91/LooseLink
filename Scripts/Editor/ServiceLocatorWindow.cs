@@ -132,13 +132,15 @@ class ServiceLocatorWindow : EditorWindow
             if (!source.enabled) continue;
             if (source.serviceSourceObject == null) continue;
 
-            if (source.GetDynamicServiceSource() != null)
+            DynamicServiceSource dynamic = source.GetDynamicServiceSource();
+            if (dynamic != null)
             {
+                dynamic.ClearCachedTypes();
                 var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
                 {
                     set = iSet,
                     source = source,
-                    loadedInstance = source.GetDynamicServiceSource()?.LoadedObject,
+                    loadedInstance = dynamic.LoadedObject,
                     loadability = new Loadability(Loadability.Type.Loadable)
                 };
 

@@ -7,6 +7,10 @@ namespace UnityServiceLocator
 {
 static class FileIconHelper
 {
+    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
+    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
+    static readonly Texture loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
+    
     public enum FileType
     {
         Prefab,
@@ -35,17 +39,25 @@ static class FileIconHelper
         return null;
 #endif
     }
-    
-    public static GUIContent GetGUIContentToType(Type type)
-    {
-        Texture texture = GetIconOfType(type);
+
+    public static GUIContent GetGUIContentToType(ServiceTypeInfo typeInfo)
+    { 
+        Type type = typeInfo.type;
+        string name = typeInfo.name;
+        string fullName = typeInfo.fullName;
+        bool isMissing = typeInfo.isMissing;
+
+        if (type == null) 
+            return new GUIContent(name, errorImage, $"Types \"{fullName}\" Is Missing!");
+        
+        Texture texture = isMissing ? errorImage : GetIconOfType(type);
         if (texture == null)
             texture = GetIconOfSource(FileType.CsFile);
-        string name = type.Name;
-        var tooltip = $"{type.FullName} ({GetTypeCategory(type)})";
-        return new GUIContent(name, texture, tooltip); 
+        var tooltip = $"{fullName} ({GetTypeCategory(type)})";
+        return new GUIContent(name, texture, tooltip);
+
     }
-    
+
     public static Texture GetIconOfObject(Object obj)
     {
 #if UNITY_EDITOR

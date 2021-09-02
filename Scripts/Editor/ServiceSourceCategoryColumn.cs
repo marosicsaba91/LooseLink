@@ -1,9 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEditor;
 using UnityEngine;
 using MUtility;
-using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {

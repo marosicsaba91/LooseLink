@@ -107,6 +107,7 @@ static class ServiceSourceDrawer
         if (_source == null) return 0;
         _insideSet = _source.GetServiceSourceSet();
         _dynamicSource = _source.GetDynamicServiceSource();
+        _dynamicSource?.ClearCachedTypes();
         _additionalServiceTypes = _source.additionalTypes;
         _additionalTags = _source.additionalTags;
         _nonAbstractTypes = _dynamicSource?.GetAllNonAbstractTypes().ToList();
@@ -359,7 +360,7 @@ static class ServiceSourceDrawer
         {
             index = elementsString.Length - 1;
             elementsString[index] = serializableType.Name;
-            GUI.color = EditorHelper.ErrorRedColor;
+            GUI.color = EditorHelper.ErrorBackgroundColor;
         }
 
         int newIndex = EditorGUI.Popup(position, index, elementsString);
