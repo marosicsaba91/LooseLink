@@ -188,21 +188,21 @@ static class ServiceSourceDrawer
         if (enabled != _source.enabled)
         {
             _anyChange = true;
-            _source.enabled = enabled;
+            _source.enabled = enabled; 
         }
 
         float w = position.width - (toggleW + serviceTypeW + space * 4 + actionButtonWidth * 3);
         var objectPos = new Rect(togglePos.xMax + space * 2, position.y, w, lineHeight);
         Object obj = EditorGUI.ObjectField(
             objectPos,
-            _source.serviceSourceObject,
+            _source.ServiceSourceObject,
             typeof(Object),
             allowSceneObjects: true);
 
         var sourceTypePos = new Rect(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
 
         ServiceSourceTypes sourceType = _source.preferredSourceType;
-        if (_source.serviceSourceObject== null)
+        if (_source.ServiceSourceObject== null)
             GUI.Label(sourceTypePos, noObjectContent);
         else if (_dynamicSource != null)
         {
@@ -237,21 +237,21 @@ static class ServiceSourceDrawer
         }
         else if (_insideSet != null)
             GUI.Label(sourceTypePos,
-                new GUIContent($"Source Set ({_insideSet.GetValidSources().Count()})"));
+                new GUIContent($"Source Set ({_insideSet.GetEnabledValidSourcesRecursive().Count()})"));
         else
             GUI.Label(sourceTypePos, invalidObjectContent); 
 
         // Object or source Type changed
-        if (obj != _source.serviceSourceObject || sourceType != _source.preferredSourceType)
+        if (obj != _source.ServiceSourceObject || sourceType != _source.preferredSourceType)
         {
             _anyChange = true;
             if (_serializedObject is ServiceSourceSet set1 && obj is ServiceSourceSet set2)
             {
                 if (!ServiceSourceSet.IsCircular(set1, set2))
-                    _source.serviceSourceObject = obj;
+                    _source.ServiceSourceObject = obj;
             }
             else
-                _source.serviceSourceObject = obj;
+                _source.ServiceSourceObject = obj;
 
             _source.preferredSourceType = sourceType;
         }
@@ -465,12 +465,12 @@ static class ServiceSourceDrawer
 
                     break;
                 case SerializableTag.TagType.Object:
-                    Object unityObject = serializableTag.ObjectTag;
+                    Object unityObject = serializableTag.UnityObjectTag;
                     Object newObject =
                         EditorGUI.ObjectField(position, unityObject, typeof(Object), allowSceneObjects: true);
                     if (newObject != unityObject)
                     {
-                        serializableTag.ObjectTag = newObject;
+                        serializableTag.UnityObjectTag = newObject;
                         _anyChange = true;
                     }
 
@@ -484,7 +484,13 @@ static class ServiceSourceDrawer
                         serializableTag.TagFile = newTagFile;
                         _anyChange = true;
                     }
-
+                    break;
+                case SerializableTag.TagType.Other:
+                    object objectTag = serializableTag.OtherTypeTag;
+                    string objectTagText = objectTag == null 
+                            ? "null (Accessible From Code, Not Serialized)" :
+                            objectTag.ToString();
+                    EditorGUI.LabelField(position, objectTagText);
                     break;
             }
 

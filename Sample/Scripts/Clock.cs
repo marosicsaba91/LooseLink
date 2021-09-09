@@ -26,7 +26,7 @@ public class TestDictionary1 : SerializableDictionary<SomeStructKey, SomeStruct>
 [Serializable]
 public class TestDictionary2 : SerializableDictionary<ScriptableObject, Vector3> { } 
 
-public class Clock : MonoBehaviour, IInitable
+public class Clock : MonoBehaviour, IInitializable
 {
     [SerializeField] TextMesh textMesh;
     ITimeProvider _timeProviderBehaviour;
@@ -61,7 +61,7 @@ public class Clock : MonoBehaviour, IInitable
 
     void Update()
     {
-        textMesh.text = $"Time: {_timeProviderBehaviour.GetTime}";
+        // textMesh.text = $"Time: {_timeProviderBehaviour.GetTime}";
     }
 
     public void Initialize()

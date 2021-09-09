@@ -27,7 +27,8 @@ abstract class DynamicServiceSource
     public bool TryGetService(
         Type type,
         IServiceSourceSet set,
-        object[] conditionTags, 
+        object[] conditionTags,
+        List<SerializableTag> serializedTags,
         out object service,
         out bool newInstance)
     {
@@ -45,8 +46,15 @@ abstract class DynamicServiceSource
             bool success = tagged != null;
             if (success)
             {
-                if (conditionTags.Any(tag => tag != null && !tagged.GetTags().Contains(tag)))
+                foreach (object tag in conditionTags)
+                {
+                    if (tag == null) continue;
+                    if (tagged.GetTags().Contains(tag)) continue;
+                    if ( serializedTags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue; 
+                    
                     success = false;
+                    break;
+                }
             }
 
             if (!success)
@@ -78,34 +86,28 @@ abstract class DynamicServiceSource
         service = InstantiatedServices[type];
         return true; 
     }
-    
+
     void TryInitializeService()
     {
-        if (LoadedObject == null) return; 
-        foreach (Type type in _allNonAbstractTypes)
-        { 
-            if (!(type.GetInterfaces().Contains(typeof(IInitable)))) continue;
-
-            switch (LoadedObject)
+        if (LoadedObject == null) return;
+        switch (LoadedObject)
+        {
+            case ScriptableObject so:
             {
-                case ScriptableObject so:
-                {
-                    ((IInitable) so).Initialize(); 
-                    break;
-                }
-                case GameObject go:
-                {
-                    IInitable[] initables = go.GetComponents<IInitable>();
-                    foreach (IInitable initable in initables) 
-                        initable.Initialize();  
-
-                    break;
-                }
+                if (so is IInitializable initSo)
+                    initSo.Initialize();
+                break;
+            }
+            case GameObject go:
+            {
+                IInitializable[] initializables = go.GetComponents<IInitializable>();
+                foreach (IInitializable initializable in initializables)
+                    initializable.Initialize();
+                break;
             }
         }
-    }  
-    
-    
+    }
+
     protected abstract bool NeedParentTransform { get; }
 
     protected abstract Object Instantiate(Transform parent);
@@ -117,33 +119,33 @@ abstract class DynamicServiceSource
     public abstract Object SourceObject { get; }
 
     public IReadOnlyList<Type> GetAllNonAbstractTypes()
-    { 
-            InitDynamicDataIfNeeded();
+    {
+        InitDynamicTypeDataIfNeeded();
         return _allNonAbstractTypes;
     }
 
     public IReadOnlyList<Type> GetAllAbstractTypes()
-    { 
-            InitDynamicDataIfNeeded();
+    {
+        InitDynamicTypeDataIfNeeded();
         return _allAbstractTypes;
     }
 
     public IReadOnlyList<Type> GetPossibleAdditionalTypes()
     {         
-            InitDynamicDataIfNeeded();
+        InitDynamicTypeDataIfNeeded();
         return _possibleAdditionalTypes;
     }
 
     public object GetServiceOnSource(Type serviceType)
     { 
-            InitDynamicDataIfNeeded();
+        InitDynamicTypeDataIfNeeded();
         return _typeToServiceOnSource[serviceType];
     } 
 
 
-    void InitDynamicDataIfNeeded()
+    void InitDynamicTypeDataIfNeeded()
     { 
-        if (_isDynamicDataInitialized) return; // XYZ
+        if (_isDynamicDataInitialized) return;
         
         _allNonAbstractTypes = GetNonAbstractTypes();
         _allAbstractTypes = new List<Type>();
@@ -184,7 +186,7 @@ abstract class DynamicServiceSource
         if (includeInterfaces)
         {
             foreach (Type interfaceType in type.GetInterfaces())
-                if (interfaceType != typeof(ITagged) && interfaceType != typeof(IInitable))
+                if (interfaceType != typeof(ITagged) && interfaceType != typeof(IInitializable))
                     yield return interfaceType;
         }
 
@@ -210,7 +212,7 @@ abstract class DynamicServiceSource
 
     public IEnumerable<object> GetDynamicTags()
     {
-        InitDynamicDataIfNeeded();
+        InitDynamicTypeDataIfNeeded();
 
         foreach (KeyValuePair<Type, ITagged> pair in _typeToTagProviderOnSource)
             if (pair.Value != null)

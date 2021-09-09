@@ -41,7 +41,7 @@ class ServiceLocatorWindow : EditorWindow
     {
         minSize = minimumSize;
         wantsMouseMove = true;
-        ServiceLocator.SceneContextInstallersChanged += OnSceneContextInstallersChanged;
+        ServiceLocator.InstallersChanged += OnSceneContextInstallersChanged;
         ServiceLocator.LoadedInstancesChanged += Repaint;
 
         string data = EditorPrefs.GetString(
@@ -120,7 +120,7 @@ class ServiceLocatorWindow : EditorWindow
     List<TreeNode<ServiceLocatorRow>> GetChildNodes(IServiceSourceSet iSet)
     {
         var nodes = new List<TreeNode<ServiceLocatorRow>>();
-        ServiceSource[] sources = iSet.GetValidSources().ToArray();
+        ServiceSource[] sources = iSet.GetEnabledValidSources().ToArray();
 
         bool noServiceSearch = _servicesColumn.NoSearch;
         bool noTypeSearch = _typesColumn.NoSearch;
@@ -130,7 +130,7 @@ class ServiceLocatorWindow : EditorWindow
         foreach (ServiceSource source in sources)
         {
             if (!source.enabled) continue;
-            if (source.serviceSourceObject == null) continue;
+            if (source.ServiceSourceObject == null) continue;
 
             DynamicServiceSource dynamic = source.GetDynamicServiceSource();
             if (dynamic != null)

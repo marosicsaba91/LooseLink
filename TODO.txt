@@ -1,11 +1,11 @@
-Cache init & tagged types
-Playtime Functions
-API fuctions
-
 Add Examples to Project
 Update Manual
-Add Tests to Project
-    Generic Types
 
 Publish Beta:
 	Balázs,	Tibi, Robi, Máté
+	
+2.0
+    Subcription to environment changes for specific types???
+    Different environments (For example testing)
+        (Tags can be used for this, but they are slower and litter the project)
+    AssyncGet.

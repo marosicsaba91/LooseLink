@@ -10,12 +10,12 @@ namespace UnityServiceLocator
 class DynamicServiceSourceFromSceneObject : DynamicServiceSource
 {
     public GameObject sceneGameObject;
-  
-    internal DynamicServiceSourceFromSceneObject( GameObject sceneGameObject)
+
+    public DynamicServiceSourceFromSceneObject(GameObject gameObject)
     {
-        this.sceneGameObject = sceneGameObject;
+        sceneGameObject = gameObject;
     }
-    
+
     protected override List<Type> GetNonAbstractTypes() => 
         sceneGameObject.GetComponents<Component>().Select(component => component.GetType()).ToList();
 

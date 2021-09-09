@@ -174,12 +174,12 @@ MonoBehaviour:
       switchable: 0
     additionalTags:
     - tagType: 0
-      stringTag: Obi-Wan Kenobi
+      stringTag: Obi-Wan
       tagFile: {fileID: 0}
-      objectTag: {fileID: 0}
-      initialized: 0
-      customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 1
+      unityObjectTag: {fileID: 0}
+      initialized: 1
+      customColor: {r: 0.77626896, g: 0.53789437, b: 0.8614334, a: 1}
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
@@ -208,7 +208,7 @@ MonoBehaviour:
     - tagType: 0
       stringTag: Bvcb
       tagFile: {fileID: 0}
-      objectTag: {fileID: 0}
+      unityObjectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
     isTypesExpanded: 1
@@ -233,10 +233,10 @@ MonoBehaviour:
     - tagType: 0
       stringTag: SecondaryCamera
       tagFile: {fileID: 0}
-      objectTag: {fileID: 0}
+      unityObjectTag: {fileID: 0}
       initialized: 0
       customColor: {r: 0, g: 0, b: 0, a: 0}
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 1075936879}
@@ -255,7 +255,7 @@ MonoBehaviour:
       monoScript: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
       switchable: 0
     additionalTags: []
-    isTypesExpanded: 1
+    isTypesExpanded: 0
     isTagsExpanded: 0
 --- !u!4 &450527955
 Transform:
@@ -336,10 +336,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeName:
-    value: Clock
+    value: ITimeProvider
+  tags:
+  - Obi-Wan
   locatedProperty:
     value: 
-  timeInTicks: 9929
+  timeInTicks: 0
 --- !u!4 &537690891
 Transform:
   m_ObjectHideFlags: 0
@@ -524,14 +526,10 @@ MonoBehaviour:
     width: 1
   test2:
     keys:
-    - {fileID: 0}
     - {fileID: 11400000, guid: 2f258797147bcb8459b36d0eb15909ad, type: 2}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: b99fab03cb9cb0f4fb88f124346495f7, type: 2}
+    - {fileID: 11400000, guid: b7cd4113098f53e4d9cac2d61fa54a3c, type: 2}
     values:
-    - {x: 0, y: 0, z: 0}
-    - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
@@ -739,5 +737,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 
-  age: 0

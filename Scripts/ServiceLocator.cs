@@ -29,8 +29,8 @@ public static class ServiceLocator
     internal static List<ServiceSourceSet> globalInstallers =
         new List<ServiceSourceSet>();
 
-    public static event Action SceneContextInstallersChanged;
-    public static event Action LoadedInstancesChanged;
+    public static event Action InstallersChanged;
+    internal static event Action LoadedInstancesChanged;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
@@ -42,7 +42,7 @@ public static class ServiceLocator
         Resources
             .LoadAll<ServiceSourceSet>(string.Empty)
             .Where(contextInstaller => contextInstaller.useAsGlobalInstaller)
-            .OrderByDescending(set =>set.priority)
+            .OrderByDescending(set => set.priority)
             .ToList();
 
     internal static IEnumerable<(IServiceSourceSet installer, ServiceSource source)> SceneAndGlobalContextServiceSources
@@ -50,11 +50,11 @@ public static class ServiceLocator
         get
         {
             foreach (SceneServiceInstaller sceneInstaller in SceneInstallers)
-            foreach (ServiceSource setting in sceneInstaller.GetValidSources())
+            foreach (ServiceSource setting in sceneInstaller.GetEnabledValidSourcesRecursive())
                 yield return (sceneInstaller, setting);
 
             foreach (ServiceSourceSet globalInstaller in globalInstallers)
-            foreach (ServiceSource setting in globalInstaller.GetValidSources())
+            foreach (ServiceSource setting in globalInstaller.GetEnabledValidSourcesRecursive())
                 yield return (globalInstaller, setting);
         }
     }
@@ -67,7 +67,7 @@ public static class ServiceLocator
         {
             if (_parentObject == null)
             {
-                _parentObject = new GameObject("Loose Services").transform;
+                _parentObject = new GameObject("Services").transform;
                 Object.DontDestroyOnLoad(_parentObject.gameObject);
             }
 
@@ -79,13 +79,13 @@ public static class ServiceLocator
     {
         if (sceneInstallers.Contains(serviceInstaller)) return;
         sceneInstallers.Insert(index: 0, serviceInstaller);
-        SceneContextInstallersChanged?.Invoke();
+        InstallersChanged?.Invoke(); 
     }
 
     internal static void RemoveSceneContextInstaller(SceneServiceInstaller serviceInstaller)
     {
         sceneInstallers.Remove(serviceInstaller);
-        SceneContextInstallersChanged?.Invoke();
+        InstallersChanged?.Invoke(); 
     }
 
 
@@ -93,8 +93,7 @@ public static class ServiceLocator
     {
         foreach (var installerSourcePair in SceneAndGlobalContextServiceSources)
             installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes();
-
-        LoadedInstancesChanged?.Invoke();
+        LoadedInstancesChanged.Invoke();
     }
 
     public static TService Get<TService>(params object[] tags) =>
@@ -108,9 +107,15 @@ public static class ServiceLocator
         throw CantFindService(looseServiceType);
     }
 
-    public static bool TryGet<TService>(Type looseServiceType, object[] tags, out TService service)
+    public static bool TryGet<TService>(out TService service) =>
+        TryGet(tags: null, out service);
+
+    public static bool TryGet(Type looseServiceType, out object service) =>
+        TryGet(looseServiceType, tags: null, out service);
+
+    public static bool TryGet<TService>(object[] tags, out TService service)
     {
-        if (TryGet(looseServiceType, tags, out object service1))
+        if (TryGet(typeof(TService), tags, out object service1))
         {
             service = (TService) service1;
             return true;
@@ -123,12 +128,12 @@ public static class ServiceLocator
     public static bool TryGet(Type looseServiceType, object[] tags, out object service)
     {
         foreach ((IServiceSourceSet installer, ServiceSource source) in SceneAndGlobalContextServiceSources)
-        {   
+        {
             DynamicServiceSource dynamicSource = source?.GetDynamicServiceSource();
             if (dynamicSource == null) continue;
             bool typeEnabled = dynamicSource.GetAllAbstractTypes().Contains(looseServiceType);
-            
-            if(!typeEnabled)
+
+            if (!typeEnabled)
                 foreach (SerializableType variable in source.additionalTypes)
                 {
                     if (typeEnabled) break;
@@ -136,8 +141,8 @@ public static class ServiceLocator
                 }
 
             if (!typeEnabled) continue;
-            
-            if (TryGetServiceInSource(looseServiceType, installer, dynamicSource, tags, out object serv))
+
+            if (TryGetServiceInSource(looseServiceType, installer, source, dynamicSource, tags, out object serv))
             {
                 service = serv;
                 return true;
@@ -148,12 +153,17 @@ public static class ServiceLocator
         return false;
     }
 
-    static bool TryGetServiceInSource(Type looseServiceType, IServiceSourceSet set, DynamicServiceSource source,
+    static bool TryGetServiceInSource(
+        Type looseServiceType,
+        IServiceSourceSet set,
+        ServiceSource source,
+        DynamicServiceSource dynamicSource,
         object[] tags, out object service)
     {
         service = null;
 
-        if (!source.TryGetService(looseServiceType, set, tags, out service, out bool newInstance))
+        if (!dynamicSource.TryGetService(looseServiceType, set, tags, source.additionalTags, out service,
+            out bool newInstance))
             return false;
         if (newInstance)
             LoadedInstancesChanged?.Invoke();
@@ -161,9 +171,9 @@ public static class ServiceLocator
     }
 
     static Exception CantFindService(Type looseServiceType) =>
-        new ArgumentException($"Can't instantiate Services of this Type: {looseServiceType}");
+        new ArgumentException($"Can't find Services of this Type: {looseServiceType}");
 
- 
+
 
     internal static IEnumerable<IServiceSourceSet> GetInstallers()
     {
@@ -187,8 +197,60 @@ public static class ServiceLocator
             types.Add(type);
         return types;
     }
-    
 
     internal static void InvokeLoadedInstancesChanged() => LoadedInstancesChanged?.Invoke();
+
+    /*
+     // MIGHT WILL BE FUNCTIONALITY
+     
+    static readonly Dictionary<Type, HashSet<Action>> subscribers = new Dictionary<Type, HashSet<Action>>();
+
+    public static void SubscribeToEnvironmentChange<T>(Action callback) =>
+        SubscribeToEnvironmentChange(typeof(T), callback);
+
+    public static void UnSubscribeToEnvironmentChange<T>( Action callback)=>
+        UnSubscribeToEnvironmentChange(typeof(T), callback);
+
+
+    public static void SubscribeToEnvironmentChange(Type type, Action callback)
+    {
+        if (!subscribers.TryGetValue(type, out HashSet<Action> callbacks))
+        {
+            callbacks = new HashSet<Action>();
+            subscribers.Add(type,callbacks);
+        }
+
+        callbacks.Add(callback);
+    }
+
+    public static void UnSubscribeToEnvironmentChange(Type type, Action callback)
+    {
+        if (!subscribers.TryGetValue(type, out HashSet<Action> callbacks))
+            return;
+        callbacks.Remove(callback);
+    }
+
+    static readonly HashSet<Type> tempTypeSet = new HashSet<Type>();
+    internal static void InvokeEnvironmentChanged(IServiceSourceSet set)
+    {
+        tempTypeSet.Clear();
+        foreach (ServiceSource source in set.GetValidSources())
+        foreach (Type type in source.GetServiceTypes())
+            tempTypeSet.Add(type);
+
+        foreach (Type type in tempTypeSet)
+            InvokeEnvironmentChanged(type);
+    }
+
+    internal static void InvokeEnvironmentChanged(Type type)
+    {
+        if (subscribers.TryGetValue(type, out HashSet<Action> callbacks))
+        {
+            foreach (Action callback in callbacks)
+             callback?.Invoke();
+        }
+    }
+    */
+
 }
 }

@@ -25,7 +25,6 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged, IEqu
             yield return tagFile;
     }
     
-    public bool EnableCustomTags => true;
     public bool Equals(TimeProviderBehaviour other)
     {
         return other == this;

@@ -51,15 +51,15 @@ static class InstallerEditorHelper
             set,
             set.ServiceSources,
             editor.serializedObject.targetObject);
-        /*
-        // Button To manually clear cached data.
+        
+        if(!Application.isPlaying) return;
+        
         GUILayout.Space(pixels: 10);
-        if (GUILayout.Button("Clear Cache"))
+        if (GUILayout.Button("Clear Cached Data"))
         {
             Undo.RecordObject(editor.serializedObject.targetObject, "Add new service source setting.");
             set.ClearDynamicData();
         }
-        */
     }
 }
 }

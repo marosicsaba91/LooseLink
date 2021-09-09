@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 namespace UnityServiceLocator
 {
 [DefaultExecutionOrder(order: -1000000)]
-class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
+public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
 {
     [SerializeField] bool dontDestroyOnLoad = true;
     [SerializeField, HideInInspector] internal List<ServiceSource> serviceSources = default;
@@ -40,8 +40,18 @@ class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
     public void GlobalInstall() => ServiceLocator.AddSceneContextInstaller(this);
     
     public void GlobalUnInstall() => ServiceLocator.RemoveSceneContextInstaller(this);
-    
-    
- 
+
+
+    public ServiceSource AddServiceSource(Object sourceObject, ServiceSourceTypes preferredType = ServiceSourceTypes.Non)
+    {
+        if (serviceSources == null) serviceSources = new List<ServiceSource>();
+        var newServiceSource = new ServiceSource
+        {
+            preferredSourceType = preferredType,
+            ServiceSourceObject = sourceObject
+        };
+        serviceSources.Add(newServiceSource);
+        return newServiceSource;
+    }
 }
 }

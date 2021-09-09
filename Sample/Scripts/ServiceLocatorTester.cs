@@ -8,7 +8,10 @@ using UnityServiceLocator;
 public class ServiceLocatorTester : MonoBehaviour
 {
     [SerializeField] LoadableTypeObject typeName;
-    [SerializeField] TestButton locate;
+    [SerializeField] LocateButton locate;
+    [SerializeField] AddTagsButton add;
+    [SerializeField] string[] tags;
+
     [Space]
     [SerializeField] LocatedObject locatedProperty; 
     [SerializeField] float timeInTicks;
@@ -16,7 +19,7 @@ public class ServiceLocatorTester : MonoBehaviour
     object _located = null;
 
     [Serializable]
-    class TestButton : InspectorButton<ServiceLocatorTester>
+    class LocateButton : InspectorButton<ServiceLocatorTester>
     {
         protected override void OnClick(ServiceLocatorTester parentObject)
         {
@@ -27,12 +30,25 @@ public class ServiceLocatorTester : MonoBehaviour
                 return;
             }
 
-            DateTime time1 = DateTime.Now;  
-            parentObject. _located = ServiceLocator.Get(type);
+            DateTime time1 = DateTime.Now;
+            parentObject._located = ServiceLocator.Get(type, parentObject.tags.Cast<object>().ToArray());
             DateTime time2 = DateTime.Now;
             parentObject.timeInTicks = (time2 - time1).Ticks;
         }
     }
+    [Serializable]
+    class AddTagsButton : InspectorButton<ServiceLocatorTester>
+    {
+        protected override void OnClick(ServiceLocatorTester parentObject)
+        {
+            ServiceSource source1 = FindObjectOfType<SceneServiceInstaller>()?.ServiceSources[0];
+            source1.AddTag(new Vector2(1,2));
+            source1.AddTag("TestString");
+            source1.AddTag(123);
+            source1.AddTag(parentObject);
+        }
+    }
+    
 
     [Serializable]
     class LocatedObject : StringProperty<ServiceLocatorTester>

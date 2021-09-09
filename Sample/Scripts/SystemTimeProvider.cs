@@ -4,12 +4,15 @@ using UnityServiceLocator;
 using UnityEngine;
  
 
-public class SystemTimeProvider : ScriptableObject, ITimeProvider, ITagged, IComparer<int>, IFormattable
+public class SystemTimeProvider : ScriptableObject, ITimeProvider, ITagged, IComparer<int>, IFormattable, IInitializable
 {
+
+    [SerializeField] bool testBool = false;
     public float GetTime => DateTime.Now.Second;
 
     public void Initialize()
     {
+        testBool = !testBool;
     }
 
     public IEnumerable<object> GetTags()
@@ -21,11 +24,7 @@ public class SystemTimeProvider : ScriptableObject, ITimeProvider, ITagged, ICom
         yield return "Darth Vader";
     }
 
-    public bool EnableCustomTags => true;
-    public int Compare(int x, int y)
-    {
-        return 0;
-    }
+    public int Compare(int x, int y) => 0;
 
     public string ToString(string format, IFormatProvider formatProvider)
     {

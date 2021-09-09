@@ -1,6 +1,6 @@
 ﻿namespace UnityServiceLocator
 {
-enum ServiceSourceTypes
+public enum ServiceSourceTypes
 {
     Non,
     
