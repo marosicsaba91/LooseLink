@@ -56,7 +56,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
             if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
             {
                 var loadedContent = new GUIContent(loadedObject.name, LoadedObjectIcon(loadedObject.GetType()));
-                GUI.Label(contentPos, loadedContent, LabelStyle);
+                GUI.Label(contentPos, loadedContent, ServicesEditorHelper.SmallCenterLabelStyle);
             }
             else
             {
@@ -66,7 +66,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
                     text: null,
                     EditorGUIUtility.IconContent("d_FilterSelectedOnly").image,
                     "Cached");
-            GUI.Label(contentPos, loadedContent, LabelStyle);
+            GUI.Label(contentPos, loadedContent, ServicesEditorHelper.SmallCenterLabelStyle);
             }
 
  
@@ -105,13 +105,13 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
             {
                 // Loadability Error
                 GUIContent loadabilityError = row.element.loadability.GetGuiContent();
-                GUI.Label(actionButtonRect, loadabilityError, CategoryStyle);
+                GUI.Label(actionButtonRect, loadabilityError, ServicesEditorHelper.SmallCenterLabelStyle);
             }
             else
             {
                 // Load Button 
                 
-                if (GUI.Button(actionButtonRect, "Load", ButtonStyle))
+                if (GUI.Button(actionButtonRect, "Load", ServicesEditorHelper.SmallCenterButtonStyle))
                     row.element.source?.LoadAllType();
             }
 
@@ -143,45 +143,17 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
     static bool IsRowHighlighted(FoldableRow<ServiceLocatorRow> row) => 
         row.element.loadedInstance!=null && Selection.objects.Contains(row.element.loadedInstance);
     
-    
-    static GUIStyle _categoryStyle;
-    static GUIStyle CategoryStyle => _categoryStyle = _categoryStyle ?? new GUIStyle
-    {
-        alignment = TextAnchor.MiddleCenter,
-        fontSize = 10,
-        padding = new RectOffset(left: 2, right: 2,top: 0,bottom: 0),
-        normal = {textColor = GUI.skin.label.normal.textColor},
-    };
-    
-    static GUIStyle _labelStyle;
-    static GUIStyle LabelStyle => _labelStyle = _labelStyle ?? new GUIStyle
-    {
-        alignment = TextAnchor.MiddleCenter, 
-        normal = {textColor = GUI.skin.label.normal.textColor},
-    };
-    
-        
-    static GUIStyle _headerLabelStyle;
-    static GUIStyle HeaderLabelStyle => _headerLabelStyle = _headerLabelStyle ?? new GUIStyle
-    {
-        alignment = TextAnchor.MiddleLeft,
-        normal = {textColor = GUI.skin.label.normal.textColor}
-    };
-        
-    static GUIStyle _buttonStyle;
-    static GUIStyle ButtonStyle => _buttonStyle = _buttonStyle ?? new GUIStyle(GUI.skin.button)
-    {  
-        fontSize = 10
-    };
+  
+
     
     void DrawHeader(Rect position)
     {
-        const float buttonW = 50;
+        const float buttonW = 43;
         const float indent = 4;
         const float margin = 2;
         position.x += indent;
         position.width -= indent; 
-        GUI.Label(position, "Loaded", HeaderLabelStyle);
+        GUI.Label(position, "Server");
 
         var buttonRect = new Rect(
             position.xMax - buttonW - margin,

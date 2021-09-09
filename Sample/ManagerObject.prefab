@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 917306037975840042}
   - component: {fileID: 114262430366139420}
   m_Layer: 0
-  m_Name: TimeProviderBehaviour
+  m_Name: ManagerObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tags:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 241c8fca3ec2ecd48bf9feba1186b348, type: 2}
 --- !u!114 &114262430366139420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,5 +58,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5331f506bc5e7634e9e28e8aad2bf3ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: TestName
-  age: 28

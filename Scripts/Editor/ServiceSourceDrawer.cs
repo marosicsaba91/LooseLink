@@ -65,8 +65,7 @@ static class ServiceSourceDrawer
     static List<SerializableTag> _additionalTags;
     static List<object> _dynamicTags;
     static int _typeCount;
-    static int _tagCount;
-    static SerializableTag _editedTag;
+    static int _tagCount; 
 
     public static void DrawServiceSources(
         IServiceSourceSet containingSet,
@@ -161,7 +160,7 @@ static class ServiceSourceDrawer
             typesPos.width -= foldoutW + space;
 
             // Draw types
-            Rect tagsPosition = DrawTypes(typesPos);
+            Rect tagsPosition = DrawServices(typesPos);
 
             // Draw tags  
             DrawTags(tagsPosition);
@@ -275,10 +274,9 @@ static class ServiceSourceDrawer
         return position;
     }
 
-
-    static Rect DrawTypes(Rect position)
+    static Rect DrawServices(Rect position)
     {
-        var title = $"Types ({_typeCount})";
+        var title = $"Services ({_typeCount})";
         _source.isTypesExpanded = EditorGUI.Foldout(position, _source.isTypesExpanded, title);
 
         List<Type> usedTypes = _additionalServiceTypes
@@ -425,8 +423,8 @@ static class ServiceSourceDrawer
     {
         position.width -= 3 * actionButtonWidth;
         if (position.width <= 0) return;
-        ServiceTagsColumn.DrawTag(position, tag);
-    }
+        TagsColumn.DrawTag(position, tag, small: false, center: false);
+    } 
 
     static void DrawSerializableTag(
         Rect position,
@@ -434,82 +432,52 @@ static class ServiceSourceDrawer
         int tagIndex)
     {
         SerializableTag serializableTag = serializedTags[tagIndex];
-        position.width -= 3 * actionButtonWidth;
+        
         const float tagTypeWidth = 70;
-        const float tagWidth = 50;
-        const float editButtonWidth = 25;
-        float tagValueWidth = position.width - tagTypeWidth - tagWidth - editButtonWidth - space;
-        bool editing = _editedTag == serializableTag;
-
-        position.width = editing ? tagWidth : position.width - editButtonWidth + space;
-        if (position.width <= 0) return;
-
-        ServiceTagsColumn.DrawTag(position, serializableTag.TagObject);
-
-        if (editing)
+        position.width -= 3 * actionButtonWidth + tagTypeWidth + space; 
+ 
+        SerializableTag.TagType tagType = serializableTag.Type;
+        switch (tagType)
         {
-            position.x = position.xMax + space;
+            case SerializableTag.TagType.String:
+                string text = serializableTag.StringTag;
+                string newText = EditorGUI.TextField(position, text);
+                if (newText != text)
+                {
+                    serializableTag.StringTag = newText;
+                    _anyChange = true;
+                }
 
-            position.width = tagValueWidth;
-            SerializableTag.TagType tagType = serializableTag.Type;
-            switch (tagType)
-            {
-                case SerializableTag.TagType.String:
-                    string text = serializableTag.StringTag;
-                    string newText = EditorGUI.TextField(position, text);
-                    if (newText != text)
-                    {
-                        serializableTag.StringTag = newText;
-                        _anyChange = true;
-                    }
+                break;
+            case SerializableTag.TagType.Object:
+                Object unityObject = serializableTag.UnityObjectTag;
+                Object newObject =
+                    EditorGUI.ObjectField(position, unityObject, typeof(Object), allowSceneObjects: true);
+                if (newObject != unityObject)
+                {
+                    serializableTag.UnityObjectTag = newObject;
+                    _anyChange = true;
+                }
 
-                    break;
-                case SerializableTag.TagType.Object:
-                    Object unityObject = serializableTag.UnityObjectTag;
-                    Object newObject =
-                        EditorGUI.ObjectField(position, unityObject, typeof(Object), allowSceneObjects: true);
-                    if (newObject != unityObject)
-                    {
-                        serializableTag.UnityObjectTag = newObject;
-                        _anyChange = true;
-                    }
-
-                    break;
-                case SerializableTag.TagType.TagFile:
-                    TagFile tagFile = serializableTag.TagFile;
-                    var newTagFile =
-                        (TagFile) EditorGUI.ObjectField(position, tagFile, typeof(TagFile), allowSceneObjects: true);
-                    if (newTagFile != tagFile)
-                    {
-                        serializableTag.TagFile = newTagFile;
-                        _anyChange = true;
-                    }
-                    break;
-                case SerializableTag.TagType.Other:
-                    object objectTag = serializableTag.OtherTypeTag;
-                    string objectTagText = objectTag == null 
-                            ? "null (Accessible From Code, Not Serialized)" :
-                            objectTag.ToString();
-                    EditorGUI.LabelField(position, objectTagText);
-                    break;
-            }
-
-            position.x = position.xMax + space;
-            position.width = tagTypeWidth;
-            var newTagType = (SerializableTag.TagType) EditorGUI.EnumPopup(position, tagType);
-            if (newTagType != tagType)
-            {
-                serializableTag.Type = newTagType;
-                _anyChange = true;
-            }
-
+                break;
+            case SerializableTag.TagType.Other:
+                object objectTag = serializableTag.OtherTypeTag;
+                string objectTagText = objectTag == null
+                    ? "null (Accessible From Code, Not Serialized)"
+                    : objectTag.ToString();
+                EditorGUI.LabelField(position, objectTagText);
+                break;
         }
 
         position.x = position.xMax + space;
-        position.width = actionButtonWidth;
-        if (GUI.Button(position, GUIContent.none))
-            _editedTag = editing ? null : serializableTag;
-        GUI.Label(position, EditorGUIUtility.IconContent("align_vertically_center"));
+        position.width = tagTypeWidth;
+        var newTagType = (SerializableTag.TagType) EditorGUI.EnumPopup(position, tagType);
+        if (newTagType != tagType)
+        {
+            serializableTag.Type = newTagType;
+            _anyChange = true;
+        }
+ 
 
         position.x = position.xMax + space;
         position.width = actionBarWidth;

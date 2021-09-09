@@ -10,30 +10,41 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
+class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
 
     readonly ServiceLocatorWindow _serviceLocatorWindow;
 
-    string SearchTypeText
+    bool IsColumnOpen
     {
-        get => _serviceLocatorWindow.searchTypeText;
-        set => _serviceLocatorWindow.searchTypeText = value;
+        get => _serviceLocatorWindow.isServicesOpen;
+        set => _serviceLocatorWindow.isServicesOpen = value;
+    }
+    
+    string SearchServicesText
+    {
+        get => _serviceLocatorWindow.searchServicesText;
+        set => _serviceLocatorWindow.searchServicesText = value;
     }
 
-    string[] _typeSearchWords = null;
-    public bool NoSearch => string.IsNullOrEmpty(SearchTypeText);
+    string[] _serviceSearchWords = null;
+    public bool NoSearch => string.IsNullOrEmpty(SearchServicesText);
 
-    public ServiceTypesColumn(ServiceLocatorWindow serviceLocatorWindow)
+    public ServicesColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {
-            relativeWidthWeight = 1,
-            fixWidth = 75,
+            relativeWidthWeightGetter = GetColumnRelativeWidth,
+            fixWidthGetter = GetColumnFixWidth,
             customHeaderDrawer = DrawHeader
         };
         _serviceLocatorWindow = serviceLocatorWindow;
     }
+    
+    
+    float GetColumnFixWidth() => IsColumnOpen ? 75f : 50f; 
+    float GetColumnRelativeWidth() => IsColumnOpen ? 1f : 0f;
+
 
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
@@ -51,10 +62,10 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             return;
         }
 
-        DrawTypes(position, types);
+        DrawServices(position, types);
     }
 
-    void DrawTypes(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfos)
+    void DrawServices(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfos)
     {
         const float space = 4;
         const float iconWidth = 20;
@@ -70,7 +81,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
         {
             Type type = typeInfos[i].type;
             GUIContent content = FileIconHelper.GetGUIContentToType(typeInfos[i]);
-            float w = ServicesEditorHelper.SmallLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
+            float w = ServicesEditorHelper.SmallLeftLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
 
             overflow = i == typeInfos.Count - 1
                 ? typePosition.x + w > position.xMax
@@ -112,7 +123,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             EditorHelper.DrawBox(pos, EditorHelper.ErrorBackgroundColor);
         }
 
-        if (GUI.Button(position, content, ServicesEditorHelper.SmallLabelStyle))
+        if (GUI.Button(position, content, ServicesEditorHelper.SmallCenterLabelStyle))
             TryPing(type); 
     }
 
@@ -134,7 +145,7 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             contents,
             new GUIStyle(GUI.skin.button));
         
-        GUI.Label(position, $"{(drawPlus ? "+" : "")}{typeInfos.Count}", ServicesEditorHelper.SmallLabelStyle);
+        GUI.Label(position, $"{(drawPlus ? "+" : "")}{typeInfos.Count}", ServicesEditorHelper.SmallCenterLabelStyle);
         
         GUI.color = Color.white;
 
@@ -159,20 +170,28 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
             pos.y + 2,
             labelWidth,
             pos.height - 4);
-        
-        GUI.Label(labelPos, "Types");
+
+        GUIContent content = IsColumnOpen ? new GUIContent("Services"):  new GUIContent("Serv.", "Services");
+        IsColumnOpen = EditorGUI.Foldout(labelPos, IsColumnOpen, content);
+
+        if (!IsColumnOpen)
+        {
+            if(_serviceSearchWords == null || _serviceSearchWords.Length>0)
+                _serviceSearchWords = new string[0];
+            return;
+        }
         
         bool modernUI = EditorHelper.IsModernEditorUI; 
 
-        float searchTextW = Mathf.Min(200f, pos.width - 52f);
+        float searchTextW = Mathf.Min(200f, pos.width - 75f);
         var searchTypePos = new Rect(
             pos.xMax - searchTextW - 2,
             pos.y + 3 + (modernUI ? 0 : 1),
             searchTextW,
             pos.height - 5);
-        SearchTypeText = EditorGUI.TextField(searchTypePos, SearchTypeText, GUI.skin.FindStyle("ToolbarSeachTextField"));
+        SearchServicesText = EditorGUI.TextField(searchTypePos, SearchServicesText, GUI.skin.FindStyle("ToolbarSeachTextField"));
 
-        _typeSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchTypeText);
+        _serviceSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchServicesText);
     }
     
     public bool ApplyTypeSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
@@ -180,14 +199,14 @@ class ServiceTypesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
     public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)
     {
-        if (string.IsNullOrEmpty(SearchTypeText)) return true;
-        if (_typeSearchWords == null) return true;
+        if (string.IsNullOrEmpty(SearchServicesText)) return true;
+        if (_serviceSearchWords == null) return true;
         if (typesOnService == null) return false;
 
         Type[] types = typesOnService.ToArray();
         string[] typeTexts = types.Select(type => type.FullName.ToLower()).ToArray();
 
-        foreach (string searchWord in _typeSearchWords)
+        foreach (string searchWord in _serviceSearchWords)
             if (!typeTexts.Any(typeName => typeName.Contains(searchWord)))
                 return false;
 

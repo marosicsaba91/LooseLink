@@ -70,7 +70,7 @@ class ServiceLocatorRow
         }
     } 
     
-    public GUIContent GetGUIContentForCategory()
+    public GUIContent GetGUIContentForCategory(bool isShort)
     {
         switch (Category)
         {
@@ -78,12 +78,13 @@ class ServiceLocatorRow
                 return new GUIContent(FileIconHelper.GetTooltipForISet(set)); 
             case RowCategory.Source:
                 return new GUIContent(
-                    FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType),
+                    isShort?FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType):
+                        FileIconHelper.GetNameForServiceSourceCategory(source.SourceType),
                     FileIconHelper.GetTooltipForServiceSource(source.SourceType));
             default:
                 throw new ArgumentOutOfRangeException();
         }
-    }
+    } 
 } 
 }
 #endif

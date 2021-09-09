@@ -8,18 +8,18 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-class ServiceFoldoutColumn : FoldoutColumn<ServiceLocatorRow>
+class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
 {
     readonly ServiceLocatorWindow _serviceLocatorWindow;
 
     string SearchServiceText
     {
-        get => _serviceLocatorWindow.searchServiceText;
-        set => _serviceLocatorWindow.searchServiceText = value;
+        get => _serviceLocatorWindow.searchServiceSourcesText;
+        set => _serviceLocatorWindow.searchServiceSourcesText = value;
     }
-    public ServiceFoldoutColumn(ColumnInfo columnInfo) : base(columnInfo) { }
+    public ServiceSourceColumn(ColumnInfo columnInfo) : base(columnInfo) { }
 
-    public ServiceFoldoutColumn(ServiceLocatorWindow serviceLocatorWindow)
+    public ServiceSourceColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         {

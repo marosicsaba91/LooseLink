@@ -8,8 +8,7 @@ namespace UnityServiceLocator
 public class SerializableTag : ITag
 {   
     public SerializableTag( ) {}
-    public SerializableTag(string objectTag) => Init(objectTag, TagType.String);
-    public SerializableTag(TagFile objectTag) => Init(objectTag, TagType.TagFile);
+    public SerializableTag(string objectTag) => Init(objectTag, TagType.String); 
     public SerializableTag(Object objectTag) => Init(objectTag, TagType.Object);
     public SerializableTag(object objectTag) => Init(objectTag, TagType.Other);
     
@@ -21,10 +20,7 @@ public class SerializableTag : ITag
         {
             case TagType.String:
                 stringTag = (string) tag;
-                break;
-            case TagType.TagFile:
-                tagFile = (TagFile) tag;
-                break;
+                break;  
             case TagType.Object:
                 unityObjectTag = (Object) tag;
                 break;
@@ -37,16 +33,14 @@ public class SerializableTag : ITag
     
     public enum TagType
     {
-        String,
-        TagFile,
+        String, 
         Object,
         Other
     }
 
     [SerializeField] TagType tagType;
     
-    [SerializeField] string stringTag;
-    [SerializeField] TagFile tagFile;
+    [SerializeField] string stringTag; 
     [SerializeField] Object unityObjectTag;
     object _otherTypeTag = null;
     
@@ -63,16 +57,6 @@ public class SerializableTag : ITag
         {
             stringTag = value;
             tagType = TagType.String;
-        }
-    }
-
-    internal TagFile TagFile
-    {
-        get => tagFile;
-        set
-        {
-            tagFile = value;
-            tagType = TagType.TagFile;
         }
     }
 
@@ -95,28 +79,7 @@ public class SerializableTag : ITag
             tagType = TagType.Other;
         }
     }
-    
 
-    [SerializeField] bool initialized = false;
-    [SerializeField] Color customColor;
-
-    public Color Color
-    {
-        get
-        {
-            if(TagObject == null)
-                return Color.black;
-
-            if (initialized) 
-                return customColor;
-            
-            customColor = TagHelper.GetNieColorByHash(TagObject);
-            initialized = true;
-            return customColor;
-        }
-    }
-
-    
     public string Name => TagObject.ToString();
 
     public object TagObject
@@ -126,9 +89,7 @@ public class SerializableTag : ITag
             switch (tagType)
             {
                 case TagType.String:
-                    return stringTag;
-                case TagType.TagFile:
-                    return tagFile;
+                    return stringTag; 
                 case TagType.Object:
                     return unityObjectTag;
                 case TagType.Other:

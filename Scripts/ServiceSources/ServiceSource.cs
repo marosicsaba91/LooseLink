@@ -117,8 +117,7 @@ public class ServiceSource
         return removable != null;
     }
     
-    public void AddTag(string tagString) => additionalTags.Add(new SerializableTag(tagString));
-    public void AddTag(TagFile tagFile) => additionalTags.Add(new SerializableTag(tagFile));
+    public void AddTag(string tagString) => additionalTags.Add(new SerializableTag(tagString)); 
     public void AddTag(Object tagObject) => additionalTags.Add(new SerializableTag(tagObject));
     public void AddTag(object tagObject) => additionalTags.Add(new SerializableTag(tagObject));
 

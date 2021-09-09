@@ -39,7 +39,7 @@ public static class TagHelper
 
     public static string ShortText(this ITag tag, float width)
     {
-        const int maxCharacterWidth = 10;
+        const int maxCharacterWidth = 9;
         string text = (tag == null ? "null" : tag.Name) ?? "null";
         var maxCharacterCount = (int) (width / maxCharacterWidth);
         if (maxCharacterCount >= text.Length) return text;

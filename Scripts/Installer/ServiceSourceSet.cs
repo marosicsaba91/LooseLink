@@ -7,12 +7,12 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-[CreateAssetMenu(fileName = "Service Source Set", menuName = "Loose Services/Service Source Set", order = 1)]
+[CreateAssetMenu(fileName = "New Service Source Set", menuName = "Service Source Set")]
 class ServiceSourceSet : ScriptableObject, IServiceSourceSet
 { 
     public bool useAsGlobalInstaller = false;
      
-    [SerializeField, HideInInspector] List<ServiceSource> serviceSources = default; 
+    [SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>(); 
     [SerializeField] ResourcesWarningMessage warningMessage;
     [HideInInspector] public int priority = 0;
     public List<ServiceSource> ServiceSources => serviceSources;

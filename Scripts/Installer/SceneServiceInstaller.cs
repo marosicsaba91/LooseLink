@@ -9,7 +9,7 @@ namespace UnityServiceLocator
 public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
 {
     [SerializeField] bool dontDestroyOnLoad = true;
-    [SerializeField, HideInInspector] internal List<ServiceSource> serviceSources = default;
+    [SerializeField, HideInInspector] internal List<ServiceSource> serviceSources = new List<ServiceSource>();
     
     Dictionary<Type, List<Type>> _nonAbstractToServiceTypeMap;
     

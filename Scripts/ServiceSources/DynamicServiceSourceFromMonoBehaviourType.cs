@@ -33,7 +33,7 @@ class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
             if(!Application.isPlaying)
                 return new Loadability(
                         Loadability.Type.Warning,
-                    "You can't instantiate MonoBehaviour through Loose Services in Editor Time");
+                    "You can't instantiate MonoBehaviour through Service Locator in Editor Time");
             return Loadability.Loadable;
         }
     }

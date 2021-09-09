@@ -21,9 +21,10 @@ MonoBehaviour:
     additionalTypes:
     - typeName: TimeProviderBehaviour
       fullTypeName: TimeProviderBehaviour
-      assemblyQualifiedName: TimeProviderBehaviour, LooseServicesSample, Version=0.0.0.0,
+      assemblyQualifiedName: TimeProviderBehaviour, UnityServicesLocatorSample, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
+      switchable: 0
     additionalTags: []
     isTypesExpanded: 1
     isTagsExpanded: 0

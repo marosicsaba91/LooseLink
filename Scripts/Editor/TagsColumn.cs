@@ -9,14 +9,14 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
+class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
     const int minTagWidth = 25;
     const int spacing = 2;
 
     readonly ServiceLocatorWindow _serviceLocatorWindow;
 
-    bool IsTagsOpen
+    bool IsColumnOpen
     {
         get => _serviceLocatorWindow.isTagsOpen;
         set => _serviceLocatorWindow.isTagsOpen = value;
@@ -24,26 +24,26 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 
     string SearchTagText
     {
-        get => _serviceLocatorWindow.searchTagText;
-        set => _serviceLocatorWindow.searchTagText = value;
+        get => _serviceLocatorWindow.searchTagsText;
+        set => _serviceLocatorWindow.searchTagsText = value;
     }
 
     string[] _tagSearchWords = null;
 
-    public ServiceTagsColumn(ServiceLocatorWindow serviceLocatorWindow)
+    public TagsColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
         { 
-            fixWidthGetter = GetTagWidth,
-            relativeWidthWeightGetter = GetRelativeWidthWidth,
+            fixWidthGetter = GetColumnFixWidth,
+            relativeWidthWeightGetter = GetColumnRelativeWidth,
             customHeaderDrawer = DrawHeader
         };
         _serviceLocatorWindow = serviceLocatorWindow;
     }
     
     
-    float GetTagWidth() => IsTagsOpen ? 75f : 55f;
-    float GetRelativeWidthWidth() => IsTagsOpen ? 1f : 0f;
+    float GetColumnFixWidth() => IsColumnOpen ? 75f : 50f; 
+    float GetColumnRelativeWidth() => IsColumnOpen ? 1f : 0f;
     
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
@@ -60,7 +60,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         
         if (tags.IsNullOrEmpty())
         {
-            GUI.Label(position, "-", ServicesEditorHelper.SmallLabelStyle);
+            GUI.Label(position, "-", ServicesEditorHelper.SmallCenterLabelStyle);
             return;
         }
 
@@ -74,7 +74,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 
     void DrawTags(Rect position, ICollection<object> tags)
     {
-        var maxTagsToDraw = (int) ((position.width + spacing) / (minTagWidth + spacing));
+        int maxTagsToDraw = IsColumnOpen ? (int) ((position.width + spacing) / (minTagWidth + spacing)) : 1;
 
         int tagCount = tags.Count;
         int tagPlacesToDraw =
@@ -96,7 +96,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             {
                 bool isLastTag = i >= tagsToDrawInLine - 1; 
                 int w = isLastTag ? maxXForTags - startPos : tagWidth;
-                DrawTag(new Rect(startPos, position.y, w, position.height), tag);
+                DrawTag(new Rect(startPos, position.y, w, position.height), tag, small: true, center: true);
                 startPos += tagWidth + spacing;
             }
             else
@@ -115,25 +115,40 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         }
     }
 
-    public static void DrawTag(Rect position, object tag)
+    public static void DrawTag(Rect position, object tag, bool small, bool center)
     {
         var iTag = tag.ToITag();
-
-        Color color = iTag.Color;
-        Color borderColor = EditorGUIUtility.isProSkin
-            ? Color.Lerp(color, Color.white, 0.5f)
-            : Color.Lerp(color, Color.black, 0.25f);
-        EditorHelper.DrawBox(position, color, borderColor, borderInside: true);
+ 
         var content = new GUIContent
         {
             text = iTag.ShortText(position.width),
             tooltip = iTag.ObjectType() == null ? null : iTag.TextWithType(),
         };
-        bool isColorDark = (color.a + color.g + color.b) / 3f <= 0.6;
-        Color textColor = Color.Lerp(color, isColorDark ? Color.white : Color.black, t: 0.75f);
-        ColoredLabelStyle.normal.textColor = textColor;
-        if (GUI.Button(position, content,  ColoredLabelStyle))
-            TryPing(tag);
+        bool pingable =  tag is Object obj && obj != null;
+
+
+
+        if (pingable)
+        {
+            GUIStyle style = small
+                    ? (center ? ServicesEditorHelper.SmallCenterButtonStyle : ServicesEditorHelper.SmallLeftButtonStyle)
+                    : (center ? ServicesEditorHelper.CenterButtonStyle : ServicesEditorHelper.LeftButtonStyle);
+            
+            if (GUI.Button(position, content, style))
+                TryPing(tag);
+        }
+        else
+        {
+            GUIStyle style = small
+                ? (center ? ServicesEditorHelper.SmallCenterLabelStyle : ServicesEditorHelper.SmallLeftLabelStyle)
+                : (center ? ServicesEditorHelper.CenterLabelStyle : ServicesEditorHelper.LeftLabelStyle);
+            EditorHelper.DrawBox(position);
+            position.x += 5;
+            position.width -= 10;
+            GUI.Label(position, content, style);
+        }
+
+        GUI.enabled = true; 
         
     }
 
@@ -144,7 +159,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             selectedIndex: -1,
             tagsToDrawInPopup.Select(tag => tag.ToITag().TextWithType()).ToArray(),
             new GUIStyle(GUI.skin.button));
-        GUI.Label(position, $"{(plus ? "+" : "")}{tagsToDrawInPopup.Count}", ServicesEditorHelper.SmallLabelStyle);
+        GUI.Label(position, $"{(plus ? "+" : "")}{tagsToDrawInPopup.Count}", ServicesEditorHelper.SmallCenterLabelStyle);
 
         if (index >= -0)
             TryPing(tagsToDrawInPopup[index]);
@@ -153,15 +168,15 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     void DrawHeader(Rect pos)
     {
         const float fullButtonWidth = 45;
-        float buttonWidth = IsTagsOpen ? fullButtonWidth : pos.width - 4;
+        float buttonWidth = IsColumnOpen ? fullButtonWidth : pos.width - 4;
         var buttonPos = new Rect(
             pos.x + 4,
             pos.y ,
             buttonWidth,
             pos.height );
-        IsTagsOpen = EditorGUI.Foldout(buttonPos, IsTagsOpen, "Tags");
+        IsColumnOpen = EditorGUI.Foldout(buttonPos, IsColumnOpen, "Tags");
 
-        if (!IsTagsOpen)
+        if (!IsColumnOpen)
         {
             if(_tagSearchWords == null || _tagSearchWords.Length>0)
                 _tagSearchWords = new string[0];
@@ -170,7 +185,7 @@ class ServiceTagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         
         bool modernUI = EditorHelper.IsModernEditorUI; 
 
-        float searchTextW = Mathf.Min(200f, pos.width - 52f);
+        float searchTextW = Mathf.Min(200f, pos.width - 55f);
         var searchTagPos = new Rect(
             pos.xMax - searchTextW - 2,
             pos.y + 3 + (modernUI ? 0 : 1),

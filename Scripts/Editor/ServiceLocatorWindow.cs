@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using MUtility; 
 using UnityEditor;
-using UnityEngine;
+using UnityEngine; 
 
 namespace UnityServiceLocator
 {
@@ -13,19 +13,21 @@ class ServiceLocatorWindow : EditorWindow
     const string editorPrefsKey = "ServiceLocatorWindowState";
     static readonly Vector2 minimumSize = new Vector2(500, 100);
 
-    ServiceFoldoutColumn _servicesColumn;
-    ServiceSourceCategoryColumn _categoryColumn;
-    ServiceTypesColumn _typesColumn;
-    ServiceTagsColumn _tagsColumn;
+    ServiceSourceColumn _serviceSourcesColumn;
+    ServiceSourceTypeColumn _typeColumn;
+    ServicesColumn _servicesColumn;
+    TagsColumn _tagsColumn;
     ServiceLoadedColumn _loadedColumn;
     GUITable<FoldableRow<ServiceLocatorRow>> _serviceTable; 
      
      
     [SerializeField] List<string> openedElements = new List<string>();
+    public bool isSourceCategoryOpen = false; 
     public bool isTagsOpen = false; 
-    public string searchTagText = string.Empty;
-    public string searchTypeText = string.Empty;
-    public string searchServiceText = string.Empty;
+    public bool isServicesOpen = false; 
+    public string searchTagsText = string.Empty;
+    public string searchServicesText = string.Empty;
+    public string searchServiceSourcesText = string.Empty;
     
 
     [MenuItem("Tools/Unity Service Locator")]
@@ -70,14 +72,14 @@ class ServiceLocatorWindow : EditorWindow
     {
         if (_serviceTable != null) return;
         
-        _servicesColumn = new ServiceFoldoutColumn(this);
-        _tagsColumn = new ServiceTagsColumn(this);
-        _typesColumn = new ServiceTypesColumn(this);
-        _categoryColumn = new ServiceSourceCategoryColumn(this);
+        _serviceSourcesColumn = new ServiceSourceColumn(this);
+        _tagsColumn = new TagsColumn(this);
+        _servicesColumn = new ServicesColumn(this);
+        _typeColumn = new ServiceSourceTypeColumn(this);
         _loadedColumn = new ServiceLoadedColumn(this);
         var componentTypeColumns = new List<IColumn<FoldableRow<ServiceLocatorRow>>>
         {
-            _servicesColumn, _categoryColumn, _typesColumn, _tagsColumn, _loadedColumn,
+            _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _loadedColumn,
         };
 
         _serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)
@@ -122,8 +124,8 @@ class ServiceLocatorWindow : EditorWindow
         var nodes = new List<TreeNode<ServiceLocatorRow>>();
         ServiceSource[] sources = iSet.GetEnabledValidSources().ToArray();
 
-        bool noServiceSearch = _servicesColumn.NoSearch;
-        bool noTypeSearch = _typesColumn.NoSearch;
+        bool noServiceSearch = _serviceSourcesColumn.NoSearch;
+        bool noTypeSearch = _servicesColumn.NoSearch;
         bool noTagSearch = _tagsColumn.NoSearch;
         bool anySearch = !(noServiceSearch && noTypeSearch && noTagSearch);
         
@@ -148,8 +150,8 @@ class ServiceLocatorWindow : EditorWindow
                 var sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, abstractTypes);
                 sourceRow.loadability = source.Loadability;
 
-                bool serviceMatchSearch = _servicesColumn.ApplyServiceSourceSearch(source);
-                bool typeMatchSearch = _typesColumn.ApplyTypeSearchOnSource(iSet, source);
+                bool serviceMatchSearch = _serviceSourcesColumn.ApplyServiceSourceSearch(source);
+                bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(iSet, source);
                 bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iSet, source);
 
                 if (!anySearch)

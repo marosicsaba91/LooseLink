@@ -28,7 +28,7 @@ class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSource
             if(!Application.isPlaying)
                 return new Loadability(
                     Loadability.Type.Warning,
-                    "You can't instantiate prefab through Loose Services in Editor Time");
+                    "You can't instantiate prefab through Service Locator in Editor Time");
             return Loadability.Loadable;
         }
     } 

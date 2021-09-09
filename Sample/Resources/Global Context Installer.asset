@@ -20,7 +20,7 @@ MonoBehaviour:
     preferredSourceType: 7
     additionalTypes: []
     additionalTags: []
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
     serviceSourceObject: {fileID: 11400000, guid: 35bd33d0edb831340842597ccf33bb6a,

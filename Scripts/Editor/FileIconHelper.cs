@@ -161,10 +161,10 @@ static class FileIconHelper
             default:
                 return unexpectedCategoryText;
         } 
-    } 
-    
-    
-    internal static string  GetShortNameForServiceSourceCategory(ServiceSourceTypes sourceType)
+    }
+
+
+    internal static string GetNameForServiceSourceCategory(ServiceSourceTypes sourceType)
     {
         switch (sourceType)
         {
@@ -181,7 +181,30 @@ static class FileIconHelper
             case ServiceSourceTypes.FromScriptableObjectType:
                 return "ScriptableO. Script";
             case ServiceSourceTypes.FromMonoBehaviourType:
-                return "MonoBehaviour Script"; 
+                return "MonoBehaviour Script";
+            default:
+                return unexpectedCategoryText;
+        }
+    }
+
+    internal static string GetShortNameForServiceSourceCategory(ServiceSourceTypes sourceType)
+    {
+        switch (sourceType)
+        {
+            case ServiceSourceTypes.FromPrefabPrototype:
+                return "P. Proto.";
+            case ServiceSourceTypes.FromPrefabFile:
+                return "P. File";
+            case ServiceSourceTypes.FromScriptableObjectFile:
+                return "SO. File";
+            case ServiceSourceTypes.FromScriptableObjectPrototype:
+                return "SO. Proto.";
+            case ServiceSourceTypes.FromSceneGameObject:
+                return "Scene GO.";
+            case ServiceSourceTypes.FromScriptableObjectType:
+                return "SO. Script";
+            case ServiceSourceTypes.FromMonoBehaviourType:
+                return "MB. Script"; 
             default:
                 return unexpectedCategoryText;
         } 
