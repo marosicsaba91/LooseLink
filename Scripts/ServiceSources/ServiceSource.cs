@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using MUtility;
 using UnityEditor;
-using UnityEngine; 
+using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
@@ -15,7 +16,7 @@ public class ServiceSource
     [SerializeField] internal Object serviceSourceObject;
     [SerializeField] internal ServiceSourceTypes preferredSourceType;
     [SerializeField] internal List<SerializableType> additionalTypes = new List<SerializableType>();
-    [SerializeField] internal List<SerializableTag> additionalTags = new List<SerializableTag>();
+    [FormerlySerializedAs("additionalTags")] [SerializeField] internal List<Tag> tags = new List<Tag>();
     [SerializeField] internal bool isTypesExpanded;
     [SerializeField] internal bool isTagsExpanded;
 
@@ -75,23 +76,7 @@ public class ServiceSource
     }
 
 
-    public IEnumerable<object> GetTags()
-    {
-        if (serviceSourceObject == null) yield break;
-        InitDynamicIfNeeded();
-        if (_dynamicSource != null)
-            foreach (object serviceTypes in _dynamicSource?.GetDynamicTags())
-            {
-                if (serviceTypes != null)
-                    yield return serviceTypes;
-            }
-
-        foreach (SerializableTag tagSetting in additionalTags)
-        {
-            object tag = tagSetting.TagObject;
-            yield return tag;
-        }
-    }
+    public IReadOnlyList<Tag> GetTags() => tags;
 
     public bool TryAddType<T>() => TryAddType(typeof(T));
 
@@ -117,15 +102,15 @@ public class ServiceSource
         return removable != null;
     }
     
-    public void AddTag(string tagString) => additionalTags.Add(new SerializableTag(tagString)); 
-    public void AddTag(Object tagObject) => additionalTags.Add(new SerializableTag(tagObject));
-    public void AddTag(object tagObject) => additionalTags.Add(new SerializableTag(tagObject));
+    public void AddTag(string tagString) => tags.Add(new Tag(tagString)); 
+    public void AddTag(Object tagObject) => tags.Add(new Tag(tagObject));
+    public void AddTag(object tagObject) => tags.Add(new Tag(tagObject));
 
     public bool RemoveTag(object tagObject)
     {
-        SerializableTag removable = additionalTags.Find(st => st.TagObject.Equals(tagObject));
+        Tag removable = tags.Find(st => st.TagObject.Equals(tagObject));
         if (removable != null)
-            additionalTags.Remove(removable);
+            tags.Remove(removable);
         return removable != null;
     }
 
@@ -210,12 +195,12 @@ public class ServiceSource
             dynamicServiceSource.TryGetService(
                 type, null,
                 conditionTags: null,
-                additionalTags,
+                tags,
                 out object _,
                 out bool newInstance);
             
             if (newInstance) 
-                ServiceLocator.InvokeLoadedInstancesChanged(); 
+                ServiceLocator.Environment.InvokeLoadedInstancesChanged(); 
         }
     }
     

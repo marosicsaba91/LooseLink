@@ -4,7 +4,7 @@ using UnityServiceLocator;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged, IEquatable<TimeProviderBehaviour>, ITimeProvider3
+public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, IEquatable<TimeProviderBehaviour>, ITimeProvider3
 {
     float _time = 0;
 
@@ -15,18 +15,6 @@ public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, ITagged, IEqu
 
     public float GetTime => _time;
 
-
-    [SerializeField] Object[] tags;
-    
-    public IEnumerable<object> GetTags()
-    {
-        yield return name;
-        yield return 1;
-        if(tags == null) yield break;
-        foreach (Object tagFile in tags)
-            yield return tagFile;
-    }
-    
     public bool Equals(TimeProviderBehaviour other)
     {
         return other == this;

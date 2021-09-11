@@ -164,9 +164,15 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: fe8a175c390b41a3a6ebedcabf046e4b, type: 3}
       switchable: 1
-    additionalTags: []
+    tags:
+    - tagType: 0
+      stringTag: ABC
+      unityObjectTag: {fileID: 0}
+    - tagType: 1
+      stringTag: 
+      unityObjectTag: {fileID: 1075936879}
     isTypesExpanded: 1
-    isTagsExpanded: 0
+    isTagsExpanded: 1
   - enabled: 1
     serviceSourceObject: {fileID: 2410479155523028745, guid: ea67f913dc39dae4b9a6a2b2ae5cd71e,
       type: 3}
@@ -178,7 +184,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
       switchable: 0
-    additionalTags: []
+    tags: []
     isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
@@ -197,7 +203,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
       switchable: 0
-    additionalTags: []
+    tags: []
     isTypesExpanded: 0
     isTagsExpanded: 0
   - enabled: 1
@@ -216,7 +222,7 @@ MonoBehaviour:
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
       switchable: 0
-    additionalTags:
+    tags:
     - tagType: 0
       stringTag: SecondaryCamera
       unityObjectTag: {fileID: 0}
@@ -227,7 +233,7 @@ MonoBehaviour:
       type: 2}
     preferredSourceType: 0
     additionalTypes: []
-    additionalTags: []
+    tags: []
     isTypesExpanded: 0
     isTagsExpanded: 0
 --- !u!4 &450527955
@@ -690,7 +696,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tags: []
 --- !u!4 &2542751288459471919
 Transform:
   m_ObjectHideFlags: 0

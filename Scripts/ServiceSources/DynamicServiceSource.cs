@@ -12,8 +12,7 @@ abstract class DynamicServiceSource
     List<Type> _allNonAbstractTypes;
     List<Type> _allAbstractTypes;
     List<Type> _possibleAdditionalTypes;
-    Dictionary<Type, object> _typeToServiceOnSource;
-    Dictionary<Type, ITagged> _typeToTagProviderOnSource;
+    Dictionary<Type, object> _typeToServiceOnSource; 
     ServiceSource _setting;
     bool _isDynamicDataInitialized = false;
  
@@ -28,7 +27,7 @@ abstract class DynamicServiceSource
         Type type,
         IServiceSourceSet set,
         object[] conditionTags,
-        List<SerializableTag> serializedTags,
+        List<Tag> serializedTags,
         out object service,
         out bool newInstance)
     {
@@ -40,21 +39,16 @@ abstract class DynamicServiceSource
             return false;
         }
 
-        if (conditionTags!= null && conditionTags.Length>0) 
+        if (conditionTags!= null) 
         {
-            ITagged tagged = _typeToTagProviderOnSource[type];
-            bool success = tagged != null;
-            if (success)
+            var success = true;
+            foreach (object tag in conditionTags)
             {
-                foreach (object tag in conditionTags)
-                {
-                    if (tag == null) continue;
-                    if (tagged.GetTags().Contains(tag)) continue;
-                    if ( serializedTags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue; 
+                if (tag == null) continue; 
+                if (serializedTags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue; 
                     
-                    success = false;
-                    break;
-                }
+                success = false;
+                break;
             }
 
             if (!success)
@@ -149,14 +143,11 @@ abstract class DynamicServiceSource
         
         _allNonAbstractTypes = GetNonAbstractTypes();
         _allAbstractTypes = new List<Type>();
-        _typeToServiceOnSource = new Dictionary<Type, object>();
-        _typeToTagProviderOnSource = new Dictionary<Type, ITagged>();
+        _typeToServiceOnSource = new Dictionary<Type, object>(); 
         _possibleAdditionalTypes = new List<Type>(); 
         foreach (Type concreteType in _allNonAbstractTypes)
         { 
-            object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
-            ITagged tagProviderInstanceOnSourceObject =
-                serviceInstanceOnSourceObject is ITagged tagged ? tagged : null;
+            object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType); 
 
 
             IEnumerable<Type> abstractTypes = ServiceTypeHelper.GetServicesOfNonAbstractType(concreteType)
@@ -165,8 +156,7 @@ abstract class DynamicServiceSource
             foreach (Type abstractType in abstractTypes)
             {
                 _allAbstractTypes.Add(abstractType);
-                _typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject);
-                _typeToTagProviderOnSource.Add(abstractType, tagProviderInstanceOnSourceObject);
+                _typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject); 
             }
             
             
@@ -186,7 +176,7 @@ abstract class DynamicServiceSource
         if (includeInterfaces)
         {
             foreach (Type interfaceType in type.GetInterfaces())
-                if (interfaceType != typeof(ITagged) && interfaceType != typeof(IInitializable))
+                if (interfaceType != typeof(IInitializable))
                     yield return interfaceType;
         }
 
@@ -209,18 +199,6 @@ abstract class DynamicServiceSource
     public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 
     protected abstract void ClearService();
-
-    public IEnumerable<object> GetDynamicTags()
-    {
-        InitDynamicTypeDataIfNeeded();
-
-        foreach (KeyValuePair<Type, ITagged> pair in _typeToTagProviderOnSource)
-            if (pair.Value != null)
-            {
-                foreach (object tag in pair.Value.GetTags())
-                    yield return tag;
-            } 
-    }
 
     public void ClearInstancesAndCachedTypes()
     {

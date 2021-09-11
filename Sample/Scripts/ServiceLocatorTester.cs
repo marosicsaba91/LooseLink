@@ -75,7 +75,7 @@ public class ServiceLocatorTester : MonoBehaviour
         }
 
         protected override IList<string> PopupElements(ServiceLocatorTester container) => 
-            ServiceLocator.GetAllInstalledTypes().Select(t =>t.FullName).ToList();
+            ServiceLocator.Environment.GetAllInstalledServiceTypes().Select(t =>t.FullName).ToList();
     }
 
 }

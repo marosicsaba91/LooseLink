@@ -62,10 +62,8 @@ static class ServiceSourceDrawer
     static List<Type> _dynamicServiceTypes;
     static List<SerializableType> _additionalServiceTypes;
     static List<Type> _possibleAdditionalServiceTypes;
-    static List<SerializableTag> _additionalTags;
-    static List<object> _dynamicTags;
-    static int _typeCount;
-    static int _tagCount; 
+    static List<Tag> _additionalTags; 
+    static int _typeCount; 
 
     public static void DrawServiceSources(
         IServiceSourceSet containingSet,
@@ -108,13 +106,11 @@ static class ServiceSourceDrawer
         _dynamicSource = _source.GetDynamicServiceSource();
         _dynamicSource?.ClearCachedTypes();
         _additionalServiceTypes = _source.additionalTypes;
-        _additionalTags = _source.additionalTags;
+        _additionalTags = _source.tags;
         _nonAbstractTypes = _dynamicSource?.GetAllNonAbstractTypes().ToList();
         _possibleAdditionalServiceTypes = _dynamicSource?.GetPossibleAdditionalTypes().ToList();
-        _dynamicServiceTypes = _dynamicSource?.GetAllAbstractTypes().ToList();
-        _dynamicTags = _dynamicSource?.GetDynamicTags().ToList();
+        _dynamicServiceTypes = _dynamicSource?.GetAllAbstractTypes().ToList(); 
         _typeCount = (_dynamicServiceTypes?.Count ?? 0) + _additionalServiceTypes.Count;
-        _tagCount = (_dynamicTags?.Count ?? 0) + _additionalTags.Count;
 
         float height = PixelHeightOfSource();
         var position = new Rect(startPosition, new Vector2(width, height));
@@ -140,7 +136,7 @@ static class ServiceSourceDrawer
         if (_source.isTypesExpanded)
             lineCount += 1 + _typeCount;
         if (_source.isTagsExpanded)
-            lineCount += 1 + _tagCount;
+            lineCount += 1 + _additionalTags.Count;
         return ((lineHeight + space) * lineCount) + (2 * padding);
     }
 
@@ -388,22 +384,16 @@ static class ServiceSourceDrawer
 
     static void DrawTags(Rect position)
     {
-        var title = $"Tags ({_tagCount})";
+        var title = $"Tags ({_additionalTags.Count})";
         _source.isTagsExpanded = EditorGUI.Foldout(position, _source.isTagsExpanded, title);
 
         position.y += lineHeight + space;
         if (!_source.isTagsExpanded) return;
-
-        foreach (object tag in _dynamicTags)
-        {
-            DrawDynamicTag(position, tag);
-            position.y += lineHeight + space;
-        }
-
+ 
         if (_source.additionalTypes != null)
             for (var index = 0; index < _additionalTags.Count; index++)
             {
-                DrawSerializableTag(position, _additionalTags, index);
+                DrawTag(position, _additionalTags, index);
                 position.y += lineHeight + space;
             }
 
@@ -412,56 +402,49 @@ static class ServiceSourceDrawer
         buttonPos.width -= actionBarWidth + space;
         if (DrawButton(buttonPos, ListAction.Add, enabled: true))
         {
-            _source.additionalTags.Add(new SerializableTag());
+            _source.tags.Add(new Tag());
             _anyChange = true;
         }
 
         position.y += lineHeight + space;
     }
-
-    static void DrawDynamicTag(Rect position, object tag)
-    {
-        position.width -= 3 * actionButtonWidth;
-        if (position.width <= 0) return;
-        TagsColumn.DrawTag(position, tag, small: false, center: false);
-    } 
-
-    static void DrawSerializableTag(
+    
+    static void DrawTag(
         Rect position,
-        IList<SerializableTag> serializedTags,
+        IList<Tag> serializedTags,
         int tagIndex)
     {
-        SerializableTag serializableTag = serializedTags[tagIndex];
+        Tag tag = serializedTags[tagIndex];
         
         const float tagTypeWidth = 70;
         position.width -= 3 * actionButtonWidth + tagTypeWidth + space; 
  
-        SerializableTag.TagType tagType = serializableTag.Type;
+        Tag.TagType tagType = tag.Type;
         switch (tagType)
         {
-            case SerializableTag.TagType.String:
-                string text = serializableTag.StringTag;
+            case Tag.TagType.String:
+                string text = tag.StringTag;
                 string newText = EditorGUI.TextField(position, text);
                 if (newText != text)
                 {
-                    serializableTag.StringTag = newText;
+                    tag.StringTag = newText;
                     _anyChange = true;
                 }
 
                 break;
-            case SerializableTag.TagType.Object:
-                Object unityObject = serializableTag.UnityObjectTag;
+            case Tag.TagType.Object:
+                Object unityObject = tag.UnityObjectTag;
                 Object newObject =
                     EditorGUI.ObjectField(position, unityObject, typeof(Object), allowSceneObjects: true);
                 if (newObject != unityObject)
                 {
-                    serializableTag.UnityObjectTag = newObject;
+                    tag.UnityObjectTag = newObject;
                     _anyChange = true;
                 }
 
                 break;
-            case SerializableTag.TagType.Other:
-                object objectTag = serializableTag.OtherTypeTag;
+            case Tag.TagType.Other:
+                object objectTag = tag.OtherTypeTag;
                 string objectTagText = objectTag == null
                     ? "null (Accessible From Code, Not Serialized)"
                     : objectTag.ToString();
@@ -471,10 +454,10 @@ static class ServiceSourceDrawer
 
         position.x = position.xMax + space;
         position.width = tagTypeWidth;
-        var newTagType = (SerializableTag.TagType) EditorGUI.EnumPopup(position, tagType);
+        var newTagType = (Tag.TagType) EditorGUI.EnumPopup(position, tagType);
         if (newTagType != tagType)
         {
-            serializableTag.Type = newTagType;
+            tag.Type = newTagType;
             _anyChange = true;
         }
  
