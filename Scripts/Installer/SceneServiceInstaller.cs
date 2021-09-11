@@ -37,9 +37,9 @@ public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
         GlobalUnInstall();
     }
     
-    public void GlobalInstall() => ServiceLocator.AddSceneContextInstaller(this);
+    public void GlobalInstall() => ServiceLocator.Environment.AddSceneContextInstaller(this);
     
-    public void GlobalUnInstall() => ServiceLocator.RemoveSceneContextInstaller(this);
+    public void GlobalUnInstall() => ServiceLocator.Environment.RemoveSceneContextInstaller(this);
 
 
     public ServiceSource AddServiceSource(Object sourceObject, ServiceSourceTypes preferredType = ServiceSourceTypes.Non)

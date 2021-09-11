@@ -43,8 +43,8 @@ class ServiceLocatorWindow : EditorWindow
     {
         minSize = minimumSize;
         wantsMouseMove = true;
-        ServiceLocator.InstallersChanged += OnSceneContextInstallersChanged;
-        ServiceLocator.LoadedInstancesChanged += Repaint;
+        ServiceLocator.Environment.InstallersChanged += OnSceneContextInstallersChanged;
+        ServiceLocator.Environment.LoadedInstancesChanged += Repaint;
 
         string data = EditorPrefs.GetString(
             editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
@@ -54,8 +54,8 @@ class ServiceLocatorWindow : EditorWindow
 
     public void OnDisable()
     {
-        ServiceLocator.LoadedInstancesChanged -= OnSceneContextInstallersChanged;
-        ServiceLocator.LoadedInstancesChanged -= Repaint;
+        ServiceLocator.Environment.InstallersChanged -= OnSceneContextInstallersChanged;
+        ServiceLocator.Environment.LoadedInstancesChanged -= Repaint;
 
         string data = JsonUtility.ToJson(this, prettyPrint: false);
         EditorPrefs.SetString(editorPrefsKey, data);

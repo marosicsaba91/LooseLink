@@ -54,11 +54,11 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         }
         if (row.element.source.SourceType == ServiceSourceTypes.FromScriptableObjectType) return;
         if (row.element.source.SourceType == ServiceSourceTypes.FromMonoBehaviourType) return;
-        
-        
-        object[] tags = row.element.source.GetTags().ToArray();
-        
-        if (tags.IsNullOrEmpty())
+
+
+        IReadOnlyList<Tag> tags = row.element.source.GetTags();
+
+        if (tags == null || tags.Count == 0)
         {
             GUI.Label(position, "-", ServicesEditorHelper.SmallCenterLabelStyle);
             return;
@@ -72,7 +72,7 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         DrawTags(tagsPos, tags);
     }
 
-    void DrawTags(Rect position, ICollection<object> tags)
+    void DrawTags(Rect position, IReadOnlyList<Tag> tags)
     {
         int maxTagsToDraw = IsColumnOpen ? (int) ((position.width + spacing) / (minTagWidth + spacing)) : 1;
 
@@ -86,11 +86,11 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             ? (int) (position.xMax - minTagWidth - spacing)
             : (int) position.xMax;
 
-        var tagsToDrawInPopup = new List<object>();
+        var tagsToDrawInPopup = new List<Tag>();
         var startPos = (int) position.x;
 
         var i = 0;
-        foreach (object tag in tags)
+        foreach (Tag tag in tags)
         {
             if (i < tagsToDrawInLine)
             {
@@ -115,16 +115,15 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         }
     }
 
-    public static void DrawTag(Rect position, object tag, bool small, bool center)
-    {
-        var iTag = tag.ToITag();
+    public static void DrawTag(Rect position, Tag tag, bool small, bool center)
+    { 
  
         var content = new GUIContent
         {
-            text = iTag.ShortText(position.width),
-            tooltip = iTag.ObjectType() == null ? null : iTag.TextWithType(),
+            text = tag.ShortText(position.width),
+            tooltip = tag.GetObjectType() == null ? null : tag.TextWithType(),
         };
-        bool pingable =  tag is Object obj && obj != null;
+        bool pingable =  tag.TagObject is Object obj && obj != null;
 
 
 
@@ -152,12 +151,12 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         
     }
 
-    void DrawTagPopup(Rect position, List<object> tagsToDrawInPopup, bool plus)
+    void DrawTagPopup(Rect position, IReadOnlyList<Tag> tagsToDrawInPopup, bool plus)
     {
         int index = EditorGUI.Popup(
             position,
             selectedIndex: -1,
-            tagsToDrawInPopup.Select(tag => tag.ToITag().TextWithType()).ToArray(),
+            tagsToDrawInPopup.Select(tag => tag.TextWithType()).ToArray(),
             new GUIStyle(GUI.skin.button));
         GUI.Label(position, $"{(plus ? "+" : "")}{tagsToDrawInPopup.Count}", ServicesEditorHelper.SmallCenterLabelStyle);
 
@@ -206,20 +205,19 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             EditorGUIUtility.PingObject(pingableObj);
     } 
     
-    public bool ApplyTagSearchOnTagArray(IEnumerable<object> tagsOnService)
+    public bool ApplyTagSearchOnTagArray(IReadOnlyList<Tag> tagsOnService)
     {
         if (string.IsNullOrEmpty(SearchTagText)) return true;
         if (_tagSearchWords == null) return true;
         if (tagsOnService == null) return false;
-
-        object[] tags = tagsOnService.ToArray();
-        string[] tagTexts = tags.Select(tag => tag.ToITag().TextWithType().ToLower()).ToArray();
+ 
+        string[] tagTexts = tagsOnService.Select(tag => tag.TextWithType().ToLower()).ToArray();
 
         foreach (string searchWord in _tagSearchWords)
             if (!tagTexts.Any(tag => tag.Contains(searchWord)))
                 return false;
 
-        return true; 
+        return true;
     }
 
     public bool NoSearch => string.IsNullOrEmpty(SearchTagText);

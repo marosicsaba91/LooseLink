@@ -15,10 +15,8 @@ namespace Tests
         ScriptableObject _testScriptableObject2;
         ServiceSource _serviceSource1;
         ServiceSource _serviceSource2;
-
-        internal const int testTag1 = 789;
-        internal const string testTag2 = "I hate snakes!";
-        internal static readonly Vector2 testTag3 = new Vector2(x: 22f, y: 33f);
+ 
+        internal const string testTag1 = "I hate snakes!"; 
 
         [OneTimeSetUp]
         public static void SetUp() =>ServiceLocatorSceneGameObjectTests.CleanupInstallers();
@@ -55,45 +53,19 @@ namespace Tests
             Assert.IsTrue(foundService2);
             yield return null;
         }
-        
-        [UnityTest, Order(order: 4)] 
-        public IEnumerator Test4_SearchForTags()
-        {
-            bool success1 = ServiceLocator.TryGet(  
-                new object[]{testTag1 + 1},
-                out UnityServiceLocatorTestScriptableObject1 _); 
-            Assert.IsFalse(success1);
-            
-            bool success2 = ServiceLocator.TryGet(  
-                new object[]{testTag1 },
-                out UnityServiceLocatorTestScriptableObject1 _);
-            Assert.IsTrue(success2);
-            
-            bool success3 = ServiceLocator.TryGet(  
-                new object[]{testTag1, testTag2},
-                out UnityServiceLocatorTestScriptableObject1 _);
-            Assert.IsTrue(success3); 
-            
-            bool success4 = ServiceLocator.TryGet(  
-                new object[]{testTag1, testTag2+ "x"},
-                out UnityServiceLocatorTestScriptableObject1 _);
-            Assert.IsFalse(success4);
-            
-            yield return null;
-        }
-        
+
         [UnityTest, Order(order: 5)] 
         public IEnumerator Test5_AddAndSearchForAdditionalTags()
         { 
             bool success1 = ServiceLocator.TryGet(  
-                new object[]{testTag1, testTag2, testTag3},
+                new object[]{testTag1},
                 out UnityServiceLocatorTestScriptableObject1 _);
             Assert.IsFalse(success1); 
             
-            _serviceSource1.AddTag(testTag3);
+            _serviceSource1.AddTag(testTag1);
             yield return null; 
             
-            bool success2 = ServiceLocator.TryGet(new object[]{testTag1, testTag2, testTag3},
+            bool success2 = ServiceLocator.TryGet(new object[]{testTag1},
                 out UnityServiceLocatorTestScriptableObject1 _);
             Assert.IsTrue(success2);
         } 
