@@ -9,15 +9,15 @@ namespace UnityServiceLocator
 {
 static class TypeToFileHelper
 {
-    static readonly Dictionary<Type, Object> typeObjectDictionary = new Dictionary<Type, Object>();
+    static readonly Dictionary<Type, Object> _typeObjectDictionary = new Dictionary<Type, Object>();
 
     public static Object GetObject(Type type)
     {
-        if (typeObjectDictionary.TryGetValue(type, out Object result))
+        if (_typeObjectDictionary.TryGetValue(type, out Object result))
             return result;
         
         Object obj = Find();
-        typeObjectDictionary.Add(type,obj);
+        _typeObjectDictionary.Add(type,obj);
         return obj;
         
         Object Find()

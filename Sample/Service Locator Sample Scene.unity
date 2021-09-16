@@ -164,6 +164,14 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: fe8a175c390b41a3a6ebedcabf046e4b, type: 3}
       switchable: 1
+    - typeName: IComparer`1
+      fullTypeName: System.Collections.Generic.IComparer`1[[System.Int32, mscorlib,
+        Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+      assemblyQualifiedName: System.Collections.Generic.IComparer`1[[System.Int32,
+        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]],
+        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+      switchable: 1
     tags:
     - tagType: 0
       stringTag: ABC
@@ -178,15 +186,18 @@ MonoBehaviour:
       type: 3}
     preferredSourceType: 3
     additionalTypes:
-    - typeName: ITimeProvider2
-      fullTypeName: ITimeProvider2
-      assemblyQualifiedName: ITimeProvider2, UnityServicesLocatorSample, Version=0.0.0.0,
+    - typeName: Transform
+      fullTypeName: UnityEngine.Transform
+      assemblyQualifiedName: UnityEngine.Transform, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
-      switchable: 0
-    tags: []
+      switchable: 1
+    tags:
+    - tagType: 0
+      stringTag: Test
+      unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
-    isTagsExpanded: 0
+    isTagsExpanded: 1
   - enabled: 1
     serviceSourceObject: {fileID: 1075936879}
     preferredSourceType: 1
@@ -203,9 +214,12 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 8470e2f77764d0e4497ec16642ea0d36, type: 3}
       switchable: 0
-    tags: []
+    tags:
+    - tagType: 0
+      stringTag: fghj
+      unityObjectTag: {fileID: 0}
     isTypesExpanded: 0
-    isTagsExpanded: 0
+    isTagsExpanded: 1
   - enabled: 1
     serviceSourceObject: {fileID: 963194225}
     preferredSourceType: 1
@@ -317,10 +331,10 @@ MonoBehaviour:
   typeName:
     value: ITimeProvider
   tags:
-  - Obi-Wan
+  - "\xC1\xE1\xC1"
   locatedProperty:
     value: 
-  timeInTicks: 0
+  timeInTicks: 9943
 --- !u!4 &537690891
 Transform:
   m_ObjectHideFlags: 0
@@ -498,8 +512,18 @@ MonoBehaviour:
   testFloatProperty:
     value: 0
   dictionary:
-    keys: []
-    values: []
+    keys:
+    - someString: 
+      someBool: 0
+    - someString: 
+      someBool: 1
+    values:
+    - someInt: 0
+      someObject: {fileID: 0}
+      someBool: 0
+    - someInt: 0
+      someObject: {fileID: 0}
+      someBool: 0
   matrix:
     fields: 00000000
     width: 1
@@ -512,7 +536,7 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
-  testBool: 1
+  testBool: 0
 --- !u!114 &1075936882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -530,9 +554,9 @@ MonoBehaviour:
     width: 1
     height: 1
   matrix3DInt:
-    fields: 00000000
-    width: 1
-    height: 1
+    fields: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    width: 3
+    height: 3
 --- !u!4 &1075936883
 Transform:
   m_ObjectHideFlags: 0
@@ -546,36 +570,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1275521938
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1275521939}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1275521939
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1275521938}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1776523160
 GameObject:

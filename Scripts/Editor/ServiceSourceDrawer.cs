@@ -18,8 +18,8 @@ static class ServiceSourceDrawer
     const float actionButtonWidth = 20;
     const float actionBarWidth = actionButtonWidth * 3 - 2;
 
-    static readonly float space = EditorGUIUtility.standardVerticalSpacing;
-    static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
+    static readonly float _space = EditorGUIUtility.standardVerticalSpacing;
+    static readonly float _lineHeight = EditorGUIUtility.singleLineHeight;
 
     public static readonly GUIContent invalidObjectContent = new GUIContent("Invalid Object", typeTooltip);
     public static readonly GUIContent noObjectContent = new GUIContent("Select an Object", typeTooltip);
@@ -33,16 +33,16 @@ static class ServiceSourceDrawer
         "   Non abstract ScriptableObject Script\n" +
         "   Service Set File";
     
-    static readonly GUIStyle categoryPopupStyle = default;
+    static readonly GUIStyle _categoryPopupStyle = default;
 
-    public static GUIStyle LeftAlignedButtonStyle => categoryPopupStyle ?? new GUIStyle("Button")
+    public static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
     {
         alignment = TextAnchor.MiddleLeft
     };
 
-    static readonly GUIStyle actionButtonStyle = default;
+    static readonly GUIStyle _actionButtonStyle = default;
 
-    public static GUIStyle ActionButtonStyle => actionButtonStyle ?? new GUIStyle("Label")
+    public static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
     {
         fontSize = 10,
         alignment = TextAnchor.MiddleCenter,
@@ -76,7 +76,7 @@ static class ServiceSourceDrawer
                 Rect rect = EditorGUILayout.GetControlRect();
                 float height = DrawServiceSource(containingSet, list, i, targetObject, rect.position, rect.width);
 
-                GUILayout.Space(height - lineHeight - 3);
+                GUILayout.Space(height - _lineHeight - 3);
             }
 
         GUILayout.Space(pixels: 10);
@@ -122,7 +122,7 @@ static class ServiceSourceDrawer
 
     static float PixelHeightOfSource()
     {
-        float oneLine = lineHeight + (2 * padding);
+        float oneLine = _lineHeight + (2 * padding);
 
         if (_source == null) return oneLine;
 
@@ -137,7 +137,7 @@ static class ServiceSourceDrawer
             lineCount += 1 + _typeCount;
         if (_source.isTagsExpanded)
             lineCount += 1 + _additionalTags.Count;
-        return ((lineHeight + space) * lineCount) + (2 * padding);
+        return ((_lineHeight + _space) * lineCount) + (2 * padding);
     }
 
 
@@ -152,8 +152,8 @@ static class ServiceSourceDrawer
 
         if (_dynamicSource != null)
         {
-            typesPos.x += foldoutW + space;
-            typesPos.width -= foldoutW + space;
+            typesPos.x += foldoutW + _space;
+            typesPos.width -= foldoutW + _space;
 
             // Draw types
             Rect tagsPosition = DrawServices(typesPos);
@@ -163,10 +163,7 @@ static class ServiceSourceDrawer
         } 
 
         if (_anyChange)
-        {
-            EditorUtility.SetDirty(_serializedObject);
-            _source.ClearDynamicData();
-        }
+            EditorUtility.SetDirty(_serializedObject); 
     }
 
     static Rect DrawHeader(Rect position)
@@ -176,27 +173,27 @@ static class ServiceSourceDrawer
         position.width -= padding * 2;
         position.height -= padding * 2;
 
-        var togglePos = new Rect(position.x + space, position.y, toggleW, lineHeight);
+        var togglePos = new Rect(position.x + _space, position.y, toggleW, _lineHeight);
         GUI.enabled = true;
-        bool enabled = EditorGUI.Toggle(togglePos, _source.enabled);
+        bool enabled = EditorGUI.Toggle(togglePos, _source.Enabled);
         GUI.enabled = IsSourceEnabled;
-        if (enabled != _source.enabled)
+        if (enabled != _source.Enabled)
         {
             _anyChange = true;
-            _source.enabled = enabled; 
+            _source.Enabled = enabled; 
         }
 
-        float w = position.width - (toggleW + serviceTypeW + space * 4 + actionButtonWidth * 3);
-        var objectPos = new Rect(togglePos.xMax + space * 2, position.y, w, lineHeight);
+        float w = position.width - (toggleW + serviceTypeW + _space * 4 + actionButtonWidth * 3);
+        var objectPos = new Rect(togglePos.xMax + _space * 2, position.y, w, _lineHeight);
         Object obj = EditorGUI.ObjectField(
             objectPos,
             _source.ServiceSourceObject,
             typeof(Object),
             allowSceneObjects: true);
 
-        var sourceTypePos = new Rect(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
+        var sourceTypePos = new Rect(objectPos.xMax + _space, position.y, serviceTypeW, _lineHeight);
 
-        ServiceSourceTypes sourceType = _source.preferredSourceType;
+        ServiceSourceTypes sourceType = _source.PreferredSourceType;
         if (_source.ServiceSourceObject== null)
             GUI.Label(sourceTypePos, noObjectContent);
         else if (_dynamicSource != null)
@@ -237,7 +234,7 @@ static class ServiceSourceDrawer
             GUI.Label(sourceTypePos, invalidObjectContent); 
 
         // Object or source Type changed
-        if (obj != _source.ServiceSourceObject || sourceType != _source.preferredSourceType)
+        if (obj != _source.ServiceSourceObject || sourceType != _source.PreferredSourceType)
         {
             _anyChange = true;
             if (_serializedObject is ServiceSourceSet set1 && obj is ServiceSourceSet set2)
@@ -248,25 +245,41 @@ static class ServiceSourceDrawer
             else
                 _source.ServiceSourceObject = obj;
 
-            _source.preferredSourceType = sourceType;
+            _source.PreferredSourceType = sourceType;
         }
 
         // Action Buttons 
-        var actionButtonPos = new Rect(sourceTypePos.xMax + space, position.y, actionBarWidth, lineHeight);
+        var actionButtonPos = new Rect(sourceTypePos.xMax + _space, position.y, actionBarWidth, _lineHeight);
         ListAction action = DrawActionBar(actionButtonPos, _sourceList.Count, _sourceIndex);
         if (action != ListAction.Non)
         {
             if (action == ListAction.MoveUp)
+            {
                 _sourceList.Swap(_sourceIndex, _sourceIndex - 1);
+                var source1 = _sourceList[_sourceIndex];
+                var source2 = _sourceList[_sourceIndex - 1];
+                ServiceLocator.Environment.InvokeEnvironmentChangedOnSources(source1,source2);
+            }
+
             if (action == ListAction.MoveDown)
+            {
                 _sourceList.Swap(_sourceIndex, _sourceIndex + 1);
+                var source1 = _sourceList[_sourceIndex];
+                var source2 = _sourceList[_sourceIndex + 1];
+                ServiceLocator.Environment.InvokeEnvironmentChangedOnSources(source1,source2);
+            }
+
             if (action == ListAction.Delete)
-                _sourceList.RemoveAt(_sourceIndex);
+            { 
+                _containingSet.RemoveServiceSourceAt(_sourceIndex);
+                ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
+            }
+
             _anyChange = true;
         }
 
-        position.y += lineHeight + space;
-        position.height = lineHeight;
+        position.y += _lineHeight + _space;
+        position.height = _lineHeight;
         return position;
     }
 
@@ -282,13 +295,13 @@ static class ServiceSourceDrawer
             .ToList();
 
 
-        position.y += lineHeight + space;
+        position.y += _lineHeight + _space;
         if (!_source.isTypesExpanded) return position;
 
         foreach (Type type in _dynamicServiceTypes)
         {
             DrawServiceType(position, type);
-            position.y += lineHeight + space;
+            position.y += _lineHeight + _space;
         }
 
         List<Type> notUsedAdditionalTypes =
@@ -299,23 +312,22 @@ static class ServiceSourceDrawer
             for (var index = 0; index < _additionalServiceTypes.Count; index++)
             {
                 notUsedAdditionalTypes.Remove(_additionalServiceTypes[index].Type);
-                DrawSerializableType(position, _additionalServiceTypes, index, usedTypes);
-                position.y += lineHeight + space;
+                DrawSerializableType(position, _source, _additionalServiceTypes, index, usedTypes);
+                position.y += _lineHeight + _space;
             }
 
 
 
         bool isAnyNotUsedType = notUsedAdditionalTypes.Count > 0;
         Rect buttonPos = position;
-        buttonPos.width -= actionBarWidth + space;
+        buttonPos.width -= actionBarWidth + _space;
         if (DrawButton(buttonPos, ListAction.Add, isAnyNotUsedType))
-        {
-            var st = new SerializableType {Type = notUsedAdditionalTypes[index: 0]};
-            _source.additionalTypes.Add(st);
+        { 
+            _source.TryAddType(notUsedAdditionalTypes[index: 0]);
             _anyChange = true;
         }
 
-        position.y += lineHeight + space;
+        position.y += _lineHeight + _space;
         return position;
     }
 
@@ -332,6 +344,7 @@ static class ServiceSourceDrawer
 
     static void DrawSerializableType(
         Rect position,
+        ServiceSource source,
         IList<SerializableType> serializedTypes,
         int typeIndex,
         ICollection<Type> usedTypes)
@@ -360,13 +373,15 @@ static class ServiceSourceDrawer
         int newIndex = EditorGUI.Popup(position, index, elementsString);
         if (newIndex != index)
         {
+            Type oldType = serializableType.Type;
             serializableType.Type = popupTypeList[newIndex];
+            ServiceLocator.Environment.InvokeEnvironmentChangedOnTypes(oldType, serializableType.Type);
             _anyChange = true;
         }
 
         GUI.color = guiColor;
 
-        position.x = position.xMax + space;
+        position.x = position.xMax + _space;
         position.width = actionBarWidth;
         ListAction action = DrawActionBar(position, serializedTypes.Count, typeIndex);
 
@@ -377,7 +392,7 @@ static class ServiceSourceDrawer
             if (action == ListAction.MoveDown)
                 serializedTypes.Swap(typeIndex, typeIndex + 1);
             if (action == ListAction.Delete)
-                serializedTypes.RemoveAt(typeIndex);
+                source.RemoveType(serializedTypes[typeIndex].Type); 
             _anyChange = true;
         }
     }
@@ -387,26 +402,26 @@ static class ServiceSourceDrawer
         var title = $"Tags ({_additionalTags.Count})";
         _source.isTagsExpanded = EditorGUI.Foldout(position, _source.isTagsExpanded, title);
 
-        position.y += lineHeight + space;
+        position.y += _lineHeight + _space;
         if (!_source.isTagsExpanded) return;
  
         if (_source.additionalTypes != null)
             for (var index = 0; index < _additionalTags.Count; index++)
             {
                 DrawTag(position, _additionalTags, index);
-                position.y += lineHeight + space;
+                position.y += _lineHeight + _space;
             }
 
 
         Rect buttonPos = position;
-        buttonPos.width -= actionBarWidth + space;
+        buttonPos.width -= actionBarWidth + _space;
         if (DrawButton(buttonPos, ListAction.Add, enabled: true))
         {
-            _source.tags.Add(new Tag());
+            _source.AddTag(new Tag());
             _anyChange = true;
         }
 
-        position.y += lineHeight + space;
+        position.y += _lineHeight + _space;
     }
     
     static void DrawTag(
@@ -417,7 +432,7 @@ static class ServiceSourceDrawer
         Tag tag = serializedTags[tagIndex];
         
         const float tagTypeWidth = 70;
-        position.width -= 3 * actionButtonWidth + tagTypeWidth + space; 
+        position.width -= 3 * actionButtonWidth + tagTypeWidth + _space; 
  
         Tag.TagType tagType = tag.Type;
         switch (tagType)
@@ -429,6 +444,7 @@ static class ServiceSourceDrawer
                 {
                     tag.StringTag = newText;
                     _anyChange = true;
+                    ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
                 }
 
                 break;
@@ -440,6 +456,7 @@ static class ServiceSourceDrawer
                 {
                     tag.UnityObjectTag = newObject;
                     _anyChange = true;
+                    ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
                 }
 
                 break;
@@ -452,17 +469,18 @@ static class ServiceSourceDrawer
                 break;
         }
 
-        position.x = position.xMax + space;
+        position.x = position.xMax + _space;
         position.width = tagTypeWidth;
         var newTagType = (Tag.TagType) EditorGUI.EnumPopup(position, tagType);
         if (newTagType != tagType)
         {
             tag.Type = newTagType;
             _anyChange = true;
+            ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
         }
  
 
-        position.x = position.xMax + space;
+        position.x = position.xMax + _space;
         position.width = actionBarWidth;
         ListAction action = DrawActionBar(position, serializedTags.Count, tagIndex);
 
@@ -473,11 +491,10 @@ static class ServiceSourceDrawer
             if (action == ListAction.MoveDown)
                 serializedTags.Swap(tagIndex, tagIndex + 1);
             if (action == ListAction.Delete)
-                serializedTags.RemoveAt(tagIndex);
+                _source.RemoveTag(serializedTags[tagIndex]);
             _anyChange = true;
         }
     }
-
 
     enum ListAction
     {
@@ -541,7 +558,7 @@ static class ServiceSourceDrawer
         (_containingSet == null ||
          _containingSet.GetType() != typeof(SceneServiceInstaller) ||
          ((SceneServiceInstaller) _containingSet).isActiveAndEnabled) &&
-        _source.enabled;
+        _source.Enabled;
 
 }
 }

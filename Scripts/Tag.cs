@@ -9,7 +9,7 @@ namespace UnityServiceLocator
 [Serializable]
 public class Tag
 {   
-    public Tag( ) {}
+    public Tag( )  => Init("New Tag", TagType.String); 
     public Tag(string objectTag) => Init(objectTag, TagType.String); 
     public Tag(Object objectTag) => Init(objectTag, TagType.Object);
     public Tag(object objectTag) => Init(objectTag, TagType.Other);

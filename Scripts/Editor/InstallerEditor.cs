@@ -23,21 +23,35 @@ public class ServiceSourceSetEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
     {
-        GUI.enabled = !Application.isPlaying;
-        DrawDefaultInspector();
+        GUI.enabled = !Application.isPlaying; 
         var set = target as ServiceSourceSet;
-        GUI.enabled = true;
-        if (set.useAsGlobalInstaller)
+
+        bool newGI = EditorGUILayout.Toggle("Use as Global Installer", set.automaticallyUseAsGlobalInstaller);
+        if (newGI != set.automaticallyUseAsGlobalInstaller)
         {
-            int priority = EditorGUILayout.IntField("Priority", set.priority);
-            if (set.priority != priority)
+            Undo.RecordObject(serializedObject.targetObject, "GlobalInstaller changed.");
+            set.automaticallyUseAsGlobalInstaller = newGI;
+            ServiceLocator.FreshEnvironment();
+            EditorUtility.SetDirty(serializedObject.targetObject);
+        }
+
+        GUI.enabled = true;
+        if (set.automaticallyUseAsGlobalInstaller)
+        {
+            int priority = EditorGUILayout.IntField("Priority", set.Priority);
+            if (set.Priority != priority)
             {
                 Undo.RecordObject(serializedObject.targetObject, "GlobalInstaller priority changed.");
-                set.priority = priority;
+                set.Priority = priority;
                 EditorUtility.SetDirty(serializedObject.targetObject);
             }
-
         }
+        
+        if(set.automaticallyUseAsGlobalInstaller && !set.IsInResources())
+            EditorGUILayout.HelpBox(
+                $"{set.name} should be in Resources to work as Global Installer",
+                MessageType.Error );
+        
         this.DrawInstallerInspectorGUI(set);
     }
 }
@@ -45,8 +59,7 @@ public class ServiceSourceSetEditor : UnityEditor.Editor
 static class InstallerEditorHelper
 {
     public static void DrawInstallerInspectorGUI(this UnityEditor.Editor editor, IServiceSourceSet set)
-    {  
-
+    {
         ServiceSourceDrawer.DrawServiceSources(
             set,
             set.ServiceSources,
@@ -59,6 +72,7 @@ static class InstallerEditorHelper
         {
             Undo.RecordObject(editor.serializedObject.targetObject, "Add new service source setting.");
             set.ClearDynamicData();
+            ServiceLocator.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
         }
     }
 }

@@ -21,7 +21,7 @@ public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
     public void ClearDynamicData()
     {
         foreach (ServiceSource source in serviceSources)
-            source.ClearDynamicData();
+            source.ClearDynamicData_NoSourceChange(); 
     }
 
     void OnEnable()
@@ -40,18 +40,5 @@ public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
     public void GlobalInstall() => ServiceLocator.Environment.AddSceneContextInstaller(this);
     
     public void GlobalUnInstall() => ServiceLocator.Environment.RemoveSceneContextInstaller(this);
-
-
-    public ServiceSource AddServiceSource(Object sourceObject, ServiceSourceTypes preferredType = ServiceSourceTypes.Non)
-    {
-        if (serviceSources == null) serviceSources = new List<ServiceSource>();
-        var newServiceSource = new ServiceSource
-        {
-            preferredSourceType = preferredType,
-            ServiceSourceObject = sourceObject
-        };
-        serviceSources.Add(newServiceSource);
-        return newServiceSource;
-    }
 }
 }

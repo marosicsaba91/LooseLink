@@ -16,6 +16,21 @@ public class ServiceLocatorTester : MonoBehaviour
     [SerializeField] LocatedObject locatedProperty; 
     [SerializeField] float timeInTicks;
 
+    void OnEnable()
+    {
+        ServiceLocator.Environment.SubscribeToEnvironmentChange<BoxCollider2D>(BoxColliderChanged);
+    }    
+    void OnDisable()
+    {
+        ServiceLocator.Environment.SubscribeToEnvironmentChange<BoxCollider2D>(BoxColliderChanged);
+    }
+
+    void BoxColliderChanged()
+    {
+        ServiceLocator.TryGet(out BoxCollider2D c);
+        Debug.Log($"Box Collider Changed: {(c == null ? "null" : c.name)}");
+    }
+
     object _located = null;
 
     [Serializable]
@@ -49,7 +64,6 @@ public class ServiceLocatorTester : MonoBehaviour
         }
     }
     
-
     [Serializable]
     class LocatedObject : StringProperty<ServiceLocatorTester>
     {

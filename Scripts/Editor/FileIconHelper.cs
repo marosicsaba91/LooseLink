@@ -7,9 +7,9 @@ namespace UnityServiceLocator
 {
 static class FileIconHelper
 {
-    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
-    static readonly Texture loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
+    static readonly Texture _warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
+    static readonly Texture _errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
+    static readonly Texture _loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
     
     public enum FileType
     {
@@ -48,9 +48,9 @@ static class FileIconHelper
         bool isMissing = typeInfo.isMissing;
 
         if (type == null) 
-            return new GUIContent(name, errorImage, $"Types \"{fullName}\" Is Missing!");
+            return new GUIContent(name, _errorImage, $"Types \"{fullName}\" Is Missing!");
         
-        Texture texture = isMissing ? errorImage : GetIconOfType(type);
+        Texture texture = isMissing ? _errorImage : GetIconOfType(type);
         if (texture == null)
             texture = GetIconOfSource(FileType.CsFile);
         var tooltip = $"{fullName} ({GetTypeCategory(type)})";
@@ -108,7 +108,7 @@ static class FileIconHelper
         {
             case SceneServiceInstaller _:
                 return "Scene Service Installer: Service sources are available if the Component is in scene and enabled.";
-            case ServiceSourceSet set when set.useAsGlobalInstaller:
+            case ServiceSourceSet set when set.automaticallyUseAsGlobalInstaller:
                 return "Global Service Installer: Service Sources are available always";
             case ServiceSourceSet _:
                 return "Service Source Set";

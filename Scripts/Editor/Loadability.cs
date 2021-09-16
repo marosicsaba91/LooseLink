@@ -36,9 +36,9 @@ readonly struct Loadability
 
 static class LoadabilityHelper
 {
-    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
-    static readonly Texture loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
+    static readonly Texture _warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
+    static readonly Texture _errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
+    static readonly Texture _loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
     
     internal static GUIContent GetGuiContent(this Loadability loadability)
     {
@@ -53,11 +53,11 @@ static class LoadabilityHelper
         switch (loadabilityType)
         {
             case Loadability.Type.Warning:
-                return warningImage;
+                return _warningImage;
             case Loadability.Type.Error:
-                return errorImage;
+                return _errorImage;
             case Loadability.Type.Loadable:
-                return loadableImage;
+                return _loadableImage;
             default:
                 return null;
         }

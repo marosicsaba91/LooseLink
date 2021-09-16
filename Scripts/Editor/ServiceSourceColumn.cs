@@ -149,8 +149,8 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
          alignment = TextAnchor.MiddleLeft
      };
      
-     static readonly GUIStyle categoryStyle = default;
-     public static GUIStyle CategoryStyle => categoryStyle ?? new GUIStyle
+     static readonly GUIStyle _categoryStyle = default;
+     public static GUIStyle CategoryStyle => _categoryStyle ?? new GUIStyle
      {
          alignment = TextAnchor.MiddleLeft,
          fontSize = 10,

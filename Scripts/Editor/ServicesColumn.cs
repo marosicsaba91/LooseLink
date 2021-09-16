@@ -195,7 +195,7 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
     }
     
     public bool ApplyTypeSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
-        ApplyTypeSearchOnTypeArray(source.GetServiceTypes());
+        ApplyTypeSearchOnTypeArray(source.GetServiceTypesRecursively());
 
     public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)
     {

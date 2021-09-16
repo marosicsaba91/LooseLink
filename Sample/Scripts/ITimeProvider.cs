@@ -6,7 +6,7 @@ public interface ITimeProvider
     float GetTime { get; }
 }
 
-public interface ITimeProvider3
+public interface ITimeProvider2
 {
     float GetTime { get; }
 }

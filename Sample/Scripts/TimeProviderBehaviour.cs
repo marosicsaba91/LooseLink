@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityServiceLocator;
-using UnityEngine;
-using Object = UnityEngine.Object;
+﻿using System; 
+using UnityEngine; 
 
-public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, IEquatable<TimeProviderBehaviour>, ITimeProvider3
+public class TimeProviderBehaviour : MonoBehaviour, ITimeProvider, IEquatable<TimeProviderBehaviour>, ITimeProvider2
 {
     float _time = 0;
 

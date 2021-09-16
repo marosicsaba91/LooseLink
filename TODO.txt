@@ -6,4 +6,6 @@ Publish Beta:
 	
 2.0        
     Subscription to environment changes for specific types ???
-    Might need to remove ITagged interface (???)
+    Manual SourceSetInstallation;
+    
+    Testing for everything above

@@ -11,7 +11,7 @@ namespace UnityServiceLocator
 class ServiceLocatorWindow : EditorWindow
 {
     const string editorPrefsKey = "ServiceLocatorWindowState";
-    static readonly Vector2 minimumSize = new Vector2(500, 100);
+    static readonly Vector2 _minimumSize = new Vector2(500, 100);
 
     ServiceSourceColumn _serviceSourcesColumn;
     ServiceSourceTypeColumn _typeColumn;
@@ -34,17 +34,17 @@ class ServiceLocatorWindow : EditorWindow
     static void ShowWindow()
     {
         var window = GetWindow<ServiceLocatorWindow>();
-        window.minSize = minimumSize;
+        window.minSize = _minimumSize;
         window.titleContent = new GUIContent("Service Locator");
         window.Show();
     }
     
     public void OnEnable()
     {
-        minSize = minimumSize;
+        minSize = _minimumSize;
         wantsMouseMove = true;
-        ServiceLocator.Environment.InstallersChanged += OnSceneContextInstallersChanged;
-        ServiceLocator.Environment.LoadedInstancesChanged += Repaint;
+        // ServiceLocator.Environment.InstallersChanged += OnEnvironmentChanged;
+        // ServiceLocator.Environment.LoadedInstancesChanged += Repaint;
 
         string data = EditorPrefs.GetString(
             editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
@@ -54,15 +54,15 @@ class ServiceLocatorWindow : EditorWindow
 
     public void OnDisable()
     {
-        ServiceLocator.Environment.InstallersChanged -= OnSceneContextInstallersChanged;
-        ServiceLocator.Environment.LoadedInstancesChanged -= Repaint;
+        // ServiceLocator.Environment.InstallersChanged -= OnSceneContextInstallersChanged;
+        // ServiceLocator.Environment.LoadedInstancesChanged -= Repaint;
 
         string data = JsonUtility.ToJson(this, prettyPrint: false);
         EditorPrefs.SetString(editorPrefsKey, data);
         Selection.selectionChanged -= Repaint;
     }
 
-    void OnSceneContextInstallersChanged()
+    void OnEnvironmentChanged()
     {
         if (!Application.isPlaying) return;
         Repaint();
@@ -131,7 +131,7 @@ class ServiceLocatorWindow : EditorWindow
         
         foreach (ServiceSource source in sources)
         {
-            if (!source.enabled) continue;
+            if (!source.Enabled) continue;
             if (source.ServiceSourceObject == null) continue;
 
             DynamicServiceSource dynamic = source.GetDynamicServiceSource();

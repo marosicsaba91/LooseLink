@@ -47,14 +47,11 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
-        if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
+        if (row.element.Category == ServiceLocatorRow.RowCategory.Set)
         {
             ServicesEditorHelper.DrawLine(position);
             return;
         }
-        if (row.element.source.SourceType == ServiceSourceTypes.FromScriptableObjectType) return;
-        if (row.element.source.SourceType == ServiceSourceTypes.FromMonoBehaviourType) return;
-
 
         IReadOnlyList<Tag> tags = row.element.source.GetTags();
 

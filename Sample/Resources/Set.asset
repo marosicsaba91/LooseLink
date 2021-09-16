@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bc99de804f79f54b800ab521cdaf7f0, type: 3}
   m_Name: Set
   m_EditorClassIdentifier: 
-  useAsGlobalInstaller: 0
+  automaticallyUseAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
     serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
@@ -25,15 +25,24 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
       switchable: 0
-    additionalTags: []
+    tags:
+    - tagType: 0
+      stringTag: erastzju
+      unityObjectTag: {fileID: 0}
+    - tagType: 1
+      stringTag: 
+      unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
-    isTagsExpanded: 0
+    isTagsExpanded: 1
   - enabled: 1
     serviceSourceObject: {fileID: 11500000, guid: 915e9cc4d6bc40c08edb38aba7b7d196,
       type: 3}
     preferredSourceType: 7
     additionalTypes: []
-    additionalTags: []
+    tags:
+    - tagType: 0
+      stringTag: "\xC1\xE1\xC1"
+      unityObjectTag: {fileID: 0}
     isTypesExpanded: 0
-    isTagsExpanded: 0
+    isTagsExpanded: 1
   priority: 0

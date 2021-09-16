@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit;
+using System.Text;
+using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,25 +11,31 @@ namespace UnityServiceLocator
 
 public static class ServiceLocator
 {
-    static readonly ServiceEnvironment environment = new ServiceEnvironment();
-    public static ServiceEnvironment Environment => environment;
+    static readonly ServiceEnvironment _environment = new ServiceEnvironment();
+    public static ServiceEnvironment Environment => _environment;
 
-    internal static IEnumerable<SceneServiceInstaller> SceneInstallers => environment.SceneInstallers;
+    internal static IEnumerable<SceneServiceInstaller> SceneInstallers => _environment.SceneInstallers;
 
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
     {
-        environment.globalInstallers = FindGlobalInstallers;
+        _environment.SetGlobalInstallers(FindGlobalInstallers);
+        _environment.InitServiceSources();
     }
+    
+    internal static void FreshEnvironment()
+    {
+        UpdateGlobalInstallers();
+        Environment.InvokeEnvironmentChangedOnWholeEnvironment();
+    }
+    
 
     static List<ServiceSourceSet> FindGlobalInstallers =>
         Resources
             .LoadAll<ServiceSourceSet>(string.Empty)
-            .Where(contextInstaller => contextInstaller.useAsGlobalInstaller)
-            .OrderByDescending(set => set.priority)
+            .Where(contextInstaller => contextInstaller.automaticallyUseAsGlobalInstaller)
             .ToList();
-
 
     static Transform _parentObject;
 
@@ -50,7 +57,7 @@ public static class ServiceLocator
     {
         foreach (var installerSourcePair in Environment.SceneAndGlobalContextServiceSources)
             installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes(); 
-        environment.InvokeLoadedInstancesChanged();
+        // _environment.InvokeLoadedInstancesChanged();
     }
 
     public static TService Get<TService>(params object[] tags) =>
@@ -61,7 +68,7 @@ public static class ServiceLocator
         if (TryGet(looseServiceType, tags, out object service))
             return service;
 
-        throw CantFindService(looseServiceType);
+        throw CantFindService(looseServiceType, tags);
     }
 
     public static bool TryGet<TService>(out TService service) =>
@@ -119,16 +126,31 @@ public static class ServiceLocator
     {
         service = null;
 
-        if (!dynamicSource.TryGetService(looseServiceType, set, tags, source.tags, out service,
-            out bool newInstance))
+        if (!dynamicSource.TryGetService(looseServiceType, set, tags, source.tags, out service, out bool _))
             return false;
-        if (newInstance)
-            Environment.InvokeLoadedInstancesChanged();
+        
+        // if (newInstance)
+        //     Environment.InvokeLoadedInstancesChanged();
         return true;
     }
 
-    static Exception CantFindService(Type looseServiceType) =>
-        new ArgumentException($"Can't find Services of this Type: {looseServiceType}");
+    static Exception CantFindService(Type looseServiceType, object[] tags)
+    {
+        if(tags.IsNullOrEmpty())
+            return new ArgumentException($"Can't find Services of this Type: {looseServiceType}");
+          
+        var tagNames = new StringBuilder();
+        for (var i = 0; i < tags.Length; i++)
+        {
+            object tag = tags[i];
+            tagNames.Append(new Tag(tag).Name);
+            if(i< tags.Length-1)
+                tagNames.Append(", ");
+        }
+
+        return new ArgumentException(
+            $"Can't find Services of this Type: {looseServiceType} with these tags: [{tagNames}]");
+    }
 
     internal static IEnumerable<IServiceSourceSet> GetInstallers()
     {
