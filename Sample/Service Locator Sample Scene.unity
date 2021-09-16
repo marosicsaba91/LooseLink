@@ -164,14 +164,12 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: fe8a175c390b41a3a6ebedcabf046e4b, type: 3}
       switchable: 1
-    - typeName: IComparer`1
-      fullTypeName: System.Collections.Generic.IComparer`1[[System.Int32, mscorlib,
-        Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
-      assemblyQualifiedName: System.Collections.Generic.IComparer`1[[System.Int32,
-        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]],
-        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+    - typeName: IFormattable
+      fullTypeName: System.IFormattable
+      assemblyQualifiedName: System.IFormattable, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
       monoScript: {fileID: 0}
-      switchable: 1
+      switchable: 0
     tags:
     - tagType: 0
       stringTag: ABC
@@ -186,12 +184,12 @@ MonoBehaviour:
       type: 3}
     preferredSourceType: 3
     additionalTypes:
-    - typeName: Transform
-      fullTypeName: UnityEngine.Transform
-      assemblyQualifiedName: UnityEngine.Transform, UnityEngine.CoreModule, Version=0.0.0.0,
+    - typeName: ITimeProvider3
+      fullTypeName: ITimeProvider3
+      assemblyQualifiedName: ITimeProvider3, UnityServicesLocatorSample, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 0}
-      switchable: 1
+      switchable: 0
     tags:
     - tagType: 0
       stringTag: Test
