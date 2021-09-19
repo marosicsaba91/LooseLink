@@ -15,16 +15,10 @@ MonoBehaviour:
   automaticallyUseAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
-    serviceSourceObject: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649,
-      type: 3}
-    preferredSourceType: 6
-    additionalTypes:
-    - typeName: TimeProviderBehaviour
-      fullTypeName: TimeProviderBehaviour
-      assemblyQualifiedName: TimeProviderBehaviour, ServiceLoactorSample, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      monoScript: {fileID: 11500000, guid: 37da54251408dfb4195efc86a2c9a649, type: 3}
-      switchable: 0
+    serviceSourceObject: {fileID: 11400000, guid: 9a95d86df22b6164f97a3d7d0e711d2a,
+      type: 2}
+    preferredSourceType: 4
+    additionalTypes: []
     tags:
     - tagType: 0
       stringTag: erastzju
