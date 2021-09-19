@@ -14,24 +14,14 @@ public static class ServiceLocator
     static readonly ServiceEnvironment _environment = new ServiceEnvironment();
     public static ServiceEnvironment Environment => _environment;
 
-    internal static IEnumerable<SceneServiceInstaller> SceneInstallers => _environment.SceneInstallers;
-
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
-    {
-        _environment.SetGlobalInstallers(FindGlobalInstallers);
+    { 
+        _environment.SetAllGlobalInstallers(FindGlobalInstallers);
         _environment.InitServiceSources();
     }
     
-    internal static void FreshEnvironment()
-    {
-        UpdateGlobalInstallers();
-        Environment.InvokeEnvironmentChangedOnWholeEnvironment();
-    }
-    
-
-    static List<ServiceSourceSet> FindGlobalInstallers =>
+    internal static List<ServiceSourceSet> FindGlobalInstallers =>
         Resources
             .LoadAll<ServiceSourceSet>(string.Empty)
             .Where(contextInstaller => contextInstaller.automaticallyUseAsGlobalInstaller)
@@ -55,9 +45,8 @@ public static class ServiceLocator
 
     internal static void ClearAllCachedData()
     {
-        foreach (var installerSourcePair in Environment.SceneAndGlobalContextServiceSources)
-            installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes(); 
-        // _environment.InvokeLoadedInstancesChanged();
+        foreach (var installerSourcePair in Environment.ServiceSources)
+            installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes();
     }
 
     public static TService Get<TService>(params object[] tags) =>
@@ -91,7 +80,7 @@ public static class ServiceLocator
 
     public static bool TryGet(Type looseServiceType, object[] tags, out object service)
     {
-        foreach ((IServiceSourceSet installer, ServiceSource source) in Environment.SceneAndGlobalContextServiceSources)
+        foreach ((IServiceSourceSet installer, ServiceSource source) in Environment.ServiceSources)
         {
             DynamicServiceSource dynamicSource = source?.GetDynamicServiceSource();
             if (dynamicSource == null) continue;
@@ -129,8 +118,6 @@ public static class ServiceLocator
         if (!dynamicSource.TryGetService(looseServiceType, set, tags, source.tags, out service, out bool _))
             return false;
         
-        // if (newInstance)
-        //     Environment.InvokeLoadedInstancesChanged();
         return true;
     }
 
@@ -153,12 +140,7 @@ public static class ServiceLocator
     }
 
     internal static IEnumerable<IServiceSourceSet> GetInstallers()
-    {
-#if UNITY_EDITOR
-        if (!Application.isPlaying)
-            UpdateGlobalInstallers();
-#endif
-
+    { 
         foreach (IServiceSourceSet installer in Environment.GetInstallers())
             yield return installer; 
     }

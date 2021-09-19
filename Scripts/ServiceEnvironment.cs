@@ -9,53 +9,70 @@ namespace UnityServiceLocator
 {
 public class ServiceEnvironment
 {
-    readonly List<SceneServiceInstaller> _sceneInstallers = new List<SceneServiceInstaller>();
-    List<ServiceSourceSet> _globalInstallers = new List<ServiceSourceSet>();
- 
+    readonly List<IServiceSourceSet> _installers = new List<IServiceSourceSet>();
 
-    internal void SetGlobalInstallers(List<ServiceSourceSet> globalInstallers)
-    {
-        _globalInstallers = globalInstallers;
-        TrySortGlobalInstallers(); 
-    }
+    // INSTALL & UNINSTALL SETS ---------------
+    
+    public bool TryInstallServiceSourceSet(ServiceSourceSet serviceSourceSet) =>
+        TryInstallServiceSourceSet((IServiceSourceSet) serviceSourceSet);
+    
+    public bool TryUninstallServiceSourceSet(ServiceSourceSet serviceSourceSet) => 
+        TryUninstallServiceSourceSet( (IServiceSourceSet) serviceSourceSet);
 
-    internal bool  TryAddGlobalInstaller(ServiceSourceSet serviceSourceSet)
+    
+    public void UninstallAllSourceSets()
     {
-        if (serviceSourceSet == null) return false;
-        if (_globalInstallers.Contains(serviceSourceSet)) return false;
-        _globalInstallers.Add(serviceSourceSet);
-        _globalInstallers.Sort(_globalInstallerSorting);
-        InvokeEnvironmentChangedOnInstaller(serviceSourceSet);
-        return true;
-    }
-
-    internal bool TryRemoveGlobalInstaller(ServiceSourceSet serviceSourceSet)
-    {
-        if (serviceSourceSet == null) return false;
-        if (!_globalInstallers.Remove(serviceSourceSet)) return false; 
-        _globalInstallers.Sort(_globalInstallerSorting);
-        InvokeEnvironmentChangedOnInstaller(serviceSourceSet);
-        return true;
-    }
-
-    internal void SortGlobalInstallers()
-    {
-        if (TrySortGlobalInstallers())
-            InvokeEnvironmentChangedOnWholeEnvironment();
+        Type[] types =TypesOfWholeEnvironment().ToArray();
+        _installers.Clear();
+        InvokeEnvironmentChanged(types);
     }
     
-
-    static readonly Comparison<ServiceSourceSet> _globalInstallerSorting = (a, b) => b.Priority.CompareTo(a.Priority);
-
-    bool TrySortGlobalInstallers()
+    internal bool TryInstallServiceSourceSet(IServiceSourceSet serviceSourceSet)
     {
-        if (_globalInstallers.Count <= 1) return true; 
+        if (serviceSourceSet == null) return false;
+        if (_installers.Contains(serviceSourceSet)) return false;
+        _installers.Add(serviceSourceSet);
+        TrySortInstallers();
+        InvokeEnvironmentChangedOnInstaller(serviceSourceSet);
+        return false;
+    }
+
+    internal bool TryUninstallServiceSourceSet(IServiceSourceSet serviceSourceSet)
+    {
+        if (serviceSourceSet == null) return false;
+        if (!_installers.Remove(serviceSourceSet)) return false;
+        TrySortInstallers();
+        InvokeEnvironmentChangedOnInstaller(serviceSourceSet);
+        return false;
+    }
+
+    internal void SetAllGlobalInstallers(List<ServiceSourceSet> globalInstallers)
+    {
+        UninstallAllSourceSets();
+        foreach (ServiceSourceSet globalInstaller in globalInstallers)
+            _installers.Add(globalInstaller);
+        TrySortInstallers();
+    }
+
+    // SORT INSTALLERS ---------------
+    
+    static readonly Comparison<IServiceSourceSet> _installerSorting = (a, b) => b.Priority.CompareTo(a.Priority);
+
+    internal void SortInstallers()
+    {
+        if (TrySortInstallers())
+            InvokeEnvironmentChangedOnWholeEnvironment();
+    }
+
+    bool TrySortInstallers()
+    {
+        if (_installers.Count <= 1) return true; 
         var isSorted = true;
-        ServiceSourceSet s1 = _globalInstallers[0];
-        for (var index = 1; index < _globalInstallers.Count; index++)
+        IServiceSourceSet s1 = _installers[0];
+        for (var index = 1; index < _installers.Count; index++)
         {
-            ServiceSourceSet s2 = _globalInstallers[index];
-            if (_globalInstallerSorting.Invoke(s1, s2) > 0)
+            IServiceSourceSet s2 = _installers[index];
+            if (_installerSorting.Invoke(s1, s2) > 0)
             {
                 isSorted = false; 
                 break;
@@ -67,47 +84,50 @@ public class ServiceEnvironment
         if (isSorted)
             return false;
 
-        _globalInstallers.Sort(_globalInstallerSorting);
+        _installers.Sort(_installerSorting);
         return true;
     }
- 
-
-    internal IEnumerable<SceneServiceInstaller> SceneInstallers
+    
+    // INSTALLER & SOURCE GETTERS ---------------
+    
+    internal IEnumerable<IServiceSourceSet> GetInstallers()
     {
-        get
+        if (Application.isPlaying)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-                return Object.FindObjectsOfType<SceneServiceInstaller>().Where(installer => installer.enabled);
-#endif
+            foreach (IServiceSourceSet set in _installers)
+                yield return set;
+        }
+        else
+        {
+            var sets = new List<IServiceSourceSet>();
+            sets.AddRange(ServiceLocator.FindGlobalInstallers);
+            
+            List<SceneServiceInstaller> sceneInstallers =
+                Object.FindObjectsOfType<SceneServiceInstaller>()
+                .Where(inst => inst.isActiveAndEnabled)
+                .ToList();
 
-            return _sceneInstallers;
+            sets.AddRange(sceneInstallers.Where(
+                    inst => inst.PriorityType == SceneServiceInstaller.PriorityTypeEnum.ConcreteValue));
+
+
+            int maxPriority = sets.Select(set => set.Priority).Max();
+            foreach (SceneServiceInstaller sceneInstaller in sceneInstallers.Where(
+                inst => inst.PriorityType == SceneServiceInstaller.PriorityTypeEnum.HighestAtInstallation))
+            {
+                maxPriority++;
+                sceneInstaller.priorityAtInstallation = maxPriority;
+                sets.Add(sceneInstaller);
+            }
+          
+
+            sets.Sort(_installerSorting);
+            foreach (IServiceSourceSet set in sets)
+                yield return set;
         }
     }
 
-    internal void AddSceneContextInstaller(SceneServiceInstaller serviceInstaller)
-    {
-        if (_sceneInstallers.Contains(serviceInstaller)) return;
-        _sceneInstallers.Insert(index: 0, serviceInstaller);
-        InvokeEnvironmentChangedOnInstaller(serviceInstaller);
-    }
-
-    internal void RemoveSceneContextInstaller(SceneServiceInstaller serviceInstaller)
-    {
-        _sceneInstallers.Remove(serviceInstaller);
-        InvokeEnvironmentChangedOnInstaller(serviceInstaller);
-    }
-
-    internal IEnumerable<IServiceSourceSet> GetInstallers()
-    {
-        foreach (SceneServiceInstaller sceneInstaller in SceneInstallers)
-            yield return sceneInstaller;
-
-        foreach (ServiceSourceSet globalInstaller in _globalInstallers)
-            yield return globalInstaller;
-    }
-
-    internal IEnumerable<(IServiceSourceSet installer, ServiceSource source)> SceneAndGlobalContextServiceSources
+    internal IEnumerable<(IServiceSourceSet installer, ServiceSource source)> ServiceSources
     {
         get
         {
@@ -116,24 +136,16 @@ public class ServiceEnvironment
                 yield return (installer, setting);
         }
     }
- 
 
-    public HashSet<Type> GetAllInstalledServiceTypes()
-    {
-        var types = new HashSet<Type>();
-        foreach ((IServiceSourceSet _, ServiceSource source) in SceneAndGlobalContextServiceSources)
-        foreach (Type type in source.GetServiceTypesRecursively())
-            types.Add(type);
-        return types;
-    }
+    public int MaxPriority => GetInstallers().FirstOrDefault()?.Priority ?? 0;
 
-    public void InitServiceSources()
+    internal void InitServiceSources()
     {
-        foreach ((IServiceSourceSet installer, ServiceSource source) pair in SceneAndGlobalContextServiceSources)
+        foreach ((IServiceSourceSet installer, ServiceSource source) pair in ServiceSources)
             pair.source.InitDynamicIfNeeded();
     }
 
-    // SUBSCRIPTION
+    // SUBSCRIPTION ---------------------
 
     public event Action EnvironmentChanged;
     readonly Dictionary<Type, HashSet<Action>> _subscribers = new Dictionary<Type, HashSet<Action>>();
@@ -162,85 +174,51 @@ public class ServiceEnvironment
             return;
         callbacks.Remove(callback);
     }
-    internal void InvokeEnvironmentChangedOnWholeEnvironment()
+    
+    // INVOKE SUBSCRIPTION ---------------------
+    
+    public void InvokeEnvironmentChangedOnWholeEnvironment()
     {
         Debug.Log("Whole Environment Change");
-        InvokeEnvironmentChanged(EnvironmentChanged_WholeEnvironment());
+        InvokeEnvironmentChanged(TypesOfWholeEnvironment());
     }
-
-    IEnumerable<Type>  EnvironmentChanged_WholeEnvironment()
-    { 
-        foreach (SceneServiceInstaller set in _sceneInstallers)
-        foreach (Type type in EnvironmentChanged_Installer(set))
-            yield return type;
-        foreach (ServiceSourceSet set in _globalInstallers)
-        foreach (Type type in  EnvironmentChanged_Installer( set))
-            yield return type;
-    }
-    
     
     internal void InvokeEnvironmentChangedOnInstaller(IServiceSourceSet set)
     {
         Debug.Log($"Installer Change: {set.Name}"); 
-        InvokeEnvironmentChanged(EnvironmentChanged_Installer(set));
-    }
-
-    IEnumerable<Type> EnvironmentChanged_Installer(IServiceSourceSet set)
-    {
-        foreach (ServiceSource source in set.GetEnabledValidSourcesRecursive())
-        foreach (Type type in  EnvironmentChanged_Source( source))
-            yield return type;
+        InvokeEnvironmentChanged(TypesOfInstaller(set));
     }
     
     internal void InvokeEnvironmentChangedOnSources(params ServiceSource[] sources)
     {
         string typeNames = string.Join(", ", sources.Select(t => t == null ? "-" : t.Name).ToArray());
         Debug.Log($"Sources Change: {typeNames}"); 
-        InvokeEnvironmentChanged(EnvironmentChanged_Sources(sources));
+        InvokeEnvironmentChanged(TypesOfSources(sources));
     }
-    IEnumerable<Type> EnvironmentChanged_Sources(ServiceSource[] sources) 
-    {
-        foreach (ServiceSource source in  sources)
-        foreach (Type type in  EnvironmentChanged_Source(source))
-            yield return type;
-    }
-
 
     internal void InvokeEnvironmentChangedOnSource(ServiceSource source)
     {
         Debug.Log($"Source Change: {source.Name}"); 
-        InvokeEnvironmentChanged(EnvironmentChanged_Source(source));
+        InvokeEnvironmentChanged(TypesOfSource(source));
     }
-
-    IEnumerable<Type> EnvironmentChanged_Source(ServiceSource source) => source.GetServiceTypesRecursively();
 
     internal void InvokeEnvironmentChangedOnType(Type type)
     {
-        Debug.Log($"Type Change Type: {type.Name}"); 
-        InvokeEnvironmentChanged(EnvironmentChanged_Type(type));
+        Debug.Log($"Type Change Type: {type.Name}");  
+            InvokeEnvironmentChanged(TypesOfType(type));
     }
-
-
-    IEnumerable<Type> EnvironmentChanged_Type(Type type)
-    {
-        if (type != null) yield return type;
-    }
-    
     internal void InvokeEnvironmentChangedOnTypes(params Type[] types)
     {
         string typeNames = string.Join(", ", types.Select(t => t == null ? "-" : t.Name).ToArray());
         Debug.Log($"Types Changed Type: {typeNames}"); 
         InvokeEnvironmentChanged(types);
     }
-
-    static readonly HashSet<Type> _tempTypes = new HashSet<Type>();
+    
+    static HashSet<Type> _tempTypes = new HashSet<Type>();
     void InvokeEnvironmentChanged(IEnumerable<Type> types)
     {
-        // if (!Application.isPlaying) return; 
-        _tempTypes.Clear();
-        foreach (Type type in types)
-            if(type!=null) 
-                _tempTypes.Add(type);
+        if (!Application.isPlaying) return;
+        _tempTypes = EnumerableToHashSet(types);
         if(_tempTypes.IsEmpty()) return;
         foreach (Type type in _tempTypes)
             if (_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
@@ -250,5 +228,45 @@ public class ServiceEnvironment
             }
         EnvironmentChanged?.Invoke();
     }
+
+    static HashSet<Type> EnumerableToHashSet(IEnumerable<Type> types)
+    {
+        _tempTypes.Clear();
+        foreach (Type type in types)
+            if(type!=null) 
+                _tempTypes.Add(type);
+        return _tempTypes;
+    }
+    
+    
+    // TYPES OF METHODS ---------------------
+    
+    public IReadOnlyList<Type> GetAllInstalledServiceTypes() => EnumerableToHashSet(TypesOfWholeEnvironment()).ToList();
+    IEnumerable<Type>  TypesOfWholeEnvironment()
+    {  
+        foreach (IServiceSourceSet set in GetInstallers())
+        foreach (Type type in  TypesOfInstaller( set))
+            yield return type;
+    }
+
+    static IEnumerable<Type> TypesOfInstaller(IServiceSourceSet set)
+    {
+        foreach (ServiceSource source in set.GetEnabledValidSourcesRecursive())
+        foreach (Type type in  TypesOfSource( source))
+            yield return type;
+    }
+
+    
+    static IEnumerable<Type> TypesOfSources(ServiceSource[] sources)
+    {
+        foreach (ServiceSource source in sources)
+        foreach (Type type in TypesOfSource(source))
+            yield return type;
+    }
+
+    static IEnumerable<Type> TypesOfSource(ServiceSource source) => source.GetServiceTypesRecursively();
+
+    static IEnumerable<Type> TypesOfType(Type type) { yield return type; }
+    
 }
 }

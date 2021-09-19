@@ -7,9 +7,9 @@ public interface IServiceSourceSet
 {
     List<ServiceSource> ServiceSources { get; }
     string Name { get; }
-    Object Obj { get;} 
-
-    void ClearDynamicData(); 
+    Object Obj { get;}
+    void ClearDynamicData();
+    int Priority { get; }
 }
 
 public static class ServiceSourceSetHelper

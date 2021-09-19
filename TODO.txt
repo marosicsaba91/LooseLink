@@ -1,4 +1,7 @@
-Add Examples to Project
+Add Examples to Project & Update Test
+    Event based Environment Change Test
+    Manual Service Source Set Implementation
+Priority to SceneServiceInstaller;
 Update Manual
 
 Publish Beta:

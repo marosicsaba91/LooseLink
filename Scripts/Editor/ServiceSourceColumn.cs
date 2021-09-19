@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using MUtility;
@@ -64,6 +63,7 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
             OnRowClick(locatorRow, selectElement);
     }
 
+    /*
     static void CreateScriptableObjectFile(Type type)
     {
         string path = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -93,6 +93,7 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
             Selection.activeObject = so;
         }
     }
+    */
 
     static void OnRowClick(ServiceLocatorRow locatorRow, bool selectElement)
     {
@@ -137,7 +138,7 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
 
     public bool ApplyServiceSourceSearch(ServiceSource source) => ApplyServiceSearchOnType(source.Name);
 
-    public bool ApplyServiceSearchOnType(string text)
+    bool ApplyServiceSearchOnType(string text)
      {
          if (NoSearch) return true;  
          return text.ToLower().Contains(SearchServiceText.Trim().ToLower());
@@ -149,14 +150,6 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
          alignment = TextAnchor.MiddleLeft
      };
      
-     static readonly GUIStyle _categoryStyle = default;
-     public static GUIStyle CategoryStyle => _categoryStyle ?? new GUIStyle
-     {
-         alignment = TextAnchor.MiddleLeft,
-         fontSize = 10,
-         normal = {textColor = GUI.skin.label.normal.textColor},
-     };
-
      protected override GUIStyle GetDefaultStyle() => LabelStyle;
 
      static GUIStyle _rowButtonStyle;

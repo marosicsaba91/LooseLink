@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq; 
-using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine; 
 using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
 [CreateAssetMenu(fileName = "New Service Source Set", menuName = "Service Source Set")]
-class ServiceSourceSet : ScriptableObject, IServiceSourceSet
+public class ServiceSourceSet : ScriptableObject, IServiceSourceSet
 { 
-    [FormerlySerializedAs("useAsGlobalInstaller")] [SerializeField] internal bool automaticallyUseAsGlobalInstaller = false;
+    [SerializeField] internal bool automaticallyUseAsGlobalInstaller = false;
     [SerializeField] List<ServiceSource> serviceSources = new List<ServiceSource>(); 
     [SerializeField] int priority = 0; 
     
@@ -21,7 +20,7 @@ class ServiceSourceSet : ScriptableObject, IServiceSourceSet
             if(priority == value)
                 return;
             priority = value;
-            ServiceLocator.Environment.SortGlobalInstallers();
+            ServiceLocator.Environment.SortInstallers();
         }
     }
     

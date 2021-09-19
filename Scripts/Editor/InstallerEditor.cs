@@ -9,11 +9,42 @@ namespace UnityServiceLocator.Editor
 public class SceneInstallerEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
-    { 
-        GUI.enabled = !Application.isPlaying;
-        DrawDefaultInspector();
-        GUI.enabled = true;
+    {  
         var sceneInstaller = target as IServiceSourceSet; 
+        
+        var set = target as SceneServiceInstaller;
+
+        GUI.enabled = !Application.isPlaying;
+        bool dontDestroyOnLoad = EditorGUILayout.Toggle("Don't Destroy On Load", set.dontDestroyOnLoad);
+        if (dontDestroyOnLoad != set.dontDestroyOnLoad)
+        {
+            Undo.RecordObject(serializedObject.targetObject, "Scene Installer changed.");
+            set.dontDestroyOnLoad = dontDestroyOnLoad; 
+            EditorUtility.SetDirty(serializedObject.targetObject);
+        }
+        GUI.enabled = true;
+        
+        var priorityType = (SceneServiceInstaller.PriorityTypeEnum) 
+            EditorGUILayout.EnumPopup("Priority Type", set.PriorityType);
+        if (priorityType != set.PriorityType)
+        {
+            Undo.RecordObject(serializedObject.targetObject, "Priority Type Changed.");
+            set.PriorityType = priorityType; 
+            EditorUtility.SetDirty(serializedObject.targetObject);
+        }
+
+        GUI.enabled = true;
+        if (set.PriorityType == SceneServiceInstaller.PriorityTypeEnum.ConcreteValue)
+        {
+            int priority = EditorGUILayout.IntField("Priority", set.Priority);
+            if (set.Priority != priority)
+            {
+                Undo.RecordObject(serializedObject.targetObject, "Scene Installer Priority Changed.");
+                set.Priority = priority;
+                EditorUtility.SetDirty(serializedObject.targetObject);
+            }
+        }
+        
         this.DrawInstallerInspectorGUI(sceneInstaller);
     }
 }
@@ -31,7 +62,6 @@ public class ServiceSourceSetEditor : UnityEditor.Editor
         {
             Undo.RecordObject(serializedObject.targetObject, "GlobalInstaller changed.");
             set.automaticallyUseAsGlobalInstaller = newGI;
-            ServiceLocator.FreshEnvironment();
             EditorUtility.SetDirty(serializedObject.targetObject);
         }
 

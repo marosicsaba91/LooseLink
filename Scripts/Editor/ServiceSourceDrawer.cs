@@ -21,8 +21,8 @@ static class ServiceSourceDrawer
     static readonly float _space = EditorGUIUtility.standardVerticalSpacing;
     static readonly float _lineHeight = EditorGUIUtility.singleLineHeight;
 
-    public static readonly GUIContent invalidObjectContent = new GUIContent("Invalid Object", typeTooltip);
-    public static readonly GUIContent noObjectContent = new GUIContent("Select an Object", typeTooltip);
+    static readonly GUIContent _invalidObjectContent = new GUIContent("Invalid Object", typeTooltip);
+    static readonly GUIContent _noObjectContent = new GUIContent("Select an Object", typeTooltip);
 
     const string typeTooltip =
         "Selected object should be one of these:\n" +
@@ -35,14 +35,14 @@ static class ServiceSourceDrawer
     
     static readonly GUIStyle _categoryPopupStyle = default;
 
-    public static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
+    static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
     {
         alignment = TextAnchor.MiddleLeft
     };
 
     static readonly GUIStyle _actionButtonStyle = default;
 
-    public static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
+    static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
     {
         fontSize = 10,
         alignment = TextAnchor.MiddleCenter,
@@ -143,7 +143,7 @@ static class ServiceSourceDrawer
 
     static void DrawSource(Rect position)
     {
-        Color color = _sourceIndex % 2 != 0 ? EditorHelper.tableBackgroundColor : EditorHelper.tableEvenLineColor;
+        Color color = _sourceIndex % 2 != 0 ? EditorHelper.tableOddLineColor : EditorHelper.tableEvenLineColor;
         EditorHelper.DrawBox(position, color);
  
         Undo.RecordObject(_serializedObject, "Service Setting Modified");
@@ -195,7 +195,7 @@ static class ServiceSourceDrawer
 
         ServiceSourceTypes sourceType = _source.PreferredSourceType;
         if (_source.ServiceSourceObject== null)
-            GUI.Label(sourceTypePos, noObjectContent);
+            GUI.Label(sourceTypePos, _noObjectContent);
         else if (_dynamicSource != null)
         {
             sourceType = _dynamicSource.SourceType;
@@ -231,7 +231,7 @@ static class ServiceSourceDrawer
             GUI.Label(sourceTypePos,
                 new GUIContent($"Source Set ({_insideSet.GetEnabledValidSourcesRecursive().Count()})"));
         else
-            GUI.Label(sourceTypePos, invalidObjectContent); 
+            GUI.Label(sourceTypePos, _invalidObjectContent); 
 
         // Object or source Type changed
         if (obj != _source.ServiceSourceObject || sourceType != _source.PreferredSourceType)
@@ -524,10 +524,10 @@ static class ServiceSourceDrawer
         return result;
     }
 
-    public static readonly GUIContent upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
-    public static readonly GUIContent downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
-    public static readonly GUIContent deleteIcon = EditorGUIUtility.IconContent("winbtn_win_close");
-    public static readonly GUIContent addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
+    static readonly GUIContent _upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
+    static readonly GUIContent _downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
+    static readonly GUIContent _deleteIcon = EditorGUIUtility.IconContent("winbtn_win_close");
+    static readonly GUIContent _addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
 
     static bool DrawButton(Rect position, ListAction action, bool enabled = true)
     {
@@ -535,10 +535,10 @@ static class ServiceSourceDrawer
         bool result = GUI.Button(position, GUIContent.none);
 
         GUIContent icon =
-            action == ListAction.Add ? addNewIcon :
-            action == ListAction.Delete ? deleteIcon :
-            action == ListAction.MoveDown ? downIcon :
-            action == ListAction.MoveUp ? upIcon :
+            action == ListAction.Add ? _addNewIcon :
+            action == ListAction.Delete ? _deleteIcon :
+            action == ListAction.MoveDown ? _downIcon :
+            action == ListAction.MoveUp ? _upIcon :
             GUIContent.none;
 
         if (action == ListAction.Add)

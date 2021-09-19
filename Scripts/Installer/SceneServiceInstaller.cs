@@ -8,21 +8,49 @@ namespace UnityServiceLocator
 [DefaultExecutionOrder(order: -1000000)]
 public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
 {
-    [SerializeField] bool dontDestroyOnLoad = true;
-    [SerializeField, HideInInspector] internal List<ServiceSource> serviceSources = new List<ServiceSource>();
+    [SerializeField] internal bool dontDestroyOnLoad = true;
+    [SerializeField] List<ServiceSource> serviceSources = new List<ServiceSource>();
+    [SerializeField] int priority = 0;
+    [SerializeField] PriorityTypeEnum priorityType;
     
+    internal int priorityAtInstallation = 0;
     Dictionary<Type, List<Type>> _nonAbstractToServiceTypeMap;
     
     public List<ServiceSource> ServiceSources => serviceSources;
-    
+    public enum PriorityTypeEnum { HighestAtInstallation, ConcreteValue }
+
+    public int Priority
+    {
+        get => priorityType == PriorityTypeEnum.ConcreteValue ? priority : priorityAtInstallation;
+        set
+        {
+            if(priority == value) return;
+            priority = value;
+            priorityType = PriorityTypeEnum.ConcreteValue;
+            ServiceLocator.Environment.SortInstallers();
+        }
+    }
+
+    public PriorityTypeEnum PriorityType
+    {
+        get => priorityType;
+        set
+        {
+            if(value == priorityType) return;
+            priorityType = value;
+            ServiceLocator.Environment.SortInstallers();
+        }
+    }
+
     public string Name => gameObject != null ? name : null;
     public Object Obj => gameObject;
-
+        
     public void ClearDynamicData()
     {
         foreach (ServiceSource source in serviceSources)
             source.ClearDynamicData_NoSourceChange(); 
     }
+
 
     void OnEnable()
     {
@@ -36,9 +64,13 @@ public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
     {
         GlobalUnInstall();
     }
-    
-    public void GlobalInstall() => ServiceLocator.Environment.AddSceneContextInstaller(this);
-    
-    public void GlobalUnInstall() => ServiceLocator.Environment.RemoveSceneContextInstaller(this);
+
+    void GlobalInstall()
+    {
+        priorityAtInstallation = ServiceLocator.Environment.MaxPriority + 1;
+        ServiceLocator.Environment.TryInstallServiceSourceSet(this);
+    }
+
+    void GlobalUnInstall() => ServiceLocator.Environment.TryUninstallServiceSourceSet(this);
 }
 }
