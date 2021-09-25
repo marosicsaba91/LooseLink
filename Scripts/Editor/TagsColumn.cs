@@ -176,6 +176,7 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         {
             if(_tagSearchWords == null || _tagSearchWords.Length>0)
                 _tagSearchWords = new string[0];
+            SearchTagText = string.Empty;
             return;
         }
         

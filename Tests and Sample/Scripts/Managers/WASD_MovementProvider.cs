@@ -3,7 +3,7 @@ using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class WASD_InputProvider : MonoBehaviour, IAvatarInputProvider
+public class WASD_MovementProvider : MonoBehaviour, IMovementInputProvider
 {
     public Object UnityObject => gameObject;
     public string NameOfDirectionCommand(GeneralDirection2D direction) => 

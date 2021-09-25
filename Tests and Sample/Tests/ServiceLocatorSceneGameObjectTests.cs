@@ -13,7 +13,7 @@ public class ServiceLocatorSceneGameObjectTests
     SceneServiceInstaller _installer;
     UnityServiceLocatorTestComponent1 _testComponent1;
     UnityServiceLocatorTestComponent2 _testComponent2;
-    WASD_InputProvider _testComponent3;
+    WASD_MovementProvider _testComponent3;
     ServiceSource _testSource1;
     ServiceSource _testSource2;
     ServiceSource _testSource3;
@@ -42,7 +42,7 @@ public class ServiceLocatorSceneGameObjectTests
     {
         _testComponent1 = AddServiceGameObject<UnityServiceLocatorTestComponent1>("GameObject1", out _testSource1);
         _testComponent2 = AddServiceGameObject<UnityServiceLocatorTestComponent2>("GameObject2", out _testSource2);
-        _testComponent3 = AddServiceGameObject<WASD_InputProvider>("GameObject3", out _testSource3);
+        _testComponent3 = AddServiceGameObject<WASD_MovementProvider>("GameObject3", out _testSource3);
 
         T AddServiceGameObject<T>(string name, out ServiceSource source) where T : Component
         {
@@ -67,7 +67,7 @@ public class ServiceLocatorSceneGameObjectTests
         bool foundService2 = service2 == _testComponent2;
         Assert.IsTrue(foundService2);
 
-        var service3 = ServiceLocator.Get<IAvatarInputProvider>();
+        var service3 = ServiceLocator.Get<IMovementInputProvider>();
         bool foundService3 = service3.NameOfDirectionCommand(GeneralDirection2D.Up)  == KeyCode.W.ToString();
         Assert.IsTrue(foundService3);
 

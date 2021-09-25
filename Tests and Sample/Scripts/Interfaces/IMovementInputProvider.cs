@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityServiceLocator;
 
 [ServiceType]
-public interface IAvatarInputProvider
+public interface IMovementInputProvider
 {
     Object UnityObject { get; }
     string NameOfDirectionCommand(GeneralDirection2D direction);
@@ -12,7 +12,7 @@ public interface IAvatarInputProvider
 
 public static class AvatarInputHelper
 {
-    public static bool TryGetDirection(this IAvatarInputProvider inputProvider, out Direction2D dir)
+    public static bool TryGetDirection(this IMovementInputProvider inputProvider, out Direction2D dir)
     {
         bool up = inputProvider.IsDirectionCommandPressed(GeneralDirection2D.Up);
         bool down = inputProvider.IsDirectionCommandPressed(GeneralDirection2D.Down);

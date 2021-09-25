@@ -8,10 +8,10 @@ namespace UnityServiceLocator
 [DefaultExecutionOrder(order: -1000000)]
 public class SceneServiceInstaller : MonoBehaviour, IServiceSourceSet
 {
-    [SerializeField] internal bool dontDestroyOnLoad = true;
-    [SerializeField] List<ServiceSource> serviceSources = new List<ServiceSource>();
-    [SerializeField] int priority = 0;
-    [SerializeField] PriorityTypeEnum priorityType;
+    [SerializeField, HideInInspector] internal bool dontDestroyOnLoad = false;
+    [SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>();
+    [SerializeField, HideInInspector] int priority = 0;
+    [SerializeField, HideInInspector] PriorityTypeEnum priorityType;
     
     internal int priorityAtInstallation = 0;
     Dictionary<Type, List<Type>> _nonAbstractToServiceTypeMap;

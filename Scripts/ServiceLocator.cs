@@ -6,6 +6,10 @@ using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace UnityServiceLocator
 {
 
@@ -13,14 +17,31 @@ public static class ServiceLocator
 {
     static readonly ServiceEnvironment _environment = new ServiceEnvironment();
     public static ServiceEnvironment Environment => _environment;
+    internal static bool IsDestroying { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
     { 
         _environment.SetAllGlobalInstallers(FindGlobalInstallers);
         _environment.InitServiceSources();
+        IsDestroying = false;
+        
+#if UNITY_EDITOR
+        EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
+#endif 
     }
-    
+
+#if UNITY_EDITOR
+    static void OnUnityPlayModeChanged(PlayModeStateChange change)
+    {
+        if (change == PlayModeStateChange.ExitingPlayMode)
+        {
+            IsDestroying = true;
+            ClearAllCachedData(); 
+        }
+    }
+#endif
+
     internal static List<ServiceSourceSet> FindGlobalInstallers =>
         Resources
             .LoadAll<ServiceSourceSet>(string.Empty)

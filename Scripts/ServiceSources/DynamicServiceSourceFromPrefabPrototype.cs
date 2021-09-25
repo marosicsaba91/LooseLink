@@ -51,17 +51,8 @@ class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSource
         return go;
     }
 
-    protected override void ClearService()
-    {
-        if (LoadedObject == null) return;
-        if(Application.isPlaying)
-            Object.Destroy(LoadedObject);
-        else
-            Object.DestroyImmediate(LoadedObject);
-    }
-
-    protected override object GetService(Type type, Object instantiatedObject) =>
-        ((GameObject) instantiatedObject).GetComponent(type);
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) =>
+        ((GameObject) serverObject).GetComponent(type);
 
     public override object GetServiceOnSourceObject(Type type) =>
         prototypePrefab.GetComponent(type);

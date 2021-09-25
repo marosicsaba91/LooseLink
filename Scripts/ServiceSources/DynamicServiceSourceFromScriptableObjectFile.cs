@@ -16,6 +16,10 @@ class DynamicServiceSourceFromScriptableObjectFile : DynamicServiceSource
         this.instance = instance;
     }
  
+    public override Object LoadedObject { 
+        get => instance;
+        set { }
+    } 
     protected override List<Type> GetNonAbstractTypes()
     { 
         var result = new List<Type>();
@@ -29,17 +33,16 @@ class DynamicServiceSourceFromScriptableObjectFile : DynamicServiceSource
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
     { get { yield return ServiceSourceTypes.FromScriptableObjectPrototype; } }
-    
-    protected override void ClearService() { }
+     
 
     public override Loadability Loadability => instance == null
         ? new Loadability(Loadability.Type.Error,  "No ScriptableObject instance") 
-        : Loadability.Loadable;  
+        : Loadability.AlwaysLoaded;  
     
     protected override bool NeedParentTransform => false;
     protected override Object Instantiate(Transform parent) => instance;
 
-    protected override object GetService(Type type, Object instantiatedObject) => instantiatedObject;
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
 
     public override object GetServiceOnSourceObject(Type type) => instance;
  

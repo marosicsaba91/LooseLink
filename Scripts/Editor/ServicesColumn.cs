@@ -176,6 +176,7 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
 
         if (!IsColumnOpen)
         {
+            SearchServicesText = string.Empty;
             if(_serviceSearchWords == null || _serviceSearchWords.Length>0)
                 _serviceSearchWords = new string[0];
             return;

@@ -53,7 +53,7 @@ namespace Tests
             bool service2IsNotInstantiatedToScene = service2.gameObject ==_testPrefab2;
             Assert.IsTrue(service2IsNotInstantiatedToScene);
             
-            ServiceLocator.TryGet(out IAvatarInputProvider service3);
+            ServiceLocator.TryGet(out IMovementInputProvider service3);
             bool service3Found = service3 != null;
             Assert.IsTrue(service3Found);
             bool service3IsInstantiatedToScene = ((GameObject)service3.UnityObject).scene.IsValid();

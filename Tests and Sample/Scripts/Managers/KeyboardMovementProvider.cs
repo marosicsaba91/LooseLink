@@ -4,7 +4,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 [CreateAssetMenu]
-public class KeyboardInputProvider : ScriptableObject, IAvatarInputProvider
+public class KeyboardMovementProvider : ScriptableObject, IMovementInputProvider
 {
     [SerializeField] KeyCode up = KeyCode.UpArrow;
     [SerializeField] KeyCode down = KeyCode.DownArrow;

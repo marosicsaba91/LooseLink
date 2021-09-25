@@ -9,7 +9,8 @@ namespace UnityServiceLocator.Editor
 public class SceneInstallerEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
-    {  
+    {
+        DrawDefaultInspector();
         var sceneInstaller = target as IServiceSourceSet; 
         
         var set = target as SceneServiceInstaller;
@@ -55,7 +56,7 @@ public class ServiceSourceSetEditor : UnityEditor.Editor
     public override void OnInspectorGUI()
     {
         GUI.enabled = !Application.isPlaying; 
-        var set = target as ServiceSourceSet;
+        var set = target as ServiceSourceSet; 
 
         bool newGI = EditorGUILayout.Toggle("Use as Global Installer", set.automaticallyUseAsGlobalInstaller);
         if (newGI != set.automaticallyUseAsGlobalInstaller)

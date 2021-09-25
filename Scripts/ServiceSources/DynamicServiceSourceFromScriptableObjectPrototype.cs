@@ -28,16 +28,6 @@ class DynamicServiceSourceFromScriptableObjectPrototype : DynamicServiceSource
         ? new Loadability(Loadability.Type.Error,  "No Prototype") 
         : Loadability.Loadable;
 
-    protected override void ClearService()
-    {
-        if (LoadedObject == null) return;
-        if(Application.isPlaying)
-            Object.Destroy(LoadedObject);
-        else
-            Object.DestroyImmediate(LoadedObject);
-    }
-
-    
     public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectPrototype;
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
@@ -46,7 +36,7 @@ class DynamicServiceSourceFromScriptableObjectPrototype : DynamicServiceSource
     protected override bool NeedParentTransform => false;
     protected override Object Instantiate(Transform parent) => Object.Instantiate(prototype);
 
-    protected override object GetService(Type type, Object instantiatedObject) => instantiatedObject;
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
     public override object GetServiceOnSourceObject(Type type) => prototype;
  
     public override string Name => prototype != null ? prototype.name : string.Empty;

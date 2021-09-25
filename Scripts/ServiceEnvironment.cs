@@ -218,6 +218,8 @@ public class ServiceEnvironment
     void InvokeEnvironmentChanged(IEnumerable<Type> types)
     {
         if (!Application.isPlaying) return;
+        if (ServiceLocator.IsDestroying) return;
+        
         _tempTypes = EnumerableToHashSet(types);
         if(_tempTypes.IsEmpty()) return;
         foreach (Type type in _tempTypes)

@@ -293,9 +293,9 @@ public class ServiceSource
                 return new DynamicServiceSourceFromSceneObject(gameObject);
             }
 
-            if (previousType == ServiceSourceTypes.FromPrefabPrototype)
-                return new DynamicServiceSourceFromPrefabPrototype(gameObject);
-            return new DynamicServiceSourceFromPrefabFile(gameObject); 
+            if (previousType == ServiceSourceTypes.FromPrefabFile)
+                return new DynamicServiceSourceFromPrefabFile(gameObject);
+            return new DynamicServiceSourceFromPrefabPrototype(gameObject);
         }
 
         if (obj is MonoScript script)

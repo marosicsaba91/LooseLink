@@ -9,6 +9,7 @@ readonly struct Loadability
 {
     public enum Type
     {
+        AlwaysLoaded,
         Loadable,
         Warning,
         Error
@@ -18,6 +19,7 @@ readonly struct Loadability
     public readonly string reason;
 
     public bool IsLoadable => type == Type.Loadable;
+    public static Loadability AlwaysLoaded => new Loadability(Type.AlwaysLoaded);
     public static Loadability Loadable => new Loadability(Type.Loadable);
     public static Loadability NoServiceSourceObject => new Loadability(Type.Error, "No Service Source Object!");
 
@@ -56,6 +58,7 @@ static class LoadabilityHelper
                 return _warningImage;
             case Loadability.Type.Error:
                 return _errorImage;
+            case Loadability.Type.AlwaysLoaded:
             case Loadability.Type.Loadable:
                 return _loadableImage;
             default:

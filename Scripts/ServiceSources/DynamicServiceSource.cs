@@ -14,9 +14,9 @@ abstract class DynamicServiceSource
     List<Type> _possibleAdditionalTypes;
     Dictionary<Type, object> _typeToServiceOnSource; 
     ServiceSource _setting;
-    bool _isDynamicDataInitialized = false;
+    bool _isDynamicTypeDataInitialized = false;
  
-    public Object LoadedObject { get; private set; } // GameObject or ScriptableObject
+    public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
     public Dictionary<Type, object> InstantiatedServices { get; private set; } =
         new Dictionary<Type, object>();
@@ -33,7 +33,7 @@ abstract class DynamicServiceSource
     {
         newInstance = false;
         Loadability loadability = Loadability;
-        if (loadability.type != Loadability.Type.Loadable)
+        if (loadability.type != Loadability.Type.Loadable && loadability.type!= Loadability.Type.AlwaysLoaded)
         {
             service = default;
             return false;
@@ -75,7 +75,7 @@ abstract class DynamicServiceSource
         }
 
         if (!InstantiatedServices.ContainsKey(type))
-            InstantiatedServices.Add(type,  GetService(type, LoadedObject));
+            InstantiatedServices.Add(type, GetServiceFromServerObject(type, LoadedObject));
 
         service = InstantiatedServices[type];
         return true; 
@@ -106,7 +106,7 @@ abstract class DynamicServiceSource
 
     protected abstract Object Instantiate(Transform parent);
 
-    protected abstract object GetService( Type type, Object instantiatedObject); 
+    protected abstract object GetServiceFromServerObject(Type type, Object serverObject);
     
     public abstract string Name { get; }
 
@@ -136,10 +136,9 @@ abstract class DynamicServiceSource
         return _typeToServiceOnSource[serviceType];
     } 
 
-
     void InitDynamicTypeDataIfNeeded()
     { 
-        if (_isDynamicDataInitialized) return;
+        if (_isDynamicTypeDataInitialized) return;
         
         _allNonAbstractTypes = GetNonAbstractTypes();
         _allAbstractTypes = new List<Type>();
@@ -164,7 +163,7 @@ abstract class DynamicServiceSource
                 _possibleAdditionalTypes.Add(subclass);
         }
 
-        _isDynamicDataInitialized = true;
+        _isDynamicTypeDataInitialized = true;
     }
 
     IEnumerable<Type> AllPossibleAdditionalSubclassesOf(Type type, bool includeInterfaces = true )
@@ -198,11 +197,8 @@ abstract class DynamicServiceSource
     public abstract ServiceSourceTypes SourceType { get; }
     public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 
-    protected abstract void ClearService();
-
     public void ClearInstancesAndCachedTypes()
     {
-        ClearService();
         LoadedObject = null;
         InstantiatedServices.Clear();
         ClearCachedTypes();
@@ -212,7 +208,7 @@ abstract class DynamicServiceSource
     {
         if(Application.isPlaying)
             return;
-        _isDynamicDataInitialized = false;
+        _isDynamicTypeDataInitialized = false;
     }
 
     public Texture Icon => FileIconHelper.GetIconOfObject(SourceObject);

@@ -50,8 +50,9 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
 
         // Loaded Element
         if (loadedObject != null)
-        { 
-            const float unloadButtonWidth = 23;
+        {
+            Loadability.Type loadability = source.Loadability.type; 
+            float unloadButtonWidth = loadability == Loadability.Type.AlwaysLoaded? 0 : 23;
             contentPos.width -= unloadButtonWidth;
             if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
             {
@@ -77,7 +78,7 @@ class ServiceLoadedColumn: Column<FoldableRow<ServiceLocatorRow>>
                 OnRowClick(row);
 
             // Load / Unload Button
-            if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
+            if (loadability != Loadability.Type.AlwaysLoaded && row.element.Category == ServiceLocatorRow.RowCategory.Source)
             {
                 var unloadButtonRect = new Rect(
                     contentPos.xMax,

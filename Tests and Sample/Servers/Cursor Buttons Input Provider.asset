@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 12ef9c19926c462cb534d8974b45b05e, type: 3}
-  m_Name: CursorButtons Input Provider
+  m_Name: Cursor Buttons Input Provider
   m_EditorClassIdentifier: ServiceLoactorSample::KeyBoardInputProvider
   up: 273
   down: 274

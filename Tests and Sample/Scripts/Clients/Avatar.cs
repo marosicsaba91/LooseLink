@@ -4,23 +4,76 @@ using UnityServiceLocator;
 
 public class Avatar : MonoBehaviour
 {
-    [SerializeField] float velocity = 1;
-    IAvatarInputProvider _input;
+    [Header("References")] 
+    [SerializeField] Rigidbody rgbdBody;
+    [Header("Settings")]
+    
+    [SerializeField] float maxVelocity = 5;
+    [SerializeField] float acceleration = 20;
+    [SerializeField] float deceleration = 50;
+    
+    IMovementInputProvider _movementInput;
+    IShootingInputProvider _shootingInput; 
+    BallisticsManager _ballisticsManager; 
+
+    Vector2 _horizontalVelocity;
+    
+    void OnValidate()
+    {
+        if (rgbdBody == null)
+            rgbdBody = GetComponent<Rigidbody>();
+    }
 
     void Awake()
     {
-        UpdateInputProvider();
-        ServiceLocator.Environment.SubscribeToEnvironmentChange<IAvatarInputProvider>(UpdateInputProvider);
-    }
-    
-    void UpdateInputProvider()
-    {
-        _input = ServiceLocator.Get<IAvatarInputProvider>();
+        UpdateMovementInputProvider();
+        UpdateShootingInputProvider();
+        ServiceLocator.Environment.SubscribeToEnvironmentChange<IMovementInputProvider>(UpdateMovementInputProvider);
+        ServiceLocator.Environment.SubscribeToEnvironmentChange<IShootingInputProvider>(UpdateShootingInputProvider);
+        _ballisticsManager = ServiceLocator.Get<BallisticsManager>(); 
     }
 
-    void Update()
+    void UpdateMovementInputProvider() => _movementInput = ServiceLocator.Get<IMovementInputProvider>(); 
+    void UpdateShootingInputProvider()
     {
-        if (_input.TryGetDirection(out Direction2D direction))
-            transform.localPosition += (Vector3)direction.ToVector().normalized * (Time.deltaTime * velocity);
+        _shootingInput = ServiceLocator.Get<IShootingInputProvider>();
+        _shootingInput.ShotMain += ShootMain;
+        _shootingInput.ShotSecondary += ShootSecondary;
     }
+
+    void FixedUpdate()
+    {  
+        
+        if (_movementInput.TryGetDirection(out Direction2D direction))
+        { 
+            Vector2 directionVector = direction.ToVector().normalized;  
+            _horizontalVelocity += directionVector * (acceleration * Time.fixedDeltaTime);
+            if (_horizontalVelocity.magnitude > maxVelocity)
+                _horizontalVelocity = _horizontalVelocity.normalized * maxVelocity;
+        }else if(_horizontalVelocity != Vector2.zero) 
+        {
+            float change = deceleration * Time.fixedDeltaTime;
+            if(_horizontalVelocity.magnitude <= change)
+                _horizontalVelocity = Vector2.zero;
+            else 
+                _horizontalVelocity = _horizontalVelocity - (change * _horizontalVelocity.normalized);
+        }
+ 
+        rgbdBody.velocity = new Vector3(_horizontalVelocity.x, rgbdBody.velocity.y, _horizontalVelocity.y);
+    }
+    
+    
+    
+    void ShootMain(Vector2 position)
+    {
+        Vector3 start = transform.position;
+        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y));
+    }
+    
+    void ShootSecondary(Vector2 position)
+    {
+        Vector3 start = transform.position;
+        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y));
+    }
+
 }

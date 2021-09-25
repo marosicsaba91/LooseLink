@@ -56,6 +56,7 @@ class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
 
+    /*
     protected override void ClearService()
     {
         if (LoadedObject == null) return;
@@ -64,8 +65,9 @@ class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
         else
             Object.DestroyImmediate(LoadedObject);
     }
+    */
  
-    protected override object GetService(Type type, Object instantiatedObject) => ((GameObject) instantiatedObject).GetComponent(type);
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) => ((GameObject) serverObject).GetComponent(type);
 
     public override object GetServiceOnSourceObject(Type type) => null;
  

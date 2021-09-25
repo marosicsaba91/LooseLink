@@ -15,8 +15,7 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
     {
         get => _serviceLocatorWindow.searchServiceSourcesText;
         set => _serviceLocatorWindow.searchServiceSourcesText = value;
-    }
-    public ServiceSourceColumn(ColumnInfo columnInfo) : base(columnInfo) { }
+    } 
 
     public ServiceSourceColumn(ServiceLocatorWindow serviceLocatorWindow)
     {

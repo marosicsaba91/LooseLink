@@ -15,6 +15,11 @@ class DynamicServiceSourceFromSceneObject : DynamicServiceSource
     {
         sceneGameObject = gameObject;
     }
+    
+    public override Object LoadedObject { 
+        get => sceneGameObject;
+        set { }
+    }
 
     protected override List<Type> GetNonAbstractTypes() => 
         sceneGameObject.GetComponents<Component>().Select(component => component.GetType()).ToList();
@@ -22,17 +27,15 @@ class DynamicServiceSourceFromSceneObject : DynamicServiceSource
     public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromSceneGameObject;
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
-    
-    protected override void ClearService() { }
-
+     
     public override Loadability Loadability => sceneGameObject == null
         ? new Loadability(Loadability.Type.Error,  "No Scene Game Object") 
-        : Loadability.Loadable; 
+        : Loadability.AlwaysLoaded; 
     
     protected override bool NeedParentTransform => false;
     protected override Object Instantiate(Transform parent) => sceneGameObject;
 
-    protected override object GetService(Type type, Object instantiatedObject) => ((GameObject) instantiatedObject).GetComponent(type);
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) => ((GameObject) serverObject).GetComponent(type);
 
     public override object GetServiceOnSourceObject(Type type) => sceneGameObject.GetComponent(type);
  

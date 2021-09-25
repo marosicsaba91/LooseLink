@@ -40,16 +40,7 @@ class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
 
-    protected override void ClearService()
-    {
-        if (LoadedObject == null) return;
-        if(Application.isPlaying)
-            Object.Destroy(LoadedObject);
-        else
-            Object.DestroyImmediate(LoadedObject);
-    }
-
-    protected override object GetService(Type type, Object instantiatedObject) => instantiatedObject;
+    protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
 
     public override object GetServiceOnSourceObject(Type type) => null;
  
