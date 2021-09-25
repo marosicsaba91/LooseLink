@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityServiceLocator;
 
 public class AvatarCamera : MonoBehaviour
@@ -20,8 +21,8 @@ public class AvatarCamera : MonoBehaviour
 
     void Awake()
     {
-        _followable = ServiceLocator.Get<Transform>("Avatar");
-    }
+        _followable = ServiceLocator.Get<Transform>("Avatar"); 
+    } 
 
     void Update()
     {

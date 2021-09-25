@@ -18,18 +18,25 @@ public static class ServiceLocator
     static readonly ServiceEnvironment _environment = new ServiceEnvironment();
     public static ServiceEnvironment Environment => _environment;
     internal static bool IsDestroying { get; private set; }
+    internal static bool IsSceneLoaded { get; private set; } // After all Awake & OnEneble
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
     { 
+        if(IsSceneLoaded) return;
+        
         _environment.SetAllGlobalInstallers(FindGlobalInstallers);
         _environment.InitServiceSources();
-        IsDestroying = false;
-        
+        IsDestroying = false; 
+
 #if UNITY_EDITOR
         EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
 #endif 
     }
+    
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    internal static void AfterSceneLoad() => IsSceneLoaded = true;
+    
 
 #if UNITY_EDITOR
     static void OnUnityPlayModeChanged(PlayModeStateChange change)

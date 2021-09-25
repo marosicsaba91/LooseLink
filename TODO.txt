@@ -6,6 +6,8 @@ ServerGameObject
     (Installs itself)
     (Service Set recognises it -> Get Types & Tag Setting from ServiceGameObject (No Change))
     
+Call only 1 Everything Changed at the enn of all Awake and OnEnable
+
 Update Manual
 
 Publish Beta:
