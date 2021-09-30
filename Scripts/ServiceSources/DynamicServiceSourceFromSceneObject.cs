@@ -1,47 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic; 
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-[Serializable]
-class DynamicServiceSourceFromSceneObject : DynamicServiceSource
-{
-    public GameObject sceneGameObject;
 
-    public DynamicServiceSourceFromSceneObject(GameObject gameObject)
-    {
-        sceneGameObject = gameObject;
-    }
+class DynamicServiceSourceFromSceneObject : DynamicServiceSourceFromGO
+{ 
+
+    public DynamicServiceSourceFromSceneObject(GameObject gameObject) : base(gameObject ) { }
     
-    public override Object LoadedObject { 
-        get => sceneGameObject;
-        set { }
-    }
-
-    protected override List<Type> GetNonAbstractTypes() => 
-        sceneGameObject.GetComponents<Component>().Select(component => component.GetType()).ToList();
+    public override Object LoadedObject => gameObject;
 
     public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromSceneGameObject;
 
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
-     
-    public override Loadability Loadability => sceneGameObject == null
-        ? new Loadability(Loadability.Type.Error,  "No Scene Game Object") 
-        : Loadability.AlwaysLoaded; 
     
-    protected override bool NeedParentTransform => false;
-    protected override Object Instantiate(Transform parent) => sceneGameObject;
+    protected override bool NeedParentTransformForLoad => false;
+    protected override Object Instantiate(Transform parent) => gameObject;
 
-    protected override object GetServiceFromServerObject(Type type, Object serverObject) => ((GameObject) serverObject).GetComponent(type);
-
-    public override object GetServiceOnSourceObject(Type type) => sceneGameObject.GetComponent(type);
+    public sealed override Resolvability TypeResolvability => gameObject == null
+        ? new Resolvability(Resolvability.Type.Error, "No GameObject") 
+        : Resolvability.AlwaysResolved;
  
-    public override string Name => sceneGameObject != null ? sceneGameObject.name : string.Empty;
-    public override Object SourceObject => sceneGameObject;
-     
-
 }
 }

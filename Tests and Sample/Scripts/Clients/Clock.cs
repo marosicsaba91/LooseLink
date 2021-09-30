@@ -9,7 +9,7 @@ public class Clock : MonoBehaviour
 
     void Awake()
     {
-        _timeProvider = ServiceLocator.Get<ITimeProvider>(); 
+        _timeProvider = ServiceLocator.Resolve<ITimeProvider>(); 
     }
 
     void Update()

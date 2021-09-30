@@ -6,30 +6,22 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-[Serializable]
-class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSource
-{
-    public GameObject prototypePrefab;
-  
-    internal DynamicServiceSourceFromPrefabPrototype( GameObject prototypePrefab)
-    {
-        this.prototypePrefab = prototypePrefab;
-    }
+
+class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSourceFromGO
+{ 
+    internal DynamicServiceSourceFromPrefabPrototype( GameObject prototypePrefab) : base(prototypePrefab ) { }
     
-    protected override List<Type> GetNonAbstractTypes() => 
-        prototypePrefab.GetComponents<Component>().Select(component => component.GetType()).ToList();
-   
-    public override Loadability Loadability
+    public override Resolvability TypeResolvability
     {
         get
         {
-            if (prototypePrefab == null)
-                return new Loadability(Loadability.Type.Error, "No Prefab");
+            if (gameObject == null)
+                return new Resolvability(Resolvability.Type.Error, "No Prefab");
             if(!Application.isPlaying)
-                return new Loadability(
-                    Loadability.Type.Warning,
+                return new Resolvability(
+                    Resolvability.Type.CantResolveNow,
                     "You can't instantiate prefab through Service Locator in Editor Time");
-            return Loadability.Loadable;
+            return Resolvability.Resolvable;
         }
     } 
     
@@ -38,27 +30,18 @@ class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSource
     public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
     { get { yield return ServiceSourceTypes.FromPrefabFile; } }
 
-    protected override bool NeedParentTransform => true;
+    protected override bool NeedParentTransformForLoad => true;
 
     protected override Object Instantiate(Transform parent)
     {
-        GameObject go = Object.Instantiate(prototypePrefab, parent);
-        go.name = prototypePrefab.name;
-        go.transform.localPosition = Vector3.zero;
-        go.transform.localRotation = Quaternion.identity;
-        go.transform.localScale = Vector3.one;
+        GameObject newInstance = Object.Instantiate(gameObject, parent);
+        newInstance.name = gameObject.name;
+        newInstance.transform.localPosition = Vector3.zero;
+        newInstance.transform.localRotation = Quaternion.identity;
+        newInstance.transform.localScale = Vector3.one;
 
-        return go;
-    }
-
-    protected override object GetServiceFromServerObject(Type type, Object serverObject) =>
-        ((GameObject) serverObject).GetComponent(type);
-
-    public override object GetServiceOnSourceObject(Type type) =>
-        prototypePrefab.GetComponent(type);
- 
-    public override string Name => prototypePrefab != null ? prototypePrefab.name : string.Empty;
-    public override Object SourceObject => prototypePrefab;
+        return newInstance;
+    } 
      
 
 }

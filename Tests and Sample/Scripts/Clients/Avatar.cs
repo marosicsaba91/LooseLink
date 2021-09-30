@@ -30,13 +30,13 @@ public class Avatar : MonoBehaviour
         UpdateShootingInputProvider();
         ServiceLocator.Environment.SubscribeToEnvironmentChange<IMovementInputProvider>(UpdateMovementInputProvider);
         ServiceLocator.Environment.SubscribeToEnvironmentChange<IShootingInputProvider>(UpdateShootingInputProvider);
-        _ballisticsManager = ServiceLocator.Get<BallisticsManager>(); 
+        _ballisticsManager = ServiceLocator.Resolve<BallisticsManager>(); 
     }
 
-    void UpdateMovementInputProvider() => _movementInput = ServiceLocator.Get<IMovementInputProvider>(); 
+    void UpdateMovementInputProvider() => _movementInput = ServiceLocator.Resolve<IMovementInputProvider>(); 
     void UpdateShootingInputProvider()
     {
-        _shootingInput = ServiceLocator.Get<IShootingInputProvider>();
+        _shootingInput = ServiceLocator.Resolve<IShootingInputProvider>();
         _shootingInput.ShotMain += ShootMain;
         _shootingInput.ShotSecondary += ShootSecondary;
     }
@@ -74,6 +74,5 @@ public class Avatar : MonoBehaviour
     {
         Vector3 start = transform.position;
         _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y));
-    }
-
+    } 
 }

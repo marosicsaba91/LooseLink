@@ -11,13 +11,13 @@ namespace UnityServiceLocator
 class ServiceLocatorWindow : EditorWindow
 {
     const string editorPrefsKey = "ServiceLocatorWindowState";
-    static readonly Vector2 _minimumSize = new Vector2(500, 100);
+    static readonly Vector2 minimumSize = new Vector2(300, 100);
 
     ServiceSourceColumn _serviceSourcesColumn;
     ServiceSourceTypeColumn _typeColumn;
     ServicesColumn _servicesColumn;
     TagsColumn _tagsColumn;
-    ServiceLoadedColumn _loadedColumn;
+    ResolveColumn _resolveColumn;
     GUITable<FoldableRow<ServiceLocatorRow>> _serviceTable; 
      
      
@@ -34,17 +34,15 @@ class ServiceLocatorWindow : EditorWindow
     static void ShowWindow()
     {
         var window = GetWindow<ServiceLocatorWindow>();
-        window.minSize = _minimumSize;
+        window.minSize = minimumSize;
         window.titleContent = new GUIContent("Service Locator");
         window.Show();
     }
     
     public void OnEnable()
     {
-        minSize = _minimumSize;
-        wantsMouseMove = true;
-        // ServiceLocator.Environment.InstallersChanged += OnEnvironmentChanged;
-        // ServiceLocator.Environment.LoadedInstancesChanged += Repaint;
+        minSize = minimumSize;
+        wantsMouseMove = true; 
 
         string data = EditorPrefs.GetString(
             editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
@@ -53,10 +51,7 @@ class ServiceLocatorWindow : EditorWindow
     }
 
     public void OnDisable()
-    {
-        // ServiceLocator.Environment.InstallersChanged -= OnSceneContextInstallersChanged;
-        // ServiceLocator.Environment.LoadedInstancesChanged -= Repaint;
-
+    { 
         string data = JsonUtility.ToJson(this, prettyPrint: false);
         EditorPrefs.SetString(editorPrefsKey, data);
         Selection.selectionChanged -= Repaint;
@@ -76,10 +71,10 @@ class ServiceLocatorWindow : EditorWindow
         _tagsColumn = new TagsColumn(this);
         _servicesColumn = new ServicesColumn(this);
         _typeColumn = new ServiceSourceTypeColumn(this);
-        _loadedColumn = new ServiceLoadedColumn(this);
+        _resolveColumn = new ResolveColumn(this);
         var componentTypeColumns = new List<IColumn<FoldableRow<ServiceLocatorRow>>>
         {
-            _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _loadedColumn,
+            _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn,
         };
 
         _serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)
@@ -103,26 +98,36 @@ class ServiceLocatorWindow : EditorWindow
     List<FoldableRow<ServiceLocatorRow>> GenerateTreeView()
     {
         var roots = new List<TreeNode<ServiceLocatorRow>>();
-        foreach (IServiceSourceSet installer in ServiceLocator.GetInstallers())
-        {
-            TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(installer);
-            roots.Add(installerNode);
+        foreach (IServiceSourceProvider installer in ServiceLocator.GetAllInstallers())
+        { 
+            TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(installer, parentEnabled: true);
+            if(installerNode!= null)
+                roots.Add(installerNode);
         }
 
         return FoldableRow<ServiceLocatorRow>.GetRows(roots, openedElements, row => row.ToString());
     }
 
-    TreeNode<ServiceLocatorRow> GetInstallerNode(IServiceSourceSet set)
+    TreeNode<ServiceLocatorRow> GetInstallerNode(IServiceSourceProvider provider, bool parentEnabled)
     {
-        var installerRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Set) {set = set};
-        List<TreeNode<ServiceLocatorRow>> children = GetChildNodes(set);  
-        return new TreeNode<ServiceLocatorRow>(installerRow, children); 
+        var installerRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Set)
+        {
+            enabled = provider.IsEnabled && parentEnabled,
+            provider = provider
+        };
+        
+        List<TreeNode<ServiceLocatorRow>> children = GetChildNodes(provider, provider.IsEnabled);
+        if (provider.IsSingleSourceProvider)
+            return children.FirstOrDefault();
+
+        return new TreeNode<ServiceLocatorRow>(installerRow, children);
+
     }
 
-    List<TreeNode<ServiceLocatorRow>> GetChildNodes(IServiceSourceSet iSet)
+    List<TreeNode<ServiceLocatorRow>> GetChildNodes(IServiceSourceProvider iProvider, bool enabled)
     {
         var nodes = new List<TreeNode<ServiceLocatorRow>>();
-        ServiceSource[] sources = iSet.GetEnabledValidSources().ToArray();
+        ServiceSource[] sources = iProvider.GetSources().ToArray();
 
         bool noServiceSearch = _serviceSourcesColumn.NoSearch;
         bool noTypeSearch = _servicesColumn.NoSearch;
@@ -130,41 +135,53 @@ class ServiceLocatorWindow : EditorWindow
         bool anySearch = !(noServiceSearch && noTypeSearch && noTagSearch);
         
         foreach (ServiceSource source in sources)
-        {
-            if (!source.Enabled) continue;
-            if (source.ServiceSourceObject == null) continue;
-
-            DynamicServiceSource dynamic = source.GetDynamicServiceSource();
-            if (dynamic != null)
+        {  
+            if (source.IsServiceSource)
             {
-                dynamic.ClearCachedTypes();
+                source.ClearCachedTypes_NoEnvironmentChangeEvent();
                 var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
                 {
-                    set = iSet,
+                    enabled = enabled && source.Enabled,
+                    provider = iProvider,
                     source = source,
-                    loadedInstance = dynamic.LoadedObject,
-                    loadability = new Loadability(Loadability.Type.Loadable)
+                    resolvedInstance = source.LoadedObject,
+                    resolvability = new Resolvability(Resolvability.Type.Resolvable)
                 };
 
                 var abstractTypes = new List<TreeNode<ServiceLocatorRow>>();
                 var sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, abstractTypes);
-                sourceRow.loadability = source.Loadability;
+                sourceRow.resolvability = source.Resolvability;
 
                 bool serviceMatchSearch = _serviceSourcesColumn.ApplyServiceSourceSearch(source);
-                bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(iSet, source);
-                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iSet, source);
+                bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(iProvider, source);
+                bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iProvider, source);
 
                 if (!anySearch)
                     nodes.Add(sourceNode);
                 else if (serviceMatchSearch && tagMatchSearch && typeMatchSearch)
                     nodes.Add(sourceNode);
             }
-            else
+            else if (source.IsSourceSet)
             {
                 ServiceSourceSet set = source.GetServiceSourceSet();
                 if (set == null) continue;
-                TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(set);
+                TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(set, enabled);
                 nodes.Add(installerNode);
+            }   
+            else 
+            {           
+                var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
+                {
+                    enabled = enabled && source.Enabled,
+                    provider = null,
+                    source = source,
+                    resolvedInstance = null,
+                    resolvability = source.ServiceSourceObject == null? Resolvability.NoSourceObject :Resolvability.WrongSourcesObjectType
+                };
+                
+                var sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, children: null);
+                
+                nodes.Add(sourceNode);
             }
         }
 
@@ -179,8 +196,6 @@ class ServiceLocatorWindow : EditorWindow
         return 0;
     }
     
-
-
     public string[] GenerateSearchWords(string searchText)
     {  
         string[] rawKeywords = searchText.Split(',');

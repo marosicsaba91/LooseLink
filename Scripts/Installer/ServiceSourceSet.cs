@@ -1,18 +1,28 @@
 ﻿using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
+using MUtility;
 using UnityEngine; 
 using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
 [CreateAssetMenu(fileName = "New Service Source Set", menuName = "Service Source Set")]
-public class ServiceSourceSet : ScriptableObject, IServiceSourceSet
+public class ServiceSourceSet : ScriptableObject, IServiceSourceProvider
 { 
-    [SerializeField] internal bool automaticallyUseAsGlobalInstaller = false;
-    [SerializeField] List<ServiceSource> serviceSources = new List<ServiceSource>(); 
-    [SerializeField] int priority = 0; 
+    [SerializeField, HideInInspector] internal bool automaticallyUseAsGlobalInstaller = false;
+    [SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>(); 
+    [SerializeField, HideInInspector] int priority = 0; 
     
-    public int Priority
+    public bool IsSingleSourceProvider => false;
+    
+    public ServiceSource GetSourceAt(int index)
+    {
+        ServiceSource result = serviceSources[index];
+        result.serviceSourceProvider = this;
+        return result;
+    }
+
+    public int PriorityValue
     {
         get => priority;
         set
@@ -23,21 +33,26 @@ public class ServiceSourceSet : ScriptableObject, IServiceSourceSet
             ServiceLocator.Environment.SortInstallers();
         }
     }
-    
-    public List<ServiceSource> ServiceSources => serviceSources;
-
-    
+  
     public string Name => name;
-    public Object Obj => this;
+    public Object ProviderObject => this;
  
+    public bool IsEnabled => true;
 
-    public void ClearDynamicData()
+    public void ClearDynamicData_NoEnvironmentChangeEvent()
     {
         serviceSources = serviceSources ?? new List<ServiceSource>();
         foreach (ServiceSource source in serviceSources)
-            source.ClearDynamicData_NoSourceChange();
+            source.ClearCachedTypes_NoEnvironmentChangeEvent();
     }
     
+    public void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent()
+    {
+        serviceSources = serviceSources ?? new List<ServiceSource>();
+        foreach (ServiceSource source in serviceSources)
+            source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+    }
+
     internal bool IsInResources() => 
             Resources.LoadAll<ServiceSourceSet>(string.Empty).Any(so => so == this);
 
@@ -59,5 +74,28 @@ public class ServiceSourceSet : ScriptableObject, IServiceSourceSet
 		
         return false;
     }
+    
+    public int SourceCount => serviceSources.Count;
+    public void AddSource(ServiceSource item) => serviceSources.Add(item);
+
+    public void ClearSources() => serviceSources.Clear();
+
+    public bool ContainsSource(ServiceSource item) => serviceSources.Contains(item);
+
+    public bool RemoveSource(ServiceSource item) => serviceSources.Remove(item);
+
+    public int IndexOfSource(ServiceSource item) => serviceSources.IndexOf(item);
+
+    public void InsertSource(int index, ServiceSource item) => serviceSources.Insert(index, item);
+
+    public void RemoveSourceAt(int index) => serviceSources.RemoveAt(index);
+    public void SwapSources(int index1, int index2) => serviceSources.Swap(index1, index2);
+
+    public ServiceSource this[int index]
+    {
+        get => serviceSources[index];
+        set => serviceSources[index] = value;
+    }
+
 }
 }

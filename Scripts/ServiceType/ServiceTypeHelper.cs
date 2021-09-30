@@ -7,19 +7,19 @@ namespace UnityServiceLocator
 public static class ServiceTypeHelper
 { 
     public static readonly List<Type> allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
-    static readonly HashSet<Type> _serviceTypes;
-    static readonly Dictionary<Type, List<Type>> _serviceToNonAbstractTypeMap;
-    static readonly Dictionary<Type, List<Type>> _nonAbstractToServiceTypeMap; 
+    static readonly HashSet<Type> serviceTypes;
+    static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
+    static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap; 
 
     static ServiceTypeHelper()
     {
         allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
-        _serviceTypes = AllGlobalServiceTypes(allTypes); 
+        serviceTypes = AllGlobalServiceTypes(allTypes); 
         
         SetupServiceDictionaries(
-            _serviceTypes,
-            out _serviceToNonAbstractTypeMap, 
-            out _nonAbstractToServiceTypeMap);
+            serviceTypes,
+            out serviceToNonAbstractTypeMap, 
+            out nonAbstractToServiceTypeMap);
  
     }
     
@@ -82,14 +82,12 @@ public static class ServiceTypeHelper
     }
     
     // EXTENSION
-
-    public static Type initableType = typeof(IInitializable);
-    
-    internal static bool IsServiceType(this Type type) => _serviceTypes.Contains(type);
+ 
+    internal static bool IsServiceType(this Type type) => serviceTypes.Contains(type);
 
     internal static IEnumerable<Type> GetServicesOfNonAbstractType(Type type)
     {
-        if (_nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
+        if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
             foreach (Type serviceType in value)
                 yield return serviceType;
     }

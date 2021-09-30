@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8503866212822430112
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 478786924710184680}
+  - component: {fileID: 3635074710233182703}
+  - component: {fileID: 5994101885887772600}
+  m_Layer: 0
+  m_Name: Ballistics Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &478786924710184680
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8503866212822430112}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3635074710233182703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8503866212822430112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62741858c54346a392b3a31a9c35441d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5994101885887772600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8503866212822430112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e56fc669dd784ee5acffc93442f230b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  priority:
+    type: 0
+    priorityValueSetting: 0
+    priorityValueAtInstallation: 0
+  dontDestroyOnLoad: 0
+  source:
+    enabled: 1
+    serviceSourceObject: {fileID: 8503866212822430112}
+    preferredSourceType: 3
+    additionalTypes:
+    - typeName: BallisticsManager
+      fullTypeName: BallisticsManager
+      assemblyQualifiedName: BallisticsManager, ServiceLoactorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 62741858c54346a392b3a31a9c35441d, type: 3}
+      switchable: 0
+    - typeName: BoxCollider
+      fullTypeName: UnityEngine.BoxCollider
+      assemblyQualifiedName: UnityEngine.BoxCollider, UnityEngine.PhysicsModule,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 0}
+      switchable: 0
+    tags: []
+    isTypesExpanded: 1
+    isTagsExpanded: 0

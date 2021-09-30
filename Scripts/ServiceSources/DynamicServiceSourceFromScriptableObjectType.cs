@@ -5,29 +5,27 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-[Serializable]
+
 class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource
 {
-    public Type scriptableObjectType;
+    public readonly Type scriptableObjectType;
  
     public DynamicServiceSourceFromScriptableObjectType(Type scriptableObjectType)
     {
         this.scriptableObjectType = scriptableObjectType;
     }
 
-    protected override List<Type> GetNonAbstractTypes()
-    { 
-        var result = new List<Type>();
+    protected override IEnumerable<Type> GetNonAbstractTypes()
+    {
         if (scriptableObjectType != null)
-            result.Add(scriptableObjectType);
-
-        return result;
+            yield return scriptableObjectType;
     }
-    public override Loadability Loadability => scriptableObjectType == null
-        ? new Loadability(Loadability.Type.Error,  "No Type") 
-        : Loadability.Loadable;
+    
+    public override Resolvability TypeResolvability => scriptableObjectType == null
+        ? new Resolvability(Resolvability.Type.Error,  "No Type") 
+        : Resolvability.Resolvable;
 
-    protected override bool NeedParentTransform => false;
+    protected override bool NeedParentTransformForLoad => false;
     protected override Object Instantiate(Transform parent)
     {
         Object obj = ScriptableObject.CreateInstance(scriptableObjectType);

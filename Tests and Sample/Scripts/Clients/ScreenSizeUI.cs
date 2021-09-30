@@ -8,7 +8,7 @@ public class ScreenSizeUI : MonoBehaviour
     
     void Awake()
     {
-        _screenSizeProvider = ServiceLocator.Get<IScreenSizeProvider>();
+        _screenSizeProvider = ServiceLocator.Resolve<IScreenSizeProvider>();
         _screenSizeProvider.ScreenSizeChanged += UpdateScreenSize;
     }
 

@@ -15,21 +15,21 @@ class ServiceLocatorRow
 
     public RowCategory Category { get; }
 
-    public IServiceSourceSet set; 
+    public IServiceSourceProvider provider; 
     public ServiceSource source;
     public Type type;
-    public Object loadedInstance;
-    public Loadability loadability;
+    public Object resolvedInstance;
+    public Resolvability resolvability;
 
     public ServiceLocatorRow(RowCategory category)
     {
         Category = category;
-        set = null;
+        provider = null;
         source = null;
         type = null;
         
-        loadedInstance = null;
-        loadability = new Loadability(Loadability.Type.Loadable);
+        resolvedInstance = null;
+        resolvability = new Resolvability(Resolvability.Type.Resolvable);
     }
 
     public Object SelectionObject
@@ -39,18 +39,20 @@ class ServiceLocatorRow
             switch (Category)
             {
                 case RowCategory.Set:
-                    return set?.Obj;
+                    return provider?.ProviderObject;
                 case RowCategory.Source:
-                    return source.GetDynamicServiceSource()?.SourceObject;
+                    return source.ServiceSourceObject;
                 default:
                     return null;
             }
         }
     }
 
+    public bool enabled;
+
     public override string ToString()
     {
-        string i = set == null ? "-" : set.Name;
+        string i = provider == null ? "-" : provider.Name;
         string st = source == null ? "-" : source.GetType().ToString();
         string s = source == null ? "-" : source.Name; 
         string t = type == null ? "-" : type.Name; 
@@ -62,7 +64,10 @@ class ServiceLocatorRow
         switch (Category)
         {
             case RowCategory.Set:
-                return new GUIContent(set.Name, FileIconHelper.GetIconOfObject(set.Obj), FileIconHelper.GetTooltipForISet(set)); 
+                return new 
+                    GUIContent(provider.Name, 
+                    FileIconHelper.GetIconOfObject(provider.ProviderObject),
+                    FileIconHelper.GetTooltipForISet(provider)); 
             case RowCategory.Source:
                 return new GUIContent(source.Name, source.Icon, FileIconHelper.GetTooltipForServiceSource(source.SourceType));
             default:
@@ -75,12 +80,19 @@ class ServiceLocatorRow
         switch (Category)
         {
             case RowCategory.Set:
-                return new GUIContent(FileIconHelper.GetTooltipForISet(set)); 
+                return new GUIContent(FileIconHelper.GetTooltipForISet(provider)); 
             case RowCategory.Source:
-                return new GUIContent(
-                    isShort?FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType):
-                        FileIconHelper.GetNameForServiceSourceCategory(source.SourceType),
-                    FileIconHelper.GetTooltipForServiceSource(source.SourceType));
+                string text ;
+                if (source.IsServiceSource)
+                    text = isShort
+                        ? FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType)
+                        : FileIconHelper.GetNameForServiceSourceCategory(source.SourceType);
+                else if (source.ServiceSourceObject == null)
+                    text = isShort ? "No Obj." : "No Source Object";
+                else 
+                    text = isShort ? "Wrong Obj." : "Wrong Source Object";
+                
+                return new GUIContent( text, FileIconHelper.GetTooltipForServiceSource(source.SourceType));
             default:
                 throw new ArgumentOutOfRangeException();
         }

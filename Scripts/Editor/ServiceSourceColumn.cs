@@ -42,11 +42,14 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
     
     static void DrawCell(Rect position, ServiceLocatorRow locatorRow, bool selectElement)
     {
+        GUI.enabled = true;
+        
         if (IsRowHighlighted(locatorRow))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
 
         GUI.color = Color.white;
  
+        GUI.enabled = locatorRow.enabled;
         position.y += (position.height - 16) / 2f;
         position.height = 16;
         EditorGUI.LabelField(position, locatorRow.GetGUIContent());
@@ -58,41 +61,12 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
         if (_rowButtonStyle == null)
             _rowButtonStyle = new GUIStyle(GUI.skin.label);
         
+        GUI.enabled = true;
         if (GUI.Button(position, GUIContent.none, _rowButtonStyle))
             OnRowClick(locatorRow, selectElement);
-    }
-
-    /*
-    static void CreateScriptableObjectFile(Type type)
-    {
-        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        string selectedAssetPath = Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject));
-        if (path == "")
-            path = "Assets";
-        else if (Path.GetExtension(path) != "")
-            path = path.Replace(selectedAssetPath, "");
-        path += $"/{type.Name}.asset";
-        string assetsPath = Application.dataPath;
-        // ReSharper disable StringIndexOfIsCultureSpecific.1
-        int assetsPathLength = assetsPath.IndexOf("Assets");
-        // ReSharper restore StringIndexOfIsCultureSpecific.1
-        var fullPath = $"{assetsPath.Substring(0, assetsPathLength)}{path}";
-        if (File.Exists(fullPath))
-        {
-            Debug.Log($"File   {fullPath}   already exists!");
-            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(path);
-        }
-        else
-        { 
-            var so = ScriptableObject.CreateInstance(type);
-            so.name = type.Name;
-            AssetDatabase.CreateAsset(so, path);
-            AssetDatabase.SaveAssets();
-            EditorUtility.FocusProjectWindow();
-            Selection.activeObject = so;
-        }
-    }
-    */
+        
+        GUI.enabled = locatorRow.enabled;
+    } 
 
     static void OnRowClick(ServiceLocatorRow locatorRow, bool selectElement)
     {

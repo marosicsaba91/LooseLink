@@ -1,15 +1,16 @@
 ﻿using System;
 using MUtility;
 using UnityEngine;
+using UnityServiceLocator;
 using Object = UnityEngine.Object;
 
-[CreateAssetMenu]
+[CreateAssetMenu, ServiceType]
 public class KeyboardMovementProvider : ScriptableObject, IMovementInputProvider
 {
-    [SerializeField] KeyCode up = KeyCode.UpArrow;
-    [SerializeField] KeyCode down = KeyCode.DownArrow;
-    [SerializeField] KeyCode left = KeyCode.LeftArrow;
-    [SerializeField] KeyCode right = KeyCode.RightArrow;
+    [SerializeField, SearchEnum] KeyCode up = KeyCode.UpArrow;
+    [SerializeField, SearchEnum] KeyCode down = KeyCode.DownArrow;
+    [SerializeField, SearchEnum] KeyCode left = KeyCode.LeftArrow;
+    [SerializeField, SearchEnum] KeyCode right = KeyCode.RightArrow;
     
     public Object UnityObject => this;
     public string NameOfDirectionCommand(GeneralDirection2D direction) => 

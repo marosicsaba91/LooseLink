@@ -2,7 +2,8 @@
     "name": "ServiceLoactorSample",
     "references": [
         "MUtility",
-        "UnityServiceLocator"
+        "UnityServiceLocator",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

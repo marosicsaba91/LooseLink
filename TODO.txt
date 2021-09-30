@@ -1,13 +1,10 @@
 Add Examples to Project & Update Test
     Event based Environment Change Test
     Manual Service Source Set Implementation
+    Conditions
+    Memory Allocation
+    Everything work in build too
     
-ServerGameObject
-    (Installs itself)
-    (Service Set recognises it -> Get Types & Tag Setting from ServiceGameObject (No Change))
-    
-Call only 1 Everything Changed at the enn of all Awake and OnEnable
-
 Update Manual
 
 Publish Beta:

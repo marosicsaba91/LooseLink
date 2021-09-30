@@ -9,100 +9,98 @@ namespace UnityServiceLocator
  
 abstract class DynamicServiceSource
 {
-    List<Type> _allNonAbstractTypes;
-    List<Type> _allAbstractTypes;
-    List<Type> _possibleAdditionalTypes;
-    Dictionary<Type, object> _typeToServiceOnSource; 
+    readonly Dictionary<Type, object> _typeToServiceOnSource = new Dictionary<Type, object>();
+    readonly List<Type> _dynamicServiceTypes = new List<Type>();
+    readonly List<Type> _possibleAdditionalTypes = new List<Type>(); 
+    readonly List<Type> _allNonAbstractTypes = new List<Type>(); 
+    readonly List<IResolvingCondition> _resolvingConditions = new List<IResolvingCondition>(); 
     ServiceSource _setting;
+    ServiceSourceComponent _serviceSourceComponent;
     bool _isDynamicTypeDataInitialized = false;
- 
+
     public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
-    public Dictionary<Type, object> InstantiatedServices { get; private set; } =
-        new Dictionary<Type, object>();
+    readonly Dictionary<Type, object> _instantiatedServices = new Dictionary<Type, object>();
+ 
 
-    public abstract Loadability Loadability { get; }
+    public abstract Resolvability TypeResolvability { get; }
+
+    public Resolvability Resolvability
+    {
+        get
+        {
+            Resolvability result = TypeResolvability;
+            if (result.type == Resolvability.Type.Error || result.type == Resolvability.Type.CantResolveNow)
+                return result;
+
+            if (!IsResolvableByConditions(out string message))
+                return new Resolvability(Resolvability.Type.CantResolveNow, message);
+
+            return result;
+        }
+    }
+
+
+    public ServiceSourceComponent ServiceSourceComponent
+    {
+        get
+        {
+            InitDynamicTypeDataIfNeeded();
+            return _serviceSourceComponent;
+        } 
+    }
 
     public bool TryGetService(
         Type type,
-        IServiceSourceSet set,
-        object[] conditionTags,
-        List<Tag> serializedTags,
-        out object service,
-        out bool newInstance)
+        IServiceSourceProvider provider, 
+        out object service)
     {
-        newInstance = false;
-        Loadability loadability = Loadability;
-        if (loadability.type != Loadability.Type.Loadable && loadability.type!= Loadability.Type.AlwaysLoaded)
+        Resolvability resolvability = Resolvability;
+        if (resolvability.type != Resolvability.Type.Resolvable && resolvability.type!= Resolvability.Type.AlwaysResolved)
         {
             service = default;
             return false;
         }
-
-        if (conditionTags!= null) 
-        {
-            var success = true;
-            foreach (object tag in conditionTags)
-            {
-                if (tag == null) continue; 
-                if (serializedTags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue; 
-                    
-                success = false;
-                break;
-            }
-
-            if (!success)
-            {
-                service = default;
-                return false;
-            }
-        }
-
+        
         if (LoadedObject == null)
         {
             Transform parentObject = null;
 
-            if (NeedParentTransform)
+            if (NeedParentTransformForLoad)
             {
-                parentObject = set != null && set.GetType().IsSubclassOf(typeof(Component))
-                    ? ((Component) set).transform
+                parentObject = provider != null && provider.GetType().IsSubclassOf(typeof(Component))
+                    ? ((Component) provider).transform
                     : ServiceLocator.ParentObject;
             }
             
             LoadedObject = Instantiate(parentObject);
-            newInstance = true;
             TryInitializeService();
         }
 
-        if (!InstantiatedServices.ContainsKey(type))
-            InstantiatedServices.Add(type, GetServiceFromServerObject(type, LoadedObject));
+        if (!_instantiatedServices.ContainsKey(type))
+            _instantiatedServices.Add(type, GetServiceFromServerObject(type, LoadedObject));
 
-        service = InstantiatedServices[type];
+        service = _instantiatedServices[type];
         return true; 
     }
 
     void TryInitializeService()
     {
         if (LoadedObject == null) return;
-        switch (LoadedObject)
-        {
-            case ScriptableObject so:
-            {
-                if (so is IInitializable initSo)
-                    initSo.Initialize();
-                break;
-            }
-            case GameObject go:
-            {
-                IInitializable[] initializables = go.GetComponents<IInitializable>();
-                foreach (IInitializable initializable in initializables)
-                    initializable.Initialize();
-                break;
-            }
-        }
+        foreach (IInitializable initializable in GetTypesOf<IInitializable>(LoadedObject))
+            initializable.Initialize();
+    }
+    
+    bool IsResolvableByConditions(out string message)
+    { 
+        foreach (IResolvingCondition resolvingCondition in _resolvingConditions)
+            if (!resolvingCondition.CanResolve(out message))
+                return false;
+        message = null;
+        return true;
     }
 
-    protected abstract bool NeedParentTransform { get; }
+    protected abstract bool NeedParentTransformForLoad { get; }
 
     protected abstract Object Instantiate(Transform parent);
 
@@ -111,17 +109,11 @@ abstract class DynamicServiceSource
     public abstract string Name { get; }
 
     public abstract Object SourceObject { get; }
-
-    public IReadOnlyList<Type> GetAllNonAbstractTypes()
+ 
+    public IEnumerable<Type> GetDynamicServiceTypes()
     {
         InitDynamicTypeDataIfNeeded();
-        return _allNonAbstractTypes;
-    }
-
-    public IReadOnlyList<Type> GetAllAbstractTypes()
-    {
-        InitDynamicTypeDataIfNeeded();
-        return _allAbstractTypes;
+        return _dynamicServiceTypes;
     }
 
     public IReadOnlyList<Type> GetPossibleAdditionalTypes()
@@ -140,30 +132,54 @@ abstract class DynamicServiceSource
     { 
         if (_isDynamicTypeDataInitialized) return;
         
-        _allNonAbstractTypes = GetNonAbstractTypes();
-        _allAbstractTypes = new List<Type>();
-        _typeToServiceOnSource = new Dictionary<Type, object>(); 
-        _possibleAdditionalTypes = new List<Type>(); 
+        _allNonAbstractTypes.Clear();
+        _allNonAbstractTypes.AddRange(GetNonAbstractTypes());
+        _dynamicServiceTypes.Clear();
+        _possibleAdditionalTypes.Clear();
+        _typeToServiceOnSource.Clear();
+        _serviceSourceComponent = (SourceObject as GameObject)?.GetComponent<ServiceSourceComponent>();
+        _resolvingConditions.Clear();
+        _resolvingConditions.AddRange(GetTypesOf<IResolvingCondition>(SourceObject));
         foreach (Type concreteType in _allNonAbstractTypes)
-        { 
-            object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType); 
+        {
+            object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
 
 
             IEnumerable<Type> abstractTypes = ServiceTypeHelper.GetServicesOfNonAbstractType(concreteType)
-                .Where(abstractType => !_allAbstractTypes.Contains(abstractType));
+                .Where(abstractType => !_dynamicServiceTypes.Contains(abstractType));
 
             foreach (Type abstractType in abstractTypes)
             {
-                _allAbstractTypes.Add(abstractType);
-                _typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject); 
+                _dynamicServiceTypes.Add(abstractType);
+                _typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject);
             }
-            
-            
+
+
             foreach (Type subclass in AllPossibleAdditionalSubclassesOf(concreteType))
-                _possibleAdditionalTypes.Add(subclass);
+                _possibleAdditionalTypes.Add(subclass); 
         }
 
         _isDynamicTypeDataInitialized = true;
+    }
+
+    static IEnumerable<T> GetTypesOf<T>(Object obj)
+    {
+        switch (obj)
+        {
+            case ScriptableObject so:
+            {
+                if (so is T t)
+                    yield return t;
+                break;
+            }
+            case GameObject go:
+            {
+                T[] initializables = go.GetComponents<T>();
+                foreach (T t in initializables)
+                    yield return t;
+                break;
+            }
+        }
     }
 
     IEnumerable<Type> AllPossibleAdditionalSubclassesOf(Type type, bool includeInterfaces = true )
@@ -171,36 +187,46 @@ abstract class DynamicServiceSource
         if(type == null)
             yield break;
         
+        if(type == typeof(ServiceSourceComponent))
+            yield break;
+        
+        if(type == typeof(LocalServiceInstaller))
+            yield break;
+        
         yield return type;
+        
         if (includeInterfaces)
         {
             foreach (Type interfaceType in type.GetInterfaces())
-                if (interfaceType != typeof(IInitializable))
-                    yield return interfaceType;
+            {
+                if (interfaceType == typeof(IInitializable)) continue;
+                if (interfaceType == typeof(IResolvingCondition)) continue;
+                if (interfaceType == typeof(IServiceSourceProvider)) continue; 
+                yield return interfaceType;
+            }
         }
 
         Type baseType = type.BaseType;
-        if(baseType == null ||
-           baseType == typeof(ScriptableObject) ||
-           baseType == typeof(Component) ||
-           baseType == typeof(Behaviour) ||
-           baseType == typeof(MonoBehaviour))
-            yield break;
+        if(baseType == null ) yield break; 
+        if(baseType == typeof(ScriptableObject)) yield break;
+        if(baseType == typeof(Component)) yield break;
+        if(baseType == typeof(Behaviour)) yield break;
+        if(baseType == typeof(MonoBehaviour)) yield break;
         
         foreach (Type b in AllPossibleAdditionalSubclassesOf(baseType, includeInterfaces: false ))
             yield return b;
     }
 
-    protected abstract List<Type> GetNonAbstractTypes();
+    protected abstract IEnumerable<Type> GetNonAbstractTypes();
     public abstract object GetServiceOnSourceObject(Type type);
  
     public abstract ServiceSourceTypes SourceType { get; }
     public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 
-    public void ClearInstancesAndCachedTypes()
+    public void ClearCachedInstancesAndTypes()
     {
         LoadedObject = null;
-        InstantiatedServices.Clear();
+        _instantiatedServices.Clear();
         ClearCachedTypes();
     }
 
@@ -209,8 +235,6 @@ abstract class DynamicServiceSource
         if(Application.isPlaying)
             return;
         _isDynamicTypeDataInitialized = false;
-    }
-
-    public Texture Icon => FileIconHelper.GetIconOfObject(SourceObject);
+    } 
 }
 }

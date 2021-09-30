@@ -43,17 +43,21 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     
     
     float GetColumnFixWidth() => IsColumnOpen ? 75f : 50f; 
-    float GetColumnRelativeWidth() => IsColumnOpen ? 1f : 0f;
+    float GetColumnRelativeWidth() => IsColumnOpen ? 0.5f : 0f;
+
+    static bool _rowEnabled = true;
     
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
+        _rowEnabled = row.element.enabled;
+        GUI.enabled = _rowEnabled;
         if (row.element.Category == ServiceLocatorRow.RowCategory.Set)
         {
             ServicesEditorHelper.DrawLine(position);
             return;
         }
 
-        IReadOnlyList<Tag> tags = row.element.source.GetTags();
+        IReadOnlyList<Tag> tags = row.element.source.Tags;
 
         if (tags == null || tags.Count == 0)
         {
@@ -144,7 +148,7 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             GUI.Label(position, content, style);
         }
 
-        GUI.enabled = true; 
+        GUI.enabled = _rowEnabled; 
         
     }
 
@@ -194,8 +198,8 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         _tagSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchTagText);
     }
 
-    public bool ApplyTagSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
-        ApplyTagSearchOnTagArray(source.GetTags());
+    public bool ApplyTagSearchOnSource(IServiceSourceProvider provider, ServiceSource source) =>
+        ApplyTagSearchOnTagArray(source.Tags);
 
     public static void TryPing(object pingable)
     {

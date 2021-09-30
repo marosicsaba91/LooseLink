@@ -13,8 +13,8 @@ class ServiceSourceTypeColumn: Column<FoldableRow<ServiceLocatorRow>>
         get => _serviceLocatorWindow.isSourceCategoryOpen;
         set => _serviceLocatorWindow.isSourceCategoryOpen = value;
     }
-    
-    ServiceLocatorWindow _serviceLocatorWindow;
+
+    readonly ServiceLocatorWindow _serviceLocatorWindow;
     public ServiceSourceTypeColumn(ServiceLocatorWindow serviceLocatorWindow)
     {
         columnInfo = new ColumnInfo
@@ -44,6 +44,8 @@ class ServiceSourceTypeColumn: Column<FoldableRow<ServiceLocatorRow>>
     
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
+        GUI.enabled = row.element.enabled;
+        
         if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
         {
             ServicesEditorHelper.DrawLine(position);

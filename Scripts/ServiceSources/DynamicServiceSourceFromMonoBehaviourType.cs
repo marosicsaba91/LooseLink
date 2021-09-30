@@ -5,40 +5,36 @@ using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
-[Serializable]
 class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
 {
-    public Type monoBehaviourType;
+    public readonly Type monoBehaviourType;
  
     public DynamicServiceSourceFromMonoBehaviourType(Type monoBehaviourType)
-    {
+    { 
         this.monoBehaviourType = monoBehaviourType;
     }
 
-    protected override List<Type> GetNonAbstractTypes()
-    { 
-        var result = new List<Type>();
+    protected override IEnumerable<Type> GetNonAbstractTypes()
+    {
         if (monoBehaviourType != null)
-            result.Add(monoBehaviourType);
-
-        return result;
+            yield return monoBehaviourType;
     }
 
-    public override Loadability Loadability
+    public override Resolvability TypeResolvability
     {
         get
         {
             if (monoBehaviourType == null)
-                return new Loadability(Loadability.Type.Error, "No Type");
+                return new Resolvability(Resolvability.Type.Error, "No Type");
             if(!Application.isPlaying)
-                return new Loadability(
-                        Loadability.Type.Warning,
+                return new Resolvability(
+                        Resolvability.Type.CantResolveNow,
                     "You can't instantiate MonoBehaviour through Service Locator in Editor Time");
-            return Loadability.Loadable;
+            return Resolvability.Resolvable;
         }
     }
 
-    protected override bool NeedParentTransform => true;
+    protected override bool NeedParentTransformForLoad => true;
 
     protected override Object Instantiate(Transform parent)
     {

@@ -12,37 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bc99de804f79f54b800ab521cdaf7f0, type: 3}
   m_Name: Avatar Installer
   m_EditorClassIdentifier: 
-  automaticallyUseAsGlobalInstaller: 1
+  automaticallyUseAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
     serviceSourceObject: {fileID: 7911280409414878322, guid: 6b11993b0fc28604fb7fd5453465d0f7,
       type: 3}
     preferredSourceType: 3
-    additionalTypes:
-    - typeName: Transform
-      fullTypeName: UnityEngine.Transform
-      assemblyQualifiedName: UnityEngine.Transform, UnityEngine.CoreModule, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      monoScript: {fileID: 0}
-      switchable: 1
+    additionalTypes: []
     tags:
     - tagType: 0
       stringTag: Avatar
       unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
     isTagsExpanded: 1
-  - enabled: 1
-    serviceSourceObject: {fileID: 6821378056673058357, guid: 46a892547cec1c7488bc2f7fe73286b3,
+  - enabled: 0
+    serviceSourceObject: {fileID: 3036740062741517902, guid: 46a892547cec1c7488bc2f7fe73286b3,
       type: 3}
-    preferredSourceType: 2
-    additionalTypes:
-    - typeName: AvatarCamera
-      fullTypeName: AvatarCamera
-      assemblyQualifiedName: AvatarCamera, ServiceLoactorSample, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      monoScript: {fileID: 11500000, guid: cc085b760ba3af647a85c347eb3f8f9e, type: 3}
-      switchable: 0
+    preferredSourceType: 3
+    additionalTypes: []
     tags: []
     isTypesExpanded: 1
     isTagsExpanded: 0
-  priority: 0
+  priority: 10

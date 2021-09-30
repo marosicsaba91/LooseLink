@@ -127,7 +127,7 @@ public class Tag
             case TagType.Object:
                 return typeof(Object); 
             case TagType.Other:
-                return _otherTypeTag.GetType();
+                return _otherTypeTag?.GetType();
             default:
                 return null;
         }

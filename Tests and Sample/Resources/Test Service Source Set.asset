@@ -21,7 +21,7 @@ MonoBehaviour:
     additionalTypes:
     - typeName: TimeProvider
       fullTypeName: TimeProvider
-      assemblyQualifiedName: TimeProvider, UnityServicesLocatorSample, Version=0.0.0.0,
+      assemblyQualifiedName: TimeProvider, ServiceLoactorSample, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: 915e9cc4d6bc40c08edb38aba7b7d196, type: 3}
       switchable: 1

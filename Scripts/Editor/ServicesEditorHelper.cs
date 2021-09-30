@@ -4,12 +4,13 @@ using System.Linq;
 using MUtility;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityServiceLocator
 {
 static class ServicesEditorHelper
 {
-    const int smallMabelSize = 10;
+    const int smallMabelSize = 12;
     
     static GUIStyle _smallCenterLabelStyle;
     public static GUIStyle SmallCenterLabelStyle => _smallCenterLabelStyle = _smallCenterLabelStyle ?? new GUIStyle
@@ -17,8 +18,21 @@ static class ServicesEditorHelper
         alignment = TextAnchor.MiddleCenter,
         padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
         normal = {textColor = GUI.skin.label.normal.textColor},
-        fontSize = smallMabelSize
+        fontSize = smallMabelSize,
+        clipping = TextClipping.Clip
     };
+
+    public static GUIStyle GetSmallCenterLabelStyle(GUIContent text, float width)
+    {
+        Texture image = text.image;
+        text.image = null;
+        bool smaller = SmallLeftLabelStyle.CalcSize(text).x + (image == null ? 0 : 16) > width;
+        text.image = image;
+        if (smaller)
+            return SmallLeftLabelStyle;
+        return SmallCenterLabelStyle;
+    }
+    
     static GUIStyle _smallLeftLabelStyle;
     public static GUIStyle SmallLeftLabelStyle => _smallLeftLabelStyle = _smallLeftLabelStyle ?? new GUIStyle
     {

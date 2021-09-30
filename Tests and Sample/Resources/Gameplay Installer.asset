@@ -25,7 +25,7 @@ MonoBehaviour:
   - enabled: 1
     serviceSourceObject: {fileID: 11400000, guid: 9a95d86df22b6164f97a3d7d0e711d2a,
       type: 2}
-    preferredSourceType: 4
+    preferredSourceType: 5
     additionalTypes: []
     tags: []
     isTypesExpanded: 0
@@ -51,5 +51,12 @@ MonoBehaviour:
       switchable: 0
     tags: []
     isTypesExpanded: 1
+    isTagsExpanded: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 0}
+    preferredSourceType: 0
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
     isTagsExpanded: 0
   priority: 1

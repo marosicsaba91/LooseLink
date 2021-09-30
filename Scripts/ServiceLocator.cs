@@ -15,8 +15,8 @@ namespace UnityServiceLocator
 
 public static class ServiceLocator
 {
-    static readonly ServiceEnvironment _environment = new ServiceEnvironment();
-    public static ServiceEnvironment Environment => _environment;
+    static readonly ServiceEnvironment environment = new ServiceEnvironment();
+    public static ServiceEnvironment Environment => environment;
     internal static bool IsDestroying { get; private set; }
     internal static bool IsSceneLoaded { get; private set; } // After all Awake & OnEneble
 
@@ -25,8 +25,8 @@ public static class ServiceLocator
     { 
         if(IsSceneLoaded) return;
         
-        _environment.SetAllGlobalInstallers(FindGlobalInstallers);
-        _environment.InitServiceSources();
+        environment.SetAllGlobalInstallers(FindGlobalInstallers);
+        environment.InitServiceSources();
         IsDestroying = false; 
 
 #if UNITY_EDITOR
@@ -73,30 +73,30 @@ public static class ServiceLocator
 
     internal static void ClearAllCachedData()
     {
-        foreach (var installerSourcePair in Environment.ServiceSources)
-            installerSourcePair.source.GetDynamicServiceSource()?.ClearInstancesAndCachedTypes();
+        foreach ((IServiceSourceProvider installer, ServiceSource source) installerSourcePair in Environment.ServiceSources)
+            installerSourcePair.source?.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
     }
 
-    public static TService Get<TService>(params object[] tags) =>
-        (TService) Get(typeof(TService), tags);
+    public static TService Resolve<TService>(params object[] tags) =>
+        (TService) Resolve(typeof(TService), tags);
 
-    public static object Get(Type looseServiceType, params object[] tags)
+    public static object Resolve(Type looseServiceType, params object[] tags)
     {
-        if (TryGet(looseServiceType, tags, out object service))
+        if (TryResolve(looseServiceType, tags, out object service))
             return service;
 
         throw CantFindService(looseServiceType, tags);
     }
 
-    public static bool TryGet<TService>(out TService service) =>
-        TryGet(tags: null, out service);
+    public static bool TryResolve<TService>(out TService service) =>
+        TryResolve(tags: null, out service);
 
-    public static bool TryGet(Type looseServiceType, out object service) =>
-        TryGet(looseServiceType, tags: null, out service);
+    public static bool TryResolve(Type looseServiceType, out object service) =>
+        TryResolve(looseServiceType, tags: null, out service);
 
-    public static bool TryGet<TService>(object[] tags, out TService service)
+    public static bool TryResolve<TService>(object[] tags, out TService service)
     {
-        if (TryGet(typeof(TService), tags, out object service1))
+        if (TryResolve(typeof(TService), tags, out object service1))
         {
             service = (TService) service1;
             return true;
@@ -106,24 +106,23 @@ public static class ServiceLocator
         return false;
     }
 
-    public static bool TryGet(Type looseServiceType, object[] tags, out object service)
+    public static bool TryResolve(Type looseServiceType, object[] tags, out object service)
     {
-        foreach ((IServiceSourceSet installer, ServiceSource source) in Environment.ServiceSources)
-        {
-            DynamicServiceSource dynamicSource = source?.GetDynamicServiceSource();
-            if (dynamicSource == null) continue;
-            bool typeEnabled = dynamicSource.GetAllAbstractTypes().Contains(looseServiceType);
+        foreach ((IServiceSourceProvider installer, ServiceSource source) in Environment.ServiceSources)
+        { 
+            if (!source.IsServiceSource) continue;
+            bool serviceTypeFound = source.GetDynamicServiceTypes().Contains(looseServiceType);
 
-            if (!typeEnabled)
+            if (!serviceTypeFound)
                 foreach (SerializableType variable in source.additionalTypes)
                 {
-                    if (typeEnabled) break;
-                    if (variable.Type == looseServiceType) typeEnabled = true;
+                    if (serviceTypeFound) break;
+                    if (variable.Type == looseServiceType) serviceTypeFound = true;
                 }
 
-            if (!typeEnabled) continue;
+            if (!serviceTypeFound) continue;
 
-            if (TryGetServiceInSource(looseServiceType, installer, source, dynamicSource, tags, out object serv))
+            if (TryGetServiceInSource(looseServiceType, installer, source,  tags, out object serv))
             {
                 service = serv;
                 return true;
@@ -136,14 +135,13 @@ public static class ServiceLocator
 
     static bool TryGetServiceInSource(
         Type looseServiceType,
-        IServiceSourceSet set,
-        ServiceSource source,
-        DynamicServiceSource dynamicSource,
+        IServiceSourceProvider provider,
+        ServiceSource source, 
         object[] tags, out object service)
     {
         service = null;
 
-        if (!dynamicSource.TryGetService(looseServiceType, set, tags, source.tags, out service, out bool _))
+        if (!source.TryGetService(looseServiceType, provider, tags, out service))
             return false;
         
         return true;
@@ -167,11 +165,7 @@ public static class ServiceLocator
             $"Can't find Services of this Type: {looseServiceType} with these tags: [{tagNames}]");
     }
 
-    internal static IEnumerable<IServiceSourceSet> GetInstallers()
-    { 
-        foreach (IServiceSourceSet installer in Environment.GetInstallers())
-            yield return installer; 
-    }
-
+    internal static IEnumerable<IServiceSourceProvider> GetAllInstallers() => 
+        Environment.GetAllInstallers();
 }
 }

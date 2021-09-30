@@ -43,18 +43,19 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
     
     
     float GetColumnFixWidth() => IsColumnOpen ? 75f : 50f; 
-    float GetColumnRelativeWidth() => IsColumnOpen ? 1f : 0f;
+    float GetColumnRelativeWidth() => IsColumnOpen ? 0.5f : 0f;
 
 
     public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
     {
+        GUI.enabled = row.element.enabled;
         if (row.element.Category != ServiceLocatorRow.RowCategory.Source)
         {
             ServicesEditorHelper.DrawLine(position);
             return;
         }
 
-        List<ServiceTypeInfo> types = row.element.source.GetAllServicesWithName().ToList();
+        List<ServiceTypeInfo> types = row.element.source.GetAllServiceInfos().ToList();
 
         if (types.IsNullOrEmpty())
         {
@@ -195,7 +196,7 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
         _serviceSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchServicesText);
     }
     
-    public bool ApplyTypeSearchOnSource(IServiceSourceSet set, ServiceSource source) =>
+    public bool ApplyTypeSearchOnSource(IServiceSourceProvider provider, ServiceSource source) =>
         ApplyTypeSearchOnTypeArray(source.GetServiceTypesRecursively());
 
     public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)
