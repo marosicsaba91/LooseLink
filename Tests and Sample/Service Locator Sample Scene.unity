@@ -385,6 +385,25 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b11993b0fc28604fb7fd5453465d0f7, type: 3}
+--- !u!1 &962625555 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7911280409414878322, guid: 6b11993b0fc28604fb7fd5453465d0f7,
+    type: 3}
+  m_PrefabInstance: {fileID: 962625554}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &962625556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962625555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99564b058d442ea4494c408322ab430b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platform: 7
 --- !u!1 &1006070833
 GameObject:
   m_ObjectHideFlags: 0
@@ -909,11 +928,11 @@ MonoBehaviour:
   priority:
     type: 0
     priorityValueSetting: 13
-    priorityValueAtInstallation: 2
+    priorityValueAtInstallation: 11
   dontDestroyOnLoad: 1
   serviceSources:
-  - enabled: 0
-    serviceSourceObject: {fileID: 0}
+  - enabled: 1
+    serviceSourceObject: {fileID: 962625555}
     preferredSourceType: 1
     additionalTypes: []
     tags: []

@@ -53,10 +53,25 @@ MonoBehaviour:
     isTypesExpanded: 1
     isTagsExpanded: 0
   - enabled: 1
-    serviceSourceObject: {fileID: 0}
-    preferredSourceType: 0
-    additionalTypes: []
+    serviceSourceObject: {fileID: 11400000, guid: 8fc56107f2f013c40a87f23323f1946a,
+      type: 2}
+    preferredSourceType: 4
+    additionalTypes:
+    - typeName: IEnumerable`1
+      fullTypeName: System.Collections.Generic.IEnumerable`1[[System.Boolean, mscorlib,
+        Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+      assemblyQualifiedName: System.Collections.Generic.IEnumerable`1[[System.Boolean,
+        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]],
+        mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+      switchable: 0
+    - typeName: IEnumerable
+      fullTypeName: System.Collections.IEnumerable
+      assemblyQualifiedName: System.Collections.IEnumerable, mscorlib, Version=4.0.0.0,
+        Culture=neutral, PublicKeyToken=b77a5c561934e089
+      monoScript: {fileID: 0}
+      switchable: 1
     tags: []
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
   priority: 1
