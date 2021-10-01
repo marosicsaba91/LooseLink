@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using MUtility;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,14 +13,45 @@ public class InputSystemMovementProvider : ScriptableObject, IMovementInputProvi
     [SerializeField] InputAction right;
     [SerializeField] InputAction left;
 
+    void OnEnable()
+    {
+        up.Enable();
+        down.Enable();
+        right.Enable();
+        left.Enable();
+        
+        UnSubscribe();
+        Subscribe();
+    }
+    
+    void OnValidate()
+    {
+        UnSubscribe();
+        Subscribe();
+    }
+    
+    void OnDisable()
+    {
+        Subscribe();
+    }
+
+    void Subscribe()
+    { 
+    }
+    
+    void UnSubscribe(){}
+
     public Object UnityObject => this;
     public string NameOfDirectionCommand(GeneralDirection2D direction) => 
-        DirectionToKeyCode(direction).ToString();
+        DirectionToInputAction(direction).ToString();
 
-    public bool IsDirectionCommandPressed(GeneralDirection2D direction) =>
-        DirectionToKeyCode(direction).triggered;
- 
-    InputAction DirectionToKeyCode(GeneralDirection2D direction)
+    public bool IsDirectionCommandPressed(GeneralDirection2D direction)
+    {
+        InputAction action = DirectionToInputAction(direction); 
+        return action.phase == InputActionPhase.Started;
+    }
+
+    InputAction DirectionToInputAction(GeneralDirection2D direction)
     {
         switch (direction)
         {

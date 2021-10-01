@@ -142,6 +142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rgbdBody: {fileID: 7911280409414878280}
+  bulletPrototype: {fileID: 0}
   maxVelocity: 10
   acceleration: 25
   deceleration: 15
@@ -165,7 +166,7 @@ MonoBehaviour:
   source:
     enabled: 1
     serviceSourceObject: {fileID: 7911280409414878322}
-    preferredSourceType: 3
+    preferredSourceType: 1
     additionalTypes:
     - typeName: Avatar
       fullTypeName: Avatar

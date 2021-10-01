@@ -196,13 +196,13 @@ public class ServiceEnvironment
     
     public void InvokeEnvironmentChangedOnWholeEnvironment()
     {
-        Debug.Log("Whole Environment Change");
+        // Debug.Log("Whole Environment Change");
         InvokeEnvironmentChanged(TypesOfWholeEnvironment());
     }
     
     internal void InvokeEnvironmentChangedOnInstaller(IServiceSourceProvider provider)
     {
-        Debug.Log($"Installer Change: {provider.Name}"); 
+        // Debug.Log($"Installer Change: {provider.Name}"); 
         InvokeEnvironmentChanged(TypesOfInstaller(provider));
     }
     
@@ -275,7 +275,6 @@ public class ServiceEnvironment
             yield return type;
     }
 
-    
     static IEnumerable<Type> TypesOfSources(ServiceSource[] sources)
     {
         foreach (ServiceSource source in sources)

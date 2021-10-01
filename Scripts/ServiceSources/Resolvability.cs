@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
+#endif
+    
 using UnityEngine;
 
 namespace UnityServiceLocator
@@ -39,9 +41,12 @@ readonly struct Resolvability
 
 static class ResolvabilityHelper
 {
+
+#if UNITY_EDITOR 
     static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
     static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
     static readonly Texture resolvableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
+#endif 
     
     internal static GUIContent GetGuiContent(this Resolvability resolvability)
     {
@@ -55,6 +60,8 @@ static class ResolvabilityHelper
 
     static Texture ToImage(Resolvability.Type resolvabilityType)
     {
+        
+#if UNITY_EDITOR  
         switch (resolvabilityType)
         {
             case Resolvability.Type.CantResolveNow:
@@ -67,7 +74,9 @@ static class ResolvabilityHelper
             default:
                 return null;
         }
+#else
+        return null;
+#endif  
     }
 }
 }
-#endif

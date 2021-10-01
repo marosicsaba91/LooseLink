@@ -1,6 +1,10 @@
-﻿using System; 
+﻿using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace UnityServiceLocator
 {
@@ -17,6 +21,19 @@ public class SerializableType : ISerializationCallbackReceiver
     
     // This is a hack:
     [SerializeField] bool switchable = false;
+
+    public SerializableType(Type type)
+    {
+        Type = type;
+    }
+    
+    public SerializableType(Object monoScriptObject)
+    {
+#if UNITY_EDITOR
+        if (monoScriptObject is MonoScript script) 
+            Type = script.GetClass(); 
+#endif 
+    }
 
     public Type Type
     {
@@ -52,6 +69,7 @@ public class SerializableType : ISerializationCallbackReceiver
         assemblyQualifiedName = _type?.AssemblyQualifiedName;
         fullTypeName = _type?.FullName;
         typeName = _type?.Name;
+        
         monoScript = TypeToFileHelper.GetObject(_type);
     }
     

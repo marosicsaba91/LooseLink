@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -31,7 +32,7 @@ namespace Tests
         }
         
         [UnityTest, Order(order: 2)]
-        public IEnumerator Test2_AddPrefabSourceToInstaller()
+        public IEnumerator Test2_AddScriptableObjectSourceToInstaller()
         {
             _testScriptableObject1 = (ScriptableObject) Resources.Load(testScriptableObject1Name);
             _testScriptableObject2 = (ScriptableObject) Resources.Load(testScriptableObject2Name); 
@@ -47,6 +48,10 @@ namespace Tests
             var service1 = ServiceLocator.Resolve<KeyboardMovementProvider>();
             bool foundService1 = service1 != null && service1 != _testScriptableObject1;
             Assert.IsTrue(foundService1);
+            
+            Debug.Log(_installer.SourceCount); 
+            Debug.Log(_serviceSource1.GetServiceTypesRecursively().Count()); 
+            Debug.Log(_serviceSource2.GetServiceTypesRecursively().Count()); 
 
             var service2 = ServiceLocator.Resolve<InputSystemMovementProvider>();
             bool foundService2= service2 != null;

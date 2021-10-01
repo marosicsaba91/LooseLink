@@ -1,16 +1,14 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace UnityServiceLocator
 {
 static class FileIconHelper
-{
-    public static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-    public static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
-    public static readonly Texture loadableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
-    
+{ 
     public enum FileType
     {
         Prefab,
@@ -39,6 +37,35 @@ static class FileIconHelper
         return null;
 #endif
     }
+    
+#if UNITY_EDITOR 
+    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
+    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image; 
+#endif
+
+    static Texture WarningImage
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return warningImage;
+#else
+            return null;
+#endif
+        }
+    }
+
+    internal static Texture ErrorImage
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return errorImage;
+#else
+            return null;
+#endif
+        }
+    }  
 
     public static GUIContent GetGUIContentToType(ServiceTypeInfo typeInfo)
     { 
@@ -48,14 +75,13 @@ static class FileIconHelper
         bool isMissing = typeInfo.isMissing;
 
         if (type == null) 
-            return new GUIContent(name, errorImage, $"Types \"{fullName}\" Is Missing!");
+            return new GUIContent(name, ErrorImage, $"Types \"{fullName}\" Is Missing!");
         
-        Texture texture = isMissing ? errorImage : GetIconOfType(type);
+        Texture texture = isMissing ? ErrorImage : GetIconOfType(type);
         if (texture == null)
             texture = GetIconOfSource(FileType.CsFile);
         var tooltip = $"{fullName} ({GetTypeCategory(type)})";
         return new GUIContent(name, texture, tooltip);
-
     }
 
     public static Texture GetIconOfObject(Object obj)

@@ -6,6 +6,7 @@ public class Avatar : MonoBehaviour
 {
     [Header("References")] 
     [SerializeField] Rigidbody rgbdBody;
+    [SerializeField] Bullet bulletPrototype;
     [Header("Settings")]
     
     [SerializeField] float maxVelocity = 5;
@@ -67,12 +68,12 @@ public class Avatar : MonoBehaviour
     void ShootMain(Vector2 position)
     {
         Vector3 start = transform.position;
-        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y));
+        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y), bulletPrototype);
     }
     
     void ShootSecondary(Vector2 position)
     {
         Vector3 start = transform.position;
-        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y));
+        _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y), bulletPrototype);
     } 
 }

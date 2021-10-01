@@ -60,6 +60,7 @@ namespace UnityServiceLocator.Editor
         static List<SerializableType> _additionalServiceTypes;
         static List<Type> _possibleAdditionalServiceTypes;
         static List<Tag> _tags;
+        static List<IServiceSourceCondition> _conditions;
         static int _typeCount;
         
         public static void DrawInstallerInspectorGUI(UnityEditor.Editor editor, IServiceSourceProvider provider)
@@ -120,8 +121,9 @@ namespace UnityServiceLocator.Editor
             _insideSet = _source.GetServiceSourceSet(); 
             _source.ClearCachedTypes_NoEnvironmentChangeEvent();
             _additionalServiceTypes = _source.additionalTypes;
-            _tags = _source.Tags; 
-            _possibleAdditionalServiceTypes = _source?.GetPossibleAdditionalTypes()?.ToList();
+            _tags = _source.Tags;
+            _conditions = _source.Conditions;
+            _possibleAdditionalServiceTypes = _source?.GetPossibleAdditionalTypes()?.ToList() ?? new List<Type>();
             _dynamicServiceTypes = _source?.GetDynamicServiceTypes()?.ToList();
             _typeCount = (_dynamicServiceTypes?.Count ?? 0) + _additionalServiceTypes.Count;
 
@@ -148,6 +150,10 @@ namespace UnityServiceLocator.Editor
                 lineCount += 1 + _typeCount;
             if (_source.isTagsExpanded)
                 lineCount += 1 + _tags.Count;
+
+            lineCount+= _conditions.Count; 
+
+
             return ((lineHeight + space) * lineCount) + (2 * padding);
         }
 
@@ -166,16 +172,17 @@ namespace UnityServiceLocator.Editor
                 typesPos.x += foldoutW + space;
                 typesPos.width -= foldoutW + space;
 
-                // Draw types
                 Rect tagsPosition = DrawServices(typesPos);
 
-                // Draw tags  
-                DrawTags(tagsPosition);
+                Rect conditionsPosition = DrawTags(tagsPosition);
+                
+                DrawConditions(conditionsPosition);
             }
 
             if (_anyChange)
                 EditorUtility.SetDirty(_serializedObject);
         }
+
 
         static Rect DrawHeader(Rect position)
         {
@@ -333,7 +340,7 @@ namespace UnityServiceLocator.Editor
             if (_source.additionalTypes != null)
                 for (var index = 0; index < _additionalServiceTypes.Count; index++)
                 {
-                    notUsedAdditionalTypes.Remove(_additionalServiceTypes[index].Type);
+                    notUsedAdditionalTypes?.Remove(_additionalServiceTypes[index].Type);
                     DrawSerializableType(position, _source, _additionalServiceTypes, index, usedTypes);
                     position.y += lineHeight + space;
                 }
@@ -414,14 +421,23 @@ namespace UnityServiceLocator.Editor
             }
         }
 
-        static void DrawTags(Rect position)
+        static Rect DrawTags(Rect position)
         {
-            if(_tags == null) return;
+            if (_tags == null)
+            {
+                position.x -= foldoutW;
+                return position;
+            }
+            
             var title = $"Tags ({_tags.Count})";
             _source.isTagsExpanded = EditorGUI.Foldout(position, _source.isTagsExpanded, title);
 
             position.y += lineHeight + space;
-            if (!_source.isTagsExpanded) return;
+            if (!_source.isTagsExpanded)
+            {
+                position.x -= foldoutW;
+                return position;
+            }
 
             bool changeable = !_source.IsTypesAndTagsComingFromDifferentServiceSourceComponent;
             
@@ -441,6 +457,8 @@ namespace UnityServiceLocator.Editor
             } 
 
             position.y += lineHeight + space;
+            position.x -= foldoutW;
+            return position;
         }
 
         static void DrawTag(
@@ -547,6 +565,20 @@ namespace UnityServiceLocator.Editor
             }
             else
                 EditorHelper.DrawButtonLikeBox(position, text, TextAnchor.MiddleLeft); 
+        }
+
+        static readonly Texture successIcon = EditorGUIUtility.IconContent("TestPassed").image;
+        static readonly Texture failIcon = EditorGUIUtility.IconContent("TestFailed").image;
+        static void DrawConditions(Rect position)
+        {
+            foreach (IServiceSourceCondition condition in _conditions)
+            {
+                bool success = condition.CanResolve();
+                string message = condition.GetConditionMessage(); 
+                var content = new GUIContent(message, success ? successIcon : failIcon);
+                GUI.Label(position, content);
+                position.y += lineHeight + space;
+            }
         }
 
         enum ListAction

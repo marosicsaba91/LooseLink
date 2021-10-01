@@ -13,7 +13,7 @@ abstract class DynamicServiceSource
     readonly List<Type> _dynamicServiceTypes = new List<Type>();
     readonly List<Type> _possibleAdditionalTypes = new List<Type>(); 
     readonly List<Type> _allNonAbstractTypes = new List<Type>(); 
-    readonly List<IResolvingCondition> _resolvingConditions = new List<IResolvingCondition>(); 
+    readonly List<IServiceSourceCondition> _resolvingConditions = new List<IServiceSourceCondition>(); 
     ServiceSource _setting;
     ServiceSourceComponent _serviceSourceComponent;
     bool _isDynamicTypeDataInitialized = false;
@@ -93,9 +93,13 @@ abstract class DynamicServiceSource
     
     bool IsResolvableByConditions(out string message)
     { 
-        foreach (IResolvingCondition resolvingCondition in _resolvingConditions)
-            if (!resolvingCondition.CanResolve(out message))
+        foreach (IServiceSourceCondition resolvingCondition in _resolvingConditions)
+            if (!resolvingCondition.CanResolve())
+            {
+                message = Application.isEditor ? resolvingCondition.GetConditionMessage() : null;
                 return false;
+            }
+
         message = null;
         return true;
     }
@@ -139,7 +143,7 @@ abstract class DynamicServiceSource
         _typeToServiceOnSource.Clear();
         _serviceSourceComponent = (SourceObject as GameObject)?.GetComponent<ServiceSourceComponent>();
         _resolvingConditions.Clear();
-        _resolvingConditions.AddRange(GetTypesOf<IResolvingCondition>(SourceObject));
+        _resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
         foreach (Type concreteType in _allNonAbstractTypes)
         {
             object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
@@ -200,7 +204,7 @@ abstract class DynamicServiceSource
             foreach (Type interfaceType in type.GetInterfaces())
             {
                 if (interfaceType == typeof(IInitializable)) continue;
-                if (interfaceType == typeof(IResolvingCondition)) continue;
+                if (interfaceType == typeof(IServiceSourceCondition)) continue;
                 if (interfaceType == typeof(IServiceSourceProvider)) continue; 
                 yield return interfaceType;
             }
@@ -222,6 +226,7 @@ abstract class DynamicServiceSource
  
     public abstract ServiceSourceTypes SourceType { get; }
     public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
+    public List<IServiceSourceCondition> Conditions => _resolvingConditions;
 
     public void ClearCachedInstancesAndTypes()
     {

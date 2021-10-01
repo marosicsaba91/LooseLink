@@ -1,9 +1,11 @@
-﻿#if UNITY_EDITOR
-using System.Linq;
+﻿using System.Linq;
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using Object = UnityEngine.Object;
+
+#if UNITY_EDITOR 
+using UnityEditor;
+#endif
 
 namespace UnityServiceLocator
 {
@@ -23,6 +25,7 @@ static class TypeToFileHelper
         Object Find()
         {
             
+#if UNITY_EDITOR 
             string[] guids = AssetDatabase.FindAssets($"{type.Name} t:script");
             if (guids.Length == 0) return null;
 
@@ -36,16 +39,19 @@ static class TypeToFileHelper
             if (string.IsNullOrEmpty(filePath)) return null;
  
             return AssetDatabase.LoadAssetAtPath(filePath, typeof(Object));
+#endif
+            return null;
         }
     }
 
     public static Type GetType(Object obj)
     {
+#if UNITY_EDITOR
         var monoScript = obj as MonoScript;
         if (monoScript != null && monoScript.GetClass() != null)
             return monoScript.GetClass();
+#endif
         return null;
     }
 }
-}
-#endif
+} 

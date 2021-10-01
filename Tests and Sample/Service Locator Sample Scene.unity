@@ -315,13 +315,13 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
-      propertyPath: source.preferredSourceType
-      value: 1
+      propertyPath: source.isTagsExpanded
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
-      propertyPath: priority.priorityValueAtInstallation
-      value: 4
+      propertyPath: source.isTypesExpanded
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7911280409414878286, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
@@ -403,7 +403,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99564b058d442ea4494c408322ab430b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  platform: 7
+  platforms: 0b00000019000000
 --- !u!1 &1006070833
 GameObject:
   m_ObjectHideFlags: 0
@@ -936,8 +936,15 @@ MonoBehaviour:
     preferredSourceType: 1
     additionalTypes: []
     tags: []
-    isTypesExpanded: 1
-    isTagsExpanded: 1
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
   - enabled: 1
     serviceSourceObject: {fileID: 3036740062703557914}
     preferredSourceType: 1
@@ -948,6 +955,13 @@ MonoBehaviour:
       unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
     isTagsExpanded: 1
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
   - enabled: 1
     serviceSourceObject: {fileID: 2100000, guid: acf26affbf33d6c4489da82d64de72a8,
       type: 2}
@@ -959,6 +973,13 @@ MonoBehaviour:
       unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
     isTagsExpanded: 1
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
 --- !u!4 &1856532166
 Transform:
   m_ObjectHideFlags: 0
@@ -1355,7 +1376,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8168706743866629632}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 368063cbc421633449381768601109c3, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4

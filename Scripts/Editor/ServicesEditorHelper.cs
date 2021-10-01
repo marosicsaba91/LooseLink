@@ -10,7 +10,7 @@ namespace UnityServiceLocator
 {
 static class ServicesEditorHelper
 {
-    const int smallMabelSize = 12;
+    const int smallMabelSize = 10;
     
     static GUIStyle _smallCenterLabelStyle;
     public static GUIStyle SmallCenterLabelStyle => _smallCenterLabelStyle = _smallCenterLabelStyle ?? new GUIStyle

@@ -102,9 +102,7 @@ class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
             {
                 // Resolvability Error
                 GUIContent resolvabilityError = row.element.resolvability.GetGuiContent();
-                GUIStyle resolvabilityErrorStyle =
-                    ServicesEditorHelper.GetSmallCenterLabelStyle(resolvabilityError, actionButtonRect.width);
-                GUI.Label(actionButtonRect, resolvabilityError, resolvabilityErrorStyle);
+                GUI.Label(actionButtonRect, resolvabilityError, ServicesEditorHelper.SmallLeftLabelStyle);
             }
             else
             {

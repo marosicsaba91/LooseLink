@@ -133,24 +133,52 @@ class ServiceLocatorWindow : EditorWindow
         bool noTypeSearch = _servicesColumn.NoSearch;
         bool noTagSearch = _tagsColumn.NoSearch;
         bool anySearch = !(noServiceSearch && noTypeSearch && noTagSearch);
-        
-        foreach (ServiceSource source in sources)
-        {  
-            if (source.IsServiceSource)
-            {
-                source.ClearCachedTypes_NoEnvironmentChangeEvent();
-                var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
-                {
-                    enabled = enabled && source.Enabled,
-                    provider = iProvider,
-                    source = source,
-                    resolvedInstance = source.LoadedObject,
-                    resolvability = new Resolvability(Resolvability.Type.Resolvable)
-                };
 
-                var abstractTypes = new List<TreeNode<ServiceLocatorRow>>();
-                var sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, abstractTypes);
-                sourceRow.resolvability = source.Resolvability;
+        foreach (ServiceSource source in sources)
+        {
+            if (source.IsSourceSet)
+            {
+                ServiceSourceSet set = source.GetServiceSourceSet();
+                if (set == null) continue;
+                TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(set, enabled);
+                nodes.Add(installerNode);
+                
+            }
+            else
+            {
+                TreeNode<ServiceLocatorRow> sourceNode;
+                if (source.IsServiceSource)
+                {
+
+                    source.ClearCachedTypes_NoEnvironmentChangeEvent();
+                    var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
+                    {
+                        enabled = enabled && source.Enabled,
+                        provider = iProvider,
+                        source = source,
+                        resolvedInstance = source.LoadedObject,
+                        resolvability = new Resolvability(Resolvability.Type.Resolvable)
+                    };
+
+                    var abstractTypes = new List<TreeNode<ServiceLocatorRow>>();
+                    sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, abstractTypes);
+                    sourceRow.resolvability = source.Resolvability;
+                }
+                else
+                {
+                    var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
+                    {
+                        enabled = enabled && source.Enabled,
+                        provider = null,
+                        source = source,
+                        resolvedInstance = null,
+                        resolvability = source.ServiceSourceObject == null
+                            ? Resolvability.NoSourceObject
+                            : Resolvability.WrongSourcesObjectType
+                    };
+
+                    sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, children: null); 
+                }
 
                 bool serviceMatchSearch = _serviceSourcesColumn.ApplyServiceSourceSearch(source);
                 bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(iProvider, source);
@@ -161,30 +189,7 @@ class ServiceLocatorWindow : EditorWindow
                 else if (serviceMatchSearch && tagMatchSearch && typeMatchSearch)
                     nodes.Add(sourceNode);
             }
-            else if (source.IsSourceSet)
-            {
-                ServiceSourceSet set = source.GetServiceSourceSet();
-                if (set == null) continue;
-                TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(set, enabled);
-                nodes.Add(installerNode);
-            }   
-            else 
-            {           
-                var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
-                {
-                    enabled = enabled && source.Enabled,
-                    provider = null,
-                    source = source,
-                    resolvedInstance = null,
-                    resolvability = source.ServiceSourceObject == null? Resolvability.NoSourceObject :Resolvability.WrongSourcesObjectType
-                };
-                
-                var sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, children: null);
-                
-                nodes.Add(sourceNode);
-            }
         }
-
         return nodes;
     }
 

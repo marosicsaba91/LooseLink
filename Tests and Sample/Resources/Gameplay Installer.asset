@@ -14,45 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   automaticallyUseAsGlobalInstaller: 1
   serviceSources:
-  - enabled: 1
-    serviceSourceObject: {fileID: 11500000, guid: 6605bf9cdc297204b878cad95401b254,
-      type: 3}
-    preferredSourceType: 6
-    additionalTypes: []
-    tags: []
-    isTypesExpanded: 0
-    isTagsExpanded: 0
-  - enabled: 1
-    serviceSourceObject: {fileID: 11400000, guid: 9a95d86df22b6164f97a3d7d0e711d2a,
-      type: 2}
-    preferredSourceType: 5
-    additionalTypes: []
-    tags: []
-    isTypesExpanded: 0
-    isTagsExpanded: 0
-  - enabled: 1
-    serviceSourceObject: {fileID: 11500000, guid: ed5ebec5830149bd8f8cb82a66f8be64,
-      type: 3}
-    preferredSourceType: 6
-    additionalTypes: []
-    tags: []
-    isTypesExpanded: 0
-    isTagsExpanded: 0
-  - enabled: 1
-    serviceSourceObject: {fileID: 8503866212822430112, guid: f0384d45675f89f44b9b4cf5b093617b,
-      type: 3}
-    preferredSourceType: 3
-    additionalTypes:
-    - typeName: BallisticsManager
-      fullTypeName: BallisticsManager
-      assemblyQualifiedName: BallisticsManager, ServiceLoactorSample, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      monoScript: {fileID: 11500000, guid: 62741858c54346a392b3a31a9c35441d, type: 3}
-      switchable: 0
-    tags: []
-    isTypesExpanded: 1
-    isTagsExpanded: 0
-  - enabled: 1
+  - enabled: 0
     serviceSourceObject: {fileID: 11400000, guid: 8fc56107f2f013c40a87f23323f1946a,
       type: 2}
     preferredSourceType: 4
@@ -74,4 +36,74 @@ MonoBehaviour:
     tags: []
     isTypesExpanded: 1
     isTagsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 11500000, guid: 6605bf9cdc297204b878cad95401b254,
+      type: 3}
+    preferredSourceType: 6
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    monoScriptType:
+      typeName: CursorButtonsMovementProvider
+      fullTypeName: CursorButtonsMovementProvider
+      assemblyQualifiedName: CursorButtonsMovementProvider, ServiceLoactorSample,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 6605bf9cdc297204b878cad95401b254, type: 3}
+      switchable: 1
+  - enabled: 0
+    serviceSourceObject: {fileID: 11400000, guid: 9a95d86df22b6164f97a3d7d0e711d2a,
+      type: 2}
+    preferredSourceType: 5
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 11500000, guid: ed5ebec5830149bd8f8cb82a66f8be64,
+      type: 3}
+    preferredSourceType: 6
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    monoScriptType:
+      typeName: MouseShootingInput
+      fullTypeName: MouseShootingInput
+      assemblyQualifiedName: MouseShootingInput, ServiceLoactorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: ed5ebec5830149bd8f8cb82a66f8be64, type: 3}
+      switchable: 1
+  - enabled: 1
+    serviceSourceObject: {fileID: 8503866212822430112, guid: f0384d45675f89f44b9b4cf5b093617b,
+      type: 3}
+    preferredSourceType: 3
+    additionalTypes:
+    - typeName: BallisticsManager
+      fullTypeName: BallisticsManager
+      assemblyQualifiedName: BallisticsManager, ServiceLoactorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 62741858c54346a392b3a31a9c35441d, type: 3}
+      switchable: 0
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
   priority: 1

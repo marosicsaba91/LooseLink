@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using MUtility;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
 
 namespace UnityServiceLocator
 {
@@ -20,6 +20,9 @@ public class ServiceSource
 
     [SerializeField] internal bool isTypesExpanded;
     [SerializeField] internal bool isTagsExpanded;
+    [SerializeField] internal bool isConditionsExpanded;
+    
+    [SerializeField] SerializableType monoScriptType;
 
     DynamicServiceSource _dynamicSource;
     ServiceSourceSet _sourceSet;
@@ -46,6 +49,7 @@ public class ServiceSource
             if (serviceSourceObject == value) return;
             serviceSourceObject = value;
             InitDynamicSource();
+            monoScriptType  = new SerializableType(serviceSourceObject);
             SourceChanged();
         }
     }
@@ -70,11 +74,12 @@ public class ServiceSource
         {
             if (preferredSourceType == value) return;
             preferredSourceType = value;
+            monoScriptType = new SerializableType(serviceSourceObject);
             InitDynamicSource();
             SourceChanged();
         }
     }
-
+ 
     public ServiceSourceTypes SourceType => GetDynamicServiceSource()?.SourceType ?? preferredSourceType;
 
     public bool IsServiceSource
@@ -94,6 +99,47 @@ public class ServiceSource
             return _sourceSet != null;
         }
     }
+
+    internal string Name
+    {
+        get
+        {
+            DynamicServiceSource d = GetDynamicServiceSource();
+            if (d != null) return d.Name;
+            if (serviceSourceObject != null) return serviceSourceObject.name;
+            return "Source Object Missing";
+        }
+    }
+
+    internal Texture Icon => !IsSourceSet && !IsServiceSource
+        ? FileIconHelper.ErrorImage
+        : FileIconHelper.GetIconOfObject(serviceSourceObject);
+
+    internal Resolvability Resolvability => GetDynamicServiceSource()?.Resolvability ?? Resolvability.NoSourceObject;
+    public IEnumerable<ServiceSourceTypes> AlternativeSourceTypes => GetDynamicServiceSource().AlternativeSourceTypes;
+    public Object LoadedObject => GetDynamicServiceSource().LoadedObject;
+
+    public List<Tag> Tags =>
+        !IsServiceSource ? null : 
+        IsTypesAndTagsComingFromDifferentServiceSourceComponent ? GetDynamicServiceSource().ServiceSourceComponent.Source.Tags : 
+        tags;
+
+    internal bool IsTypesAndTagsComingFromDifferentServiceSourceComponent
+    {
+        get
+        {
+            if (serviceSourceProvider == null) return false;
+            ServiceSourceComponent serviceSourceComponent = GetDynamicServiceSource()?.ServiceSourceComponent;
+            if (serviceSourceComponent == null) return false;
+            return serviceSourceComponent.gameObject != serviceSourceProvider.ProviderObject;
+        }
+    }
+
+    public List<IServiceSourceCondition> Conditions => 
+        IsTypesAndTagsComingFromDifferentServiceSourceComponent ? 
+        GetDynamicServiceSource()?.ServiceSourceComponent.Source.Conditions : 
+        GetDynamicServiceSource()?.Conditions;
+
 
     public void ClearCachedTypes()
     {
@@ -117,8 +163,11 @@ public class ServiceSource
         else if (IsSourceSet)
             _sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
     }
-    
-    public bool TryAddServiceType<T>() => TryAddServiceType(typeof(T));
+
+    public bool TryAddServiceType<T>()
+    {
+        return TryAddServiceType(typeof(T));
+    }
 
     public bool TryAddServiceType(Type t)
     {
@@ -129,12 +178,15 @@ public class ServiceSource
         if (!_dynamicSource.GetPossibleAdditionalTypes().Contains(t)) return false;
         if (additionalTypes.Select(st => st.Type).Contains(t)) return false;
 
-        additionalTypes.Add(new SerializableType { Type = t });
+        additionalTypes.Add(new SerializableType(t));
         ServiceLocator.Environment.InvokeEnvironmentChangedOnType(t);
         return true;
     }
 
-    public bool RemoveServiceTypeType<T>() => RemoveServiceTypeType(typeof(T));
+    public bool RemoveServiceTypeType<T>()
+    {
+        return RemoveServiceTypeType(typeof(T));
+    }
 
     public bool RemoveServiceTypeType(Type type)
     {
@@ -148,9 +200,20 @@ public class ServiceSource
         return removable != null;
     }
 
-    public void AddTag(string tagString) => AddTag(new Tag(tagString));
-    public void AddTag(Object tagObject) => AddTag(new Tag(tagObject));
-    public void AddTag(object tagObject) => AddTag(new Tag(tagObject));
+    public void AddTag(string tagString)
+    {
+        AddTag(new Tag(tagString));
+    }
+
+    public void AddTag(Object tagObject)
+    {
+        AddTag(new Tag(tagObject));
+    }
+
+    public void AddTag(object tagObject)
+    {
+        AddTag(new Tag(tagObject));
+    }
 
     internal void AddTag(Tag tag)
     {
@@ -175,7 +238,6 @@ public class ServiceSource
 
         SourceChanged();
     }
-
 
 
     public bool RemoveTag(object tagObject)
@@ -205,25 +267,6 @@ public class ServiceSource
         return _sourceSet;
     }
 
-    internal string Name
-    {
-        get
-        {
-            DynamicServiceSource d = GetDynamicServiceSource();
-            if (d != null) return d.Name; 
-            if (serviceSourceObject != null) return serviceSourceObject.name;
-            return "Source Object Missing";
-        }
-    }
-
-    internal Texture Icon => !IsSourceSet && !IsServiceSource
-        ? FileIconHelper.errorImage
-        : FileIconHelper.GetIconOfObject(serviceSourceObject);
-    
-    internal Resolvability Resolvability => GetDynamicServiceSource()?.Resolvability ?? Resolvability.NoSourceObject;
-    public IEnumerable<ServiceSourceTypes> AlternativeSourceTypes => GetDynamicServiceSource().AlternativeSourceTypes;
-    public Object LoadedObject => GetDynamicServiceSource().LoadedObject;
-
     DynamicServiceSource GetDynamicServiceSource()
     {
         if (serviceSourceObject == null) return null;
@@ -237,9 +280,7 @@ public class ServiceSource
         if (dynamicServiceSource == null)
             return;
         foreach (Type type in GetServiceTypesRecursively())
-        {
-            dynamicServiceSource.TryGetService(type, null, out object _);
-        }
+            dynamicServiceSource.TryGetService(type, provider: null, out object _);
     }
 
     DynamicServiceSource GetServiceSourceOf(Object sourceObject, ServiceSourceTypes previousType) // NO SOURCE SET
@@ -253,20 +294,17 @@ public class ServiceSource
         }
 
         if (sourceObject is GameObject gameObject)
-        { 
-            if (gameObject.scene.name != null)
-            {
-                return new DynamicServiceSourceFromSceneObject(gameObject);
-            }
+        {
+            if (gameObject.scene.name != null) return new DynamicServiceSourceFromSceneObject(gameObject);
 
             if (previousType == ServiceSourceTypes.FromPrefabFile)
                 return new DynamicServiceSourceFromPrefabFile(gameObject);
             return new DynamicServiceSourceFromPrefabPrototype(gameObject);
         }
 
-        if (sourceObject is MonoScript script)
+        if (monoScriptType?.Type != null)
         {
-            Type scriptType = script.GetClass();
+            Type scriptType = monoScriptType?.Type;
 
             if (scriptType == null) return null;
             if (scriptType.IsAbstract) return null;
@@ -281,7 +319,6 @@ public class ServiceSource
 
         return null;
     }
-
 
 
     public IEnumerable<Type> GetServiceTypesRecursively()
@@ -300,10 +337,8 @@ public class ServiceSource
             else
             {
                 foreach (Type serviceTypes in _dynamicSource.GetDynamicServiceTypes())
-                {
                     if (serviceTypes != null)
                         yield return serviceTypes;
-                }
 
                 foreach (SerializableType typeSetting in additionalTypes)
                 {
@@ -327,7 +362,6 @@ public class ServiceSource
 
     internal IEnumerable<ServiceTypeInfo> GetAllServiceInfos()
     {
-
         if (serviceSourceObject == null) yield break;
         InitDynamicIfNeeded();
 
@@ -342,7 +376,6 @@ public class ServiceSource
         else
         {
             foreach (Type serviceTypes in _dynamicSource.GetDynamicServiceTypes())
-            {
                 if (serviceTypes != null)
                     yield return new ServiceTypeInfo
                     {
@@ -351,7 +384,6 @@ public class ServiceSource
                         fullName = serviceTypes.FullName,
                         isMissing = false
                     };
-            }
 
             foreach (SerializableType typeSetting in additionalTypes)
             {
@@ -367,8 +399,10 @@ public class ServiceSource
         }
     }
 
-    void SourceChanged() =>
+    void SourceChanged()
+    {
         ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(this);
+    }
 
     internal void InitDynamicIfNeeded()
     {
@@ -391,50 +425,29 @@ public class ServiceSource
         }
         else
         {
-            _dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType); 
+            _dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
         }
     }
 
-    public IReadOnlyList<Type> GetPossibleAdditionalTypes() 
+    public IReadOnlyList<Type> GetPossibleAdditionalTypes()
     {
-        if (!IsServiceSource) 
+        if (!IsServiceSource)
             return null;
         if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
             return null;
         return GetDynamicServiceSource().GetPossibleAdditionalTypes();
     }
 
-    public List<Tag> Tags =>
-        !IsServiceSource ? null: 
-        IsTypesAndTagsComingFromDifferentServiceSourceComponent
-            ? GetDynamicServiceSource().ServiceSourceComponent.Source.Tags
-            : tags;
-
     public IEnumerable<Type> GetDynamicServiceTypes()
     {
         if (!IsServiceSource) yield break;
         if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
-        {
             foreach (ServiceTypeInfo typeInfo in GetDynamicServiceSource().ServiceSourceComponent.Source
                 .GetAllServiceInfos())
                 yield return typeInfo.type;
-        }
         else
-        {
             foreach (Type type in GetDynamicServiceSource().GetDynamicServiceTypes())
                 yield return type;
-        }
-    }
-
-    internal bool IsTypesAndTagsComingFromDifferentServiceSourceComponent
-    {
-        get
-        {
-            if (serviceSourceProvider == null) return false;
-            ServiceSourceComponent serviceSourceComponent = GetDynamicServiceSource()?.ServiceSourceComponent;
-            if (serviceSourceComponent == null) return false;
-            return serviceSourceComponent.gameObject != serviceSourceProvider.ProviderObject;
-        }
     }
 
     public bool TryGetService(
@@ -449,7 +462,7 @@ public class ServiceSource
             foreach (object tag in tagConditions)
             {
                 if (tag == null) continue;
-                if (Tags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue; 
+                if (Tags.Any(serializedTag => serializedTag.TagObject.Equals(tag))) continue;
 
                 success = false;
                 break;
