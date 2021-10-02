@@ -112,8 +112,8 @@ public class ServiceSource
     }
 
     internal Texture Icon => !IsSourceSet && !IsServiceSource
-        ? FileIconHelper.ErrorImage
-        : FileIconHelper.GetIconOfObject(serviceSourceObject);
+        ? IconHelper.ErrorIcon
+        : IconHelper.GetIconOfObject(serviceSourceObject);
 
     internal Resolvability Resolvability => GetDynamicServiceSource()?.Resolvability ?? Resolvability.NoSourceObject;
     public IEnumerable<ServiceSourceTypes> AlternativeSourceTypes => GetDynamicServiceSource().AlternativeSourceTypes;

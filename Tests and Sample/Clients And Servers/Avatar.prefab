@@ -166,7 +166,7 @@ MonoBehaviour:
   source:
     enabled: 1
     serviceSourceObject: {fileID: 7911280409414878322}
-    preferredSourceType: 1
+    preferredSourceType: 3
     additionalTypes:
     - typeName: Avatar
       fullTypeName: Avatar
@@ -186,6 +186,13 @@ MonoBehaviour:
       unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
     isTagsExpanded: 1
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
 --- !u!33 &7911280409414878285
 MeshFilter:
   m_ObjectHideFlags: 0

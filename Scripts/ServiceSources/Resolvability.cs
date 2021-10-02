@@ -1,8 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor;
-#endif
-    
-using UnityEngine;
+﻿  using UnityEngine;
 
 namespace UnityServiceLocator
 {
@@ -13,70 +9,63 @@ readonly struct Resolvability
     {
         AlwaysResolved,
         Resolvable,
-        CantResolveNow,
+        BlockedInEditorTime,
+        BlockedByCondition,
         Error
     }
 
     public readonly Type type;
-    public readonly string reason;
+    public readonly string message;
 
     public bool IsResolvable => type == Type.Resolvable;
     public static Resolvability AlwaysResolved => new Resolvability(Type.AlwaysResolved);
-    public static Resolvability Resolvable => new Resolvability(Type.Resolvable); 
+    public static Resolvability Resolvable => new Resolvability(Type.Resolvable);
     public static Resolvability NoSourceObject => new Resolvability(Type.Error, "No Service Source Object!");
-    public static Resolvability WrongSourcesObjectType  => new Resolvability(Type.Error, "Wrong Service Source Type!");
+    public static Resolvability WrongSourcesObjectType => new Resolvability(Type.Error, "Wrong Service Source Type!");
 
     public Resolvability(Type type)
     {
         this.type = type;
-        reason = null;
+        message = null;
     }
-    
-    public Resolvability(Type type, string reason)
+
+    public Resolvability(Type type, string message)
     {
         this.type = type;
-        this.reason = reason;
-    } 
-}
-
-static class ResolvabilityHelper
-{
-
-#if UNITY_EDITOR 
-    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
-    static readonly Texture resolvableImage = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
-#endif 
-    
-    internal static GUIContent GetGuiContent(this Resolvability resolvability)
-    {
-        string text =
-            resolvability.type == Resolvability.Type.Resolvable ? "Resolvable" :
-            resolvability.type == Resolvability.Type.CantResolveNow ? "Can't Resolve Now" : "Can't Resolve";
-        Texture image = ToImage(resolvability.type);
-        
-        return new GUIContent(text, image, resolvability.reason);
+        this.message = message;
     }
 
-    static Texture ToImage(Resolvability.Type resolvabilityType)
+    public GUIContent GetGuiContent()
     {
-        
-#if UNITY_EDITOR  
+        string text =
+            type == Type.AlwaysResolved ? "Resolved" :
+            type == Type.Resolvable ? "Resolvable" :
+            type == Type.BlockedInEditorTime ? "Blocked in Editor Time" :
+            type == Type.BlockedByCondition ? "Blocked by Condition" :
+            type == Type.Error ? "Can't Resolve!" :
+            null;
+        Texture image = ToImage(type);
+
+        return new GUIContent(text, image, message);
+    }
+    
+
+    static Texture ToImage(Type resolvabilityType)
+    {
         switch (resolvabilityType)
         {
-            case Resolvability.Type.CantResolveNow:
-                return warningImage;
-            case Resolvability.Type.Error:
-                return errorImage;
-            case Resolvability.Type.AlwaysResolved:
-            case Resolvability.Type.Resolvable:
-                return resolvableImage;
+            case Type.AlwaysResolved:
+            case Type.Resolvable:
+                return IconHelper.ResolvableIcon;
+            case Type.BlockedByCondition: 
+            case Type.BlockedInEditorTime:
+                return IconHelper.BlockedIcon;
+            case Type.Error:
+                return IconHelper.ErrorIcon;
             default:
                 return null;
         }
-#else
-        return null;
-#endif  
     }
 }
 }
+ 

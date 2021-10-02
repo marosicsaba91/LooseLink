@@ -28,7 +28,7 @@ class DynamicServiceSourceFromMonoBehaviourType : DynamicServiceSource
                 return new Resolvability(Resolvability.Type.Error, "No Type");
             if(!Application.isPlaying)
                 return new Resolvability(
-                        Resolvability.Type.CantResolveNow,
+                        Resolvability.Type.BlockedInEditorTime,
                     "You can't instantiate MonoBehaviour through Service Locator in Editor Time");
             return Resolvability.Resolvable;
         }

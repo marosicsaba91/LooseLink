@@ -323,6 +323,11 @@ PrefabInstance:
       propertyPath: source.isTypesExpanded
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
+        type: 3}
+      propertyPath: source.preferredSourceType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7911280409414878286, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
       propertyPath: m_RootOrder
@@ -403,7 +408,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99564b058d442ea4494c408322ab430b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  platforms: 0b00000019000000
+  platforms: 0700000002000000
 --- !u!1 &1006070833
 GameObject:
   m_ObjectHideFlags: 0

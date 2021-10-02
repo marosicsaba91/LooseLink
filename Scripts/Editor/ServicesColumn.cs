@@ -81,7 +81,7 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
         for (var i = 0; i < typeInfos.Count; i++)
         {
             Type type = typeInfos[i].type;
-            GUIContent content = FileIconHelper.GetGUIContentToType(typeInfos[i]);
+            GUIContent content = IconHelper.GetGUIContentToType(typeInfos[i]);
             float w = ServicesEditorHelper.SmallLeftLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
 
             overflow = i == typeInfos.Count - 1
@@ -135,7 +135,7 @@ class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
         position.x -= 1;
         var contents = new string[typeInfos.Count];
         for (var i = 0; i < typeInfos.Count; i++)
-            contents[i] = FileIconHelper.GetGUIContentToType(typeInfos[i]).tooltip;
+            contents[i] = IconHelper.GetGUIContentToType(typeInfos[i]).tooltip;
         
         if (typeInfos.Any(info => info.isMissing))
             GUI.color = EditorHelper.ErrorBackgroundColor;

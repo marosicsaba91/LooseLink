@@ -238,9 +238,9 @@ namespace UnityServiceLocator.Editor
                     {
                         ServiceSourceTypes option = options[i];
                         guiContentOptions[i] =
-                            new GUIContent(FileIconHelper.GetShortNameForServiceSource(option),
+                            new GUIContent(IconHelper.GetShortNameForServiceSource(option),
                                 image: null,
-                                FileIconHelper.GetTooltipForServiceSource(option));
+                                IconHelper.GetTooltipForServiceSource(option));
                     }
 
                     int selectedIndex = EditorGUI.Popup(sourceTypePos, currentIndex, guiContentOptions);
@@ -248,9 +248,9 @@ namespace UnityServiceLocator.Editor
                 }
                 else
                 {
-                    var content = new GUIContent(FileIconHelper.GetShortNameForServiceSource(_source.SourceType),
+                    var content = new GUIContent(IconHelper.GetShortNameForServiceSource(_source.SourceType),
                         image: null,
-                        FileIconHelper.GetTooltipForServiceSource(_source.SourceType));
+                        IconHelper.GetTooltipForServiceSource(_source.SourceType));
                     GUI.Label(sourceTypePos, content);
                 }
             }
@@ -567,15 +567,14 @@ namespace UnityServiceLocator.Editor
                 EditorHelper.DrawButtonLikeBox(position, text, TextAnchor.MiddleLeft); 
         }
 
-        static readonly Texture successIcon = EditorGUIUtility.IconContent("TestPassed").image;
-        static readonly Texture failIcon = EditorGUIUtility.IconContent("TestFailed").image;
+        
         static void DrawConditions(Rect position)
         {
             foreach (IServiceSourceCondition condition in _conditions)
             {
                 bool success = condition.CanResolve();
                 string message = condition.GetConditionMessage(); 
-                var content = new GUIContent(message, success ? successIcon : failIcon);
+                var content = new GUIContent(message, success ? IconHelper.SuccessIcon : IconHelper.BlockedIcon);
                 GUI.Label(position, content);
                 position.y += lineHeight + space;
             }

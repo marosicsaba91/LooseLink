@@ -19,7 +19,7 @@ class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSourceFromGO
                 return new Resolvability(Resolvability.Type.Error, "No Prefab");
             if(!Application.isPlaying)
                 return new Resolvability(
-                    Resolvability.Type.CantResolveNow,
+                    Resolvability.Type.BlockedInEditorTime,
                     "You can't instantiate prefab through Service Locator in Editor Time");
             return Resolvability.Resolvable;
         }

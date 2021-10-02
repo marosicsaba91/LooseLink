@@ -66,10 +66,10 @@ class ServiceLocatorRow
             case RowCategory.Set:
                 return new 
                     GUIContent(provider.Name, 
-                    FileIconHelper.GetIconOfObject(provider.ProviderObject),
-                    FileIconHelper.GetTooltipForISet(provider)); 
+                    IconHelper.GetIconOfObject(provider.ProviderObject),
+                    IconHelper.GetTooltipForISet(provider)); 
             case RowCategory.Source:
-                return new GUIContent(source.Name, source.Icon, FileIconHelper.GetTooltipForServiceSource(source.SourceType));
+                return new GUIContent(source.Name, source.Icon, IconHelper.GetTooltipForServiceSource(source.SourceType));
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -80,19 +80,19 @@ class ServiceLocatorRow
         switch (Category)
         {
             case RowCategory.Set:
-                return new GUIContent(FileIconHelper.GetTooltipForISet(provider)); 
+                return new GUIContent(IconHelper.GetTooltipForISet(provider)); 
             case RowCategory.Source:
                 string text ;
                 if (source.IsServiceSource)
                     text = isShort
-                        ? FileIconHelper.GetShortNameForServiceSourceCategory(source.SourceType)
-                        : FileIconHelper.GetNameForServiceSourceCategory(source.SourceType);
+                        ? IconHelper.GetShortNameForServiceSourceCategory(source.SourceType)
+                        : IconHelper.GetNameForServiceSourceCategory(source.SourceType);
                 else if (source.ServiceSourceObject == null)
                     text = isShort ? "No Obj." : "No Source Object";
                 else 
                     text = isShort ? "Wrong Obj." : "Wrong Source Object";
                 
-                return new GUIContent( text, FileIconHelper.GetTooltipForServiceSource(source.SourceType));
+                return new GUIContent( text, IconHelper.GetTooltipForServiceSource(source.SourceType));
             default:
                 throw new ArgumentOutOfRangeException();
         }

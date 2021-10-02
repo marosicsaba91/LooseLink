@@ -7,7 +7,7 @@ using UnityEditor;
 
 namespace UnityServiceLocator
 {
-static class FileIconHelper
+static class IconHelper
 { 
     public enum FileType
     {
@@ -39,11 +39,26 @@ static class FileIconHelper
     }
     
 #if UNITY_EDITOR 
-    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image; 
+    static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image; 
+    static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;  
+    static readonly Texture successIcon = EditorGUIUtility.IconContent("TestPassed").image;
+    static readonly Texture blockedIcon = EditorGUIUtility.IconContent("winbtn_win_close").image;
+    static readonly Texture resolvableIcon = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
 #endif
-
-    static Texture WarningImage
+    
+    internal static Texture SuccessIcon
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return successIcon;
+#else
+            return null;
+#endif
+        }
+    }
+    
+    internal static Texture WarningIcon
     {
         get
         {
@@ -55,12 +70,35 @@ static class FileIconHelper
         }
     }
 
-    internal static Texture ErrorImage
+    internal static Texture ErrorIcon
     {
         get
         {
 #if UNITY_EDITOR
             return errorImage;
+#else
+            return null;
+#endif
+        }
+    }
+    
+    internal static Texture BlockedIcon
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return blockedIcon;
+#else
+            return null;
+#endif
+        }
+    }    
+    internal static Texture ResolvableIcon
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return resolvableIcon;
 #else
             return null;
 #endif
@@ -75,9 +113,9 @@ static class FileIconHelper
         bool isMissing = typeInfo.isMissing;
 
         if (type == null) 
-            return new GUIContent(name, ErrorImage, $"Types \"{fullName}\" Is Missing!");
+            return new GUIContent(name, ErrorIcon, $"Types \"{fullName}\" Is Missing!");
         
-        Texture texture = isMissing ? ErrorImage : GetIconOfType(type);
+        Texture texture = isMissing ? ErrorIcon : GetIconOfType(type);
         if (texture == null)
             texture = GetIconOfSource(FileType.CsFile);
         var tooltip = $"{fullName} ({GetTypeCategory(type)})";

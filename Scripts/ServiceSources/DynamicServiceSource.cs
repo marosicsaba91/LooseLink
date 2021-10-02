@@ -30,11 +30,11 @@ abstract class DynamicServiceSource
         get
         {
             Resolvability result = TypeResolvability;
-            if (result.type == Resolvability.Type.Error || result.type == Resolvability.Type.CantResolveNow)
+            if (result.type == Resolvability.Type.Error || result.type == Resolvability.Type.BlockedInEditorTime)
                 return result;
 
             if (!IsResolvableByConditions(out string message))
-                return new Resolvability(Resolvability.Type.CantResolveNow, message);
+                return new Resolvability(Resolvability.Type.BlockedByCondition, message);
 
             return result;
         }
