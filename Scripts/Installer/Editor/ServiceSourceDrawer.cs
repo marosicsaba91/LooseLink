@@ -56,11 +56,11 @@ namespace UnityServiceLocator.Editor
         static ServiceSource _source;
         static int _sourceIndex; 
         static Object _serializedObject;  
-        static List<Type> _dynamicServiceTypes;
-        static List<SerializableType> _additionalServiceTypes;
-        static List<Type> _possibleAdditionalServiceTypes;
-        static List<Tag> _tags;
-        static List<IServiceSourceCondition> _conditions;
+        static List<Type> _dynamicServiceTypes  = new List<Type>();
+        static List<SerializableType> _additionalServiceTypes = new List<SerializableType>();
+        static List<Type> _possibleAdditionalServiceTypes= new List<Type>();
+        static List<Tag> _tags= new List<Tag>();
+        static List<IServiceSourceCondition> _conditions = new List<IServiceSourceCondition>();
         static int _typeCount;
         
         public static void DrawInstallerInspectorGUI(UnityEditor.Editor editor, IServiceSourceProvider provider)
@@ -125,7 +125,7 @@ namespace UnityServiceLocator.Editor
             _conditions = _source.Conditions;
             _possibleAdditionalServiceTypes = _source?.GetPossibleAdditionalTypes()?.ToList() ?? new List<Type>();
             _dynamicServiceTypes = _source?.GetDynamicServiceTypes()?.ToList();
-            _typeCount = (_dynamicServiceTypes?.Count ?? 0) + _additionalServiceTypes.Count;
+            _typeCount = (_dynamicServiceTypes?.Count ?? 0) + (_additionalServiceTypes?.Count ?? 0);
 
             float height = PixelHeightOfSource();
             var position = new Rect(startPosition, new Vector2(width, height));
@@ -318,7 +318,7 @@ namespace UnityServiceLocator.Editor
             var title = $"Services ({_typeCount})";
             _source.isTypesExpanded = EditorGUI.Foldout(position, _source.isTypesExpanded, title);
 
-            List<Type> usedTypes = _additionalServiceTypes
+            List<Type> usedTypes = _additionalServiceTypes?
                 .Select(st => st.Type)
                 .Where(t => t != null)
                 .Union(_dynamicServiceTypes)
@@ -570,6 +570,7 @@ namespace UnityServiceLocator.Editor
         
         static void DrawConditions(Rect position)
         {
+            if (_conditions == null) return;
             foreach (IServiceSourceCondition condition in _conditions)
             {
                 bool success = condition.CanResolve();

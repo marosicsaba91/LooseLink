@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bc99de804f79f54b800ab521cdaf7f0, type: 3}
   m_Name: Avatar Installer
   m_EditorClassIdentifier: 
-  automaticallyUseAsGlobalInstaller: 1
+  automaticallyUseAsGlobalInstaller: 0
   serviceSources:
   - enabled: 1
     serviceSourceObject: {fileID: 7911280409414878322, guid: 6b11993b0fc28604fb7fd5453465d0f7,
@@ -25,6 +25,13 @@ MonoBehaviour:
       unityObjectTag: {fileID: 0}
     isTypesExpanded: 1
     isTagsExpanded: 1
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
   - enabled: 1
     serviceSourceObject: {fileID: 3036740062741517902, guid: 46a892547cec1c7488bc2f7fe73286b3,
       type: 3}
@@ -33,4 +40,11 @@ MonoBehaviour:
     tags: []
     isTypesExpanded: 1
     isTagsExpanded: 0
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: 
+      fullTypeName: 
+      assemblyQualifiedName: 
+      monoScript: {fileID: 0}
+      switchable: 0
   priority: 10

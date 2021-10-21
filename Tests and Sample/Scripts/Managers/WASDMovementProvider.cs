@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityServiceLocator;
 using Object = UnityEngine.Object;
 
-[ServiceType]
 public class WasdMovementProvider : MonoBehaviour, IMovementInputProvider, IUnityComponent
 {
     public Object UnityObject => gameObject;

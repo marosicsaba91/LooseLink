@@ -3,7 +3,8 @@
     "references": [
         "MUtility",
         "UnityServiceLocator",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "PlayLogging"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

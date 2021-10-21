@@ -115,8 +115,8 @@ public class ServiceEnvironment
         localInstallers.AddRange(
             FindObjectsOfTypeAll<ServiceSourceComponent>());
 
-        
-        int maxPriority = sets.Select(set => set.PriorityValue).Max();
+
+        int maxPriority = sets.Count == 0 ? 0 : sets.Select(set => set.PriorityValue).Max();
 
         sets.AddRange(localInstallers.Where(
             inst => inst.Priority.type == LocalInstallerPriority.Type.ConcreteValue));

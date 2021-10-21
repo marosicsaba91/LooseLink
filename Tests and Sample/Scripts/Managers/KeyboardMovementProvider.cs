@@ -16,8 +16,10 @@ public class KeyboardMovementProvider : ScriptableObject, IMovementInputProvider
     public string NameOfDirectionCommand(GeneralDirection2D direction) => 
         DirectionToKeyCode(direction).ToString();
 
-    public bool IsDirectionCommandPressed(GeneralDirection2D direction) =>
-        Input.GetKey(DirectionToKeyCode(direction));
+    public bool IsDirectionCommandPressed(GeneralDirection2D direction)
+    {
+        return Input.GetKey(DirectionToKeyCode(direction));
+    }
 
     KeyCode DirectionToKeyCode(GeneralDirection2D direction)
     {
