@@ -1,5 +1,4 @@
-﻿using PlayLogging;
-using MUtility;
+﻿using MUtility;
 using UnityEngine;
 using UnityServiceLocator;
 
@@ -17,7 +16,6 @@ public class Avatar : MonoBehaviour
     IMovementInputProvider _movementInput;
     IShootingInputProvider _shootingInput; 
     BallisticsManager _ballisticsManager; 
-    LogStore _logStore; 
 
     Vector2 _horizontalVelocity;
     
@@ -31,10 +29,7 @@ public class Avatar : MonoBehaviour
     {
         UpdateShootingInputProvider();
         UpdateMovementInputProvider();
-        _ballisticsManager = ServiceLocator.Resolve<BallisticsManager>(); 
-        _logStore = ServiceLocator.Resolve<LogStore>(); 
-        // ServiceLocator.Environment.SubscribeToEnvironmentChange<IMovementInputProvider>(UpdateMovementInputProvider);
-        // ServiceLocator.Environment.SubscribeToEnvironmentChange<IShootingInputProvider>(UpdateShootingInputProvider);
+        _ballisticsManager = ServiceLocator.Resolve<BallisticsManager>();
     }
 
     void UpdateMovementInputProvider() => _movementInput = ServiceLocator.Resolve<IMovementInputProvider>(); 
@@ -70,16 +65,12 @@ public class Avatar : MonoBehaviour
     
     void ShootMain(Vector2 position)
     {
-        var log = new PlayLog("Main Shot");
-        _logStore.Log(log );
-        _logStore.Log("Main Shot", this, (LogTag)null, 1, "béka", Time.time);
         Vector3 start = transform.position;
         _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y), bulletPrototype);
     }
     
     void ShootSecondary(Vector2 position)
     {
-        _logStore.Log("Secondary Shot", this);
         Vector3 start = transform.position;
         _ballisticsManager.Shoot(start, new Vector3(position.x,start.y, position.y), bulletPrototype);
     }

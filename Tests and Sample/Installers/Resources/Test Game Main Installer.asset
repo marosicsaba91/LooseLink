@@ -35,14 +35,14 @@ MonoBehaviour:
     preferredSourceType: 4
     additionalTypes:
     - typeName: LogStore
-      fullTypeName: PlayLog.LogStore
-      assemblyQualifiedName: PlayLog.LogStore, LogSet, Version=0.0.0.0, Culture=neutral,
+      fullTypeName: PlayLogging.LogStore
+      assemblyQualifiedName: PlayLogging.LogStore, PlayLogg, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
       monoScript: {fileID: 11500000, guid: c7e744f1c23f0fc489fdea444cc571cd, type: 3}
       switchable: 1
     tags: []
-    isTypesExpanded: 0
-    isTagsExpanded: 0
+    isTypesExpanded: 1
+    isTagsExpanded: 1
     isConditionsExpanded: 0
     monoScriptType:
       typeName: 
