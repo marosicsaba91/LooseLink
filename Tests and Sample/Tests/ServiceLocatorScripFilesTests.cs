@@ -37,7 +37,7 @@ namespace Tests
         [UnityTest, Order(order: 3)]
         public IEnumerator Test3_GetScriptableObjectSourceFromLocator()
         {       
-            var service1 = ServiceLocator.Resolve<WasdMovementProvider>();
+            var service1 = ServiceLocator.Resolve<WasdMonoBehaviourMovementProvider>();
             bool foundService1 = service1 != null;
             Assert.IsTrue(foundService1);
 

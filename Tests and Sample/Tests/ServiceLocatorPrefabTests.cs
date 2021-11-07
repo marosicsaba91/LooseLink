@@ -55,7 +55,7 @@ namespace Tests
         [UnityTest, Order(4)]
         public IEnumerator Test4_GetSourceFromLocator()
         { 
-            ServiceLocator.TryResolve(out WasdMovementProvider wasdMovementProvider);
+            ServiceLocator.TryResolve(out WasdMonoBehaviourMovementProvider wasdMovementProvider);
             bool wasdMovementProviderFound = wasdMovementProvider != null;
             Assert.IsTrue(wasdMovementProviderFound);
             bool isWasdMovementProviderSceneObject = wasdMovementProvider.gameObject.scene.IsValid();

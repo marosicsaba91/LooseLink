@@ -10,7 +10,7 @@ namespace Tests
 public class ServiceLocatorSceneGameObjectTests
 {
     LocalServiceInstaller _installer; 
-    WasdMovementProvider _testComponent3; 
+    WasdMonoBehaviourMovementProvider _testComponent3; 
     ServiceSource _testSource;
 
     [OneTimeSetUp]
@@ -29,7 +29,7 @@ public class ServiceLocatorSceneGameObjectTests
     [UnityTest, Order(2)]
     public IEnumerator Test2_AddGameObjectSourcesToInstaller()
     { 
-        _testComponent3 = AddServiceGameObject<WasdMovementProvider>("GameObject3", out _testSource);
+        _testComponent3 = AddServiceGameObject<WasdMonoBehaviourMovementProvider>("GameObject3", out _testSource);
 
         T AddServiceGameObject<T>(string name, out ServiceSource source) where T : Component
         {

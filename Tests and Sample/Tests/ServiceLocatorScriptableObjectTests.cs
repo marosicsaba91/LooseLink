@@ -60,7 +60,7 @@ namespace Tests
         { 
             bool success1 = ServiceLocator.TryResolve(  
                 new object[]{testTag1},
-                out WasdMovementProvider _);
+                out WasdMonoBehaviourMovementProvider _);
             Assert.IsFalse(success1); 
             
             _serviceSource1.AddTag(testTag1);
