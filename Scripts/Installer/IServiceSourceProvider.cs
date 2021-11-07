@@ -33,7 +33,7 @@ public interface IServiceSourceProvider
 
 public static class ServiceSourceProviderHelper
 {
-    internal static IEnumerable<ServiceSource> GetEnabledValidSourcesRecursive(this IServiceSourceProvider provider)
+    public static IEnumerable<ServiceSource> GetEnabledValidSourcesRecursive(this IServiceSourceProvider provider)
     { 
         for (var i = 0; i< provider.SourceCount; i++)
         {

@@ -1,9 +1,10 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityServiceLocator;
-using Object = System.Object;
 
 namespace Tests
 {
@@ -38,6 +39,16 @@ namespace Tests
         [UnityTest, Order(order: 3)]
         public IEnumerator Test3_GetScriptableObjectSourceFromLocator()
         {       
+            //Debug.Log(_installer.ServiceSourceCount);
+            List<IServiceSourceProvider> installers = ServiceLocator.Environment.GetAllInstallers().ToList();
+            foreach (var installer in installers)
+            {
+                Debug.Log($"{installer.Name}   {installer.SourceCount}");
+                foreach (var source in installer.GetEnabledValidSourcesRecursive())
+                    Debug.Log($"{source.IsServiceSource}   {source.ServiceSourceObject.name}");
+            }
+
+            //Debug.Log(ServiceLocator.Environment.GetAllInstallers().Count());
             var service1 = ServiceLocator.Resolve<WasdMovementProvider>();
             bool foundService1 = service1 != null;
             Assert.IsTrue(foundService1);

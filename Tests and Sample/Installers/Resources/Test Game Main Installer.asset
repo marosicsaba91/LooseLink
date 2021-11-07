@@ -30,18 +30,12 @@ MonoBehaviour:
       monoScript: {fileID: 0}
       switchable: 0
   - enabled: 1
-    serviceSourceObject: {fileID: 11400000, guid: 6531ff126b69f754d8adef424e774efe,
+    serviceSourceObject: {fileID: 11400000, guid: 9abfc1003654f924482b1854d93c228b,
       type: 2}
     preferredSourceType: 4
-    additionalTypes:
-    - typeName: LogStore
-      fullTypeName: PlayLogging.LogStore
-      assemblyQualifiedName: PlayLogging.LogStore, PlayLogg, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
-      monoScript: {fileID: 11500000, guid: c7e744f1c23f0fc489fdea444cc571cd, type: 3}
-      switchable: 1
+    additionalTypes: []
     tags: []
-    isTypesExpanded: 0
+    isTypesExpanded: 1
     isTagsExpanded: 0
     isConditionsExpanded: 0
     monoScriptType:
@@ -50,4 +44,36 @@ MonoBehaviour:
       assemblyQualifiedName: 
       monoScript: {fileID: 0}
       switchable: 0
+  - enabled: 1
+    serviceSourceObject: {fileID: 11500000, guid: b32e53197fa8fc843b2a393bb6bd0234,
+      type: 3}
+    preferredSourceType: 6
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: WasdMovementProvider
+      fullTypeName: WasdMovementProvider
+      assemblyQualifiedName: WasdMovementProvider, ServiceLoactorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: b32e53197fa8fc843b2a393bb6bd0234, type: 3}
+      switchable: 1
+  - enabled: 1
+    serviceSourceObject: {fileID: 11500000, guid: 12ef9c19926c462cb534d8974b45b05e,
+      type: 3}
+    preferredSourceType: 7
+    additionalTypes: []
+    tags: []
+    isTypesExpanded: 0
+    isTagsExpanded: 0
+    isConditionsExpanded: 0
+    monoScriptType:
+      typeName: KeyboardMovementProvider
+      fullTypeName: KeyboardMovementProvider
+      assemblyQualifiedName: KeyboardMovementProvider, ServiceLoactorSample, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      monoScript: {fileID: 11500000, guid: 12ef9c19926c462cb534d8974b45b05e, type: 3}
+      switchable: 1
   priority: 0

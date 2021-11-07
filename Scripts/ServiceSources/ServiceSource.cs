@@ -34,8 +34,8 @@ public class ServiceSource
         IServiceSourceProvider serviceSourceProvider,
         ServiceSourceTypes preferredType = ServiceSourceTypes.Non)
     {
-        serviceSourceObject = sourceObject;
-        preferredSourceType = preferredType;
+        ServiceSourceObject = sourceObject;
+        PreferredSourceType = preferredType;
         this.serviceSourceProvider = serviceSourceProvider;
         InitDynamicSource();
         SourceChanged();

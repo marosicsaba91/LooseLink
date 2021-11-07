@@ -4,11 +4,10 @@ using UnityEngine;
 using UnityServiceLocator;
 using Object = UnityEngine.Object;
 
-
-[ServiceType]
-public class WasdMovementProvider : MonoBehaviour, IMovementInputProvider, IUnityComponent
+[CreateAssetMenu, ServiceType]
+public class WasdScriptableObjectMovementProvider : ScriptableObject, IMovementInputProvider
 {
-    public Object UnityObject => gameObject;
+    public Object UnityObject => this;
     public string NameOfDirectionCommand(GeneralDirection2D direction) => 
         DirectionToKeyCode(direction).ToString();
 
@@ -27,6 +26,4 @@ public class WasdMovementProvider : MonoBehaviour, IMovementInputProvider, IUnit
                 throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
         }
     }
-
-    public GameObject GameObject => gameObject;
 }

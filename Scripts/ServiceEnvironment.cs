@@ -147,7 +147,7 @@ public class ServiceEnvironment
     internal IEnumerable<(IServiceSourceProvider installer, ServiceSource source)> ServiceSources
     {
         get
-        {
+        { 
             foreach (IServiceSourceProvider installer in GetEnabledAndActiveInstallers())
             foreach (ServiceSource setting in installer.GetEnabledValidSourcesRecursive())
                 yield return (installer, setting);

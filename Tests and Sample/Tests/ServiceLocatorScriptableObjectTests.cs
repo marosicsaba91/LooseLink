@@ -10,7 +10,7 @@ namespace Tests
     public class ServiceLocatorScriptableObjectTests
     {
         const string testScriptableObject1Name = "IJKL Buttons Input Provider"; 
-        const string testScriptableObject2Name = "WASD Input System Movement Provider"; 
+        const string testScriptableObject2Name = "WASD Movement Provider"; 
         LocalServiceInstaller _installer;  
         ScriptableObject _testScriptableObject1;
         ScriptableObject _testScriptableObject2;
@@ -47,13 +47,9 @@ namespace Tests
         {       
             var service1 = ServiceLocator.Resolve<KeyboardMovementProvider>();
             bool foundService1 = service1 != null && service1 != _testScriptableObject1;
-            Assert.IsTrue(foundService1);
-            
-            Debug.Log(_installer.SourceCount); 
-            Debug.Log(_serviceSource1.GetServiceTypesRecursively().Count()); 
-            Debug.Log(_serviceSource2.GetServiceTypesRecursively().Count()); 
+            Assert.IsTrue(foundService1); 
 
-            var service2 = ServiceLocator.Resolve<InputSystemMovementProvider>();
+            var service2 = ServiceLocator.Resolve<WasdScriptableObjectMovementProvider>();
             bool foundService2= service2 != null;
             Assert.IsTrue(foundService2);
             yield return null;

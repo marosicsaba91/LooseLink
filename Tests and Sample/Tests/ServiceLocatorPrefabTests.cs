@@ -22,8 +22,7 @@ namespace Tests
                 
         [UnityTest, Order(1)]
         public IEnumerator Test1_TestIfThereAreNoInstaller()
-        {
-            Debug.Log($"InstallerCountAtStart: {ServiceLocator.Environment.GetAllInstallers().Count()}");
+        { 
             ServiceLocator.Environment.UninstallAllSourceSets();
             Assert.IsEmpty(ServiceLocator.Environment.GetAllInstallers());
             yield return null;

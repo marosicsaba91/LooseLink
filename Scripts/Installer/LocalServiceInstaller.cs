@@ -25,7 +25,7 @@ public class LocalServiceInstaller : InstallerComponent
             source.ClearCachedTypes_NoEnvironmentChangeEvent(); 
     }
 
-    public int ServiceCount => serviceSources.Count; 
+    public int ServiceSourceCount => serviceSources.Count; 
     public override void AddSource(ServiceSource item) => serviceSources.Add(item);
 
     public override void ClearSources() => serviceSources.Clear();
