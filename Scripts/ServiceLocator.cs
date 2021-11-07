@@ -18,7 +18,7 @@ public static class ServiceLocator
     static readonly ServiceEnvironment environment = new ServiceEnvironment();
     public static ServiceEnvironment Environment => environment;
     internal static bool IsDestroying { get; private set; }
-    internal static bool IsSceneLoaded { get; private set; } // After all Awake & OnEneble
+    internal static bool IsSceneLoaded { get; private set; } // After all Awake & OnEnable
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()

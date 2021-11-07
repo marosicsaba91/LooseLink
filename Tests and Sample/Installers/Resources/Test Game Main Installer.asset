@@ -41,8 +41,8 @@ MonoBehaviour:
       monoScript: {fileID: 11500000, guid: c7e744f1c23f0fc489fdea444cc571cd, type: 3}
       switchable: 1
     tags: []
-    isTypesExpanded: 1
-    isTagsExpanded: 1
+    isTypesExpanded: 0
+    isTagsExpanded: 0
     isConditionsExpanded: 0
     monoScriptType:
       typeName: 
