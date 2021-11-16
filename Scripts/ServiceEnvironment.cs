@@ -137,10 +137,11 @@ public class ServiceEnvironment
     {
         for (var i = 0; i < SceneManager.sceneCount; i++)
         {
-            Scene scene = SceneManager.GetSceneAt(i); 
-                foreach (GameObject go in scene.GetRootGameObjects())
-                foreach (T t in go.GetComponentsInChildren<T>(includeInactive: true)) 
-                    yield return t;
+            Scene scene = SceneManager.GetSceneAt(i);
+            if (!scene.isLoaded || !scene.IsValid()) continue;
+            foreach (GameObject go in scene.GetRootGameObjects())
+            foreach (T t in go.GetComponentsInChildren<T>(includeInactive: true))
+                yield return t;
         }
     }
 
