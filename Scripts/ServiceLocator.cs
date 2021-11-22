@@ -116,6 +116,11 @@ public static class ServiceLocator
     {
         if(debugLogs)
             Debug.Log("Resolve");
+
+        if (!ServiceLocationSetupData.Instance.enableTags && !tags.IsNullOrEmpty())
+            Debug.LogWarning("If You want to use Service Tags, enable them in Service Locator's settings menu."+
+                             "(Tools / Service Locator / Open Settings in top right corner)");
+        
         foreach ((IServiceSourceProvider installer, ServiceSource source) in Environment.ServiceSources)
         { 
             if (!source.IsServiceSource) continue;

@@ -36,11 +36,13 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
         { 
             fixWidthGetter = GetColumnFixWidth,
             relativeWidthWeightGetter = GetColumnRelativeWidth,
-            customHeaderDrawer = DrawHeader
+            customHeaderDrawer = DrawHeader,
+            visibleGetter = IsVisible
         };
         _serviceLocatorWindow = serviceLocatorWindow;
     }
-    
+
+    new static bool IsVisible() => ServiceLocationSetupData.Instance.enableTags;
     
     float GetColumnFixWidth() => IsColumnOpen ? 75f : 50f; 
     float GetColumnRelativeWidth() => IsColumnOpen ? 0.5f : 0f;

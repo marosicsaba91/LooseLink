@@ -1,10 +1,12 @@
-﻿#if UNITY_EDITOR 
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using MUtility; 
 using UnityEditor;
-using UnityEngine; 
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UnityServiceLocator
 {
@@ -73,10 +75,9 @@ class ServiceLocatorWindow : EditorWindow
         _servicesColumn = new ServicesColumn(this);
         _typeColumn = new ServiceSourceTypeColumn(this);
         _resolveColumn = new ResolveColumn(this);
+
         var componentTypeColumns = new List<IColumn<FoldableRow<ServiceLocatorRow>>>
-        {
-            _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn,
-        };
+            { _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn };
 
         _serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)
         {
@@ -86,53 +87,59 @@ class ServiceLocatorWindow : EditorWindow
     
     void OnGUI()
     {
+        if(!ServiceLocationSetupData.Instance.enableTags)
+            searchTagsText = string.Empty;
+
         if (_showSetup)
+            DrawSetup();
+        else
+            DrawFullServicesMenu();
+
+    }
+
+    void DrawSetup()
+    {
+        float h = EditorGUIUtility.singleLineHeight;
+        float s = EditorGUIUtility.standardVerticalSpacing;
+        const float buttonW = 80;
+
+        var settingsRect = new Rect(
+            new Vector2(s, s),
+            new Vector2(position.width - (s * 3) - buttonW, h));
+        var setup = ServiceLocationSetupData.Instance;
+
+        if (setup.IsDefault)
         {
-            float h = EditorGUIUtility.singleLineHeight;
-            float s = EditorGUIUtility.standardVerticalSpacing;
-            const float buttonW = 80;
-
-            var settingsRect = new Rect(
-                new Vector2(s, s),
-                new Vector2(position.width - (s * 3) - buttonW, h));
-            var setup = ServiceLocationSetupData.Instance;
-
-            if (setup.IsDefault)
-            {
-                if (GUI.Button(settingsRect, "Create Setting File"))
-                    CreateSettingAsset();
-            }
-            else
-            {
-                GUI.enabled = false;
-                EditorGUI.ObjectField(
-                    settingsRect,
-                    "Setting File",
-                    setup.IsDefault ? null : setup,
-                    typeof(ServiceLocationSetupData),
-                    allowSceneObjects: false); 
-            }
-
-            settingsRect.width = position.width - (s * 2);
-            settingsRect.y += h + (3 * s);
-
-            GUI.enabled = true;
-            var servicesButtonRect = new Rect(
-                new Vector2(position.width - buttonW - s, s),
-                new Vector2(buttonW, h));
-            if (GUI.Button(servicesButtonRect, "Exit Settings"))
-                _showSetup = false; 
-            if (setup != null)
-            {
-                EditorGUIUtility.labelWidth = 300;
-                EditorGUILayout.Space(30);
-                GUI.enabled = !setup.IsDefault;
-                DoDrawDefaultInspector(setup);
-            }
+            if (GUI.Button(settingsRect, "Create Setting File"))
+                CreateSettingAsset();
         }
         else
-            ShowFullServicesMenu();
+        {
+            GUI.enabled = false;
+            EditorGUI.ObjectField(
+                settingsRect,
+                "Setting File",
+                setup.IsDefault ? null : setup,
+                typeof(ServiceLocationSetupData),
+                allowSceneObjects: false);
+        }
 
+        settingsRect.width = position.width - (s * 2);
+        settingsRect.y += h + (3 * s);
+
+        GUI.enabled = true;
+        var servicesButtonRect = new Rect(
+            new Vector2(position.width - buttonW - s, s),
+            new Vector2(buttonW, h));
+        if (GUI.Button(servicesButtonRect, "Exit Settings"))
+            _showSetup = false;
+        if (setup != null)
+        {
+            EditorGUIUtility.labelWidth = 300;
+            EditorGUILayout.Space(30);
+            GUI.enabled = !setup.IsDefault;
+            DoDrawDefaultInspector(setup);
+        }
     }
 
     void CreateSettingAsset()
@@ -173,7 +180,7 @@ class ServiceLocatorWindow : EditorWindow
         return EditorGUI.EndChangeCheck();
     }
 
-    void ShowFullServicesMenu()
+    void DrawFullServicesMenu()
     {
         EventType type = Event.current.type;
         if (type == EventType.Layout)

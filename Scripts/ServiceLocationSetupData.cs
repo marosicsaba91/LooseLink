@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace UnityServiceLocator
 {
-public class ServiceLocationSetupData : ScriptableObject
+class ServiceLocationSetupData : ScriptableObject
 { 
     [SerializeField] ErrorMessage errorMessage; 
     [SerializeField] SetupTimeMessage lastTypeMapSetupTime;
-    public bool setupTypeMapAtPlayInEditor;
-    public bool setupTypeMapAtStartInBuild = true;
-    // [Space]
-    // public bool enableTags = false;
+    public bool setupAtPlayInEditor;
+    public bool setupAtStartInBuild = true;
+    [Space]
+    public bool enableTags = false;
 
     public bool IsDefault { get; private set; } = false;
 
@@ -50,8 +50,8 @@ public class ServiceLocationSetupData : ScriptableObject
     internal static void UpdateGlobalInstallers()
     {
         ServiceLocationSetupData instance = Instance;
-        if (Application.isEditor && !instance.setupTypeMapAtPlayInEditor) return;
-        if (!Application.isEditor && !instance.setupTypeMapAtStartInBuild) return;
+        if (Application.isEditor && !instance.setupAtPlayInEditor) return;
+        if (!Application.isEditor && !instance.setupAtStartInBuild) return;
         ServiceLocator.Init();
     }
 
@@ -88,10 +88,10 @@ public class ServiceLocationSetupData : ScriptableObject
     {
         protected override IEnumerable<string> GetLines(ServiceLocationSetupData parentObject)
         {
-            yield return "Service Locator needs to setup a Type-Map one to operate fast after.";
+            yield return "Service Locator needs to setup itself once to operate fast after that.";
             yield return "This process takes relatively long time, so it can cause a noticeable hiccup.";
-            yield return "Last Type-Map setup was:  " + ServiceLocator.SetupTime.Milliseconds + " ms.";
-            yield return "You can choose to do this at the start of the software or at the first Resolve call.";
+            yield return "Last setup was:  " + ServiceLocator.SetupTime.Milliseconds + " ms.";
+            yield return "You can choose to do this at the start of the software or at the first use of the Service Locator.";
         }
 
         protected override InspectorMessageType MessageType(ServiceLocationSetupData parentObject) => 

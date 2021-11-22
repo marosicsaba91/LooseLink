@@ -145,11 +145,16 @@ namespace UnityServiceLocator.Editor
  
             if (!_source.IsServiceSource) return oneLine;
 
-            var lineCount = 3;
+            var lineCount = 2;
             if (_source.isTypesExpanded)
                 lineCount += 1 + _typeCount;
-            if (_source.isTagsExpanded)
-                lineCount += 1 + _tags.Count;
+
+            if (ServiceLocationSetupData.Instance.enableTags)
+            {
+                lineCount++;
+                if (_source.isTagsExpanded)
+                    lineCount += 1 + _tags.Count;
+            }
 
             lineCount+= _conditions.Count; 
 
@@ -175,15 +180,14 @@ namespace UnityServiceLocator.Editor
                 Rect tagsPosition = DrawServices(typesPos);
 
                 Rect conditionsPosition = DrawTags(tagsPosition);
-                
+
                 DrawConditions(conditionsPosition);
             }
 
             if (_anyChange)
                 EditorUtility.SetDirty(_serializedObject);
         }
-
-
+        
         static Rect DrawHeader(Rect position)
         {
             position.x += padding;
@@ -423,7 +427,7 @@ namespace UnityServiceLocator.Editor
 
         static Rect DrawTags(Rect position)
         {
-            if (_tags == null)
+            if (_tags == null || !ServiceLocationSetupData.Instance.enableTags)
             {
                 position.x -= foldoutW;
                 return position;
