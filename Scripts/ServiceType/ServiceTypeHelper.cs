@@ -1,32 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace UnityServiceLocator
 {
 public static class ServiceTypeHelper
 { 
-    public static readonly List<Type> allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
-    static readonly HashSet<Type> serviceTypes;
-    static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
-    static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap; 
-
-    static ServiceTypeHelper()
-    {
-        allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
-        serviceTypes = AllGlobalServiceTypes(allTypes); 
-        
-        SetupServiceDictionaries(
-            serviceTypes,
-            out serviceToNonAbstractTypeMap, 
-            out nonAbstractToServiceTypeMap);
- 
-    }
     
-    static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> allTypes)
+    static readonly HashSet<Type> serviceTypes;
+    static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap;
+    
+    internal static void Init( ) { }
+    
+    static ServiceTypeHelper()
+    { 
+
+        IEnumerable<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        Assembly[] assemblyArray = assemblies.ToArray(); 
+        IEnumerable<Type> allTypes = assemblyArray.SelectMany(a => a.GetTypes()).ToArray(); 
+        serviceTypes = AllGlobalServiceTypes(allTypes);
+
+        SetupServiceDictionaries(
+            allTypes,
+            serviceTypes,
+            out nonAbstractToServiceTypeMap);
+    }
+
+
+    static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> relevantTypes)
     {
         var result = new HashSet<Type>();
-        foreach (Type type in allTypes)
+        foreach (Type type in relevantTypes)
         {
             if (type.ContainsGenericParameters) continue;
             var attribute = (ServiceTypeAttribute)
@@ -36,16 +41,17 @@ public static class ServiceTypeHelper
         }
 
         return result;
-    } 
+    }
 
-    internal static void SetupServiceDictionaries( 
+    internal static void SetupServiceDictionaries(
+        IEnumerable<Type> allTypes ,
         IEnumerable<Type> abstractServiceTypes,
-        out Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap ,
+        // out Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap ,
         out Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap)
     {  
-        serviceToNonAbstractTypeMap = new Dictionary<Type, List<Type>>();
+        // serviceToNonAbstractTypeMap = new Dictionary<Type, List<Type>>();
         nonAbstractToServiceTypeMap = new Dictionary<Type, List<Type>>();
-
+        
         foreach (Type type in allTypes)
         {
             if (type.IsInterface) continue;
@@ -60,6 +66,7 @@ public static class ServiceTypeHelper
                 }
         }
 
+        /*
         foreach (KeyValuePair<Type, List<Type>> pair in nonAbstractToServiceTypeMap)
         {
             Type concreteTypes = pair.Key;
@@ -70,6 +77,7 @@ public static class ServiceTypeHelper
                 serviceToNonAbstractTypeMap[serviceType].Add(concreteTypes);
             } 
         } 
+        */
     }
 
     static bool IsSubClassOrSelf(Type parent, Type child)
@@ -90,11 +98,6 @@ public static class ServiceTypeHelper
         if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
             foreach (Type serviceType in value)
                 yield return serviceType;
-    }
-
-    public static Type SearchTypeWithName(string name) => allTypes.FirstOrDefault(t => t.Name == name);
-
-    public static Type SearchTypeWithFullName(string fullName) =>
-        allTypes.FirstOrDefault(t => t.FullName == fullName);
+    }  
 }
 }

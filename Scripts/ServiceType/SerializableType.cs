@@ -106,11 +106,7 @@ public class SerializableType : ISerializationCallbackReceiver
         catch (Exception)
         {
             /* ignored */
-        }
-      
-        type = ServiceTypeHelper.SearchTypeWithName(typeName);
-        if (type != null) return type;
-        type = ServiceTypeHelper.SearchTypeWithFullName(typeName);
+        } 
         return type;
     }
 }
