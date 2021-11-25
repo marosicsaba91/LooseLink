@@ -15,6 +15,8 @@ static class TypeToFileHelper
 
     public static Object GetObject(Type type)
     {
+        if (type == null) return null;
+        
         if (typeObjectDictionary.TryGetValue(type, out Object result))
             return result;
         
