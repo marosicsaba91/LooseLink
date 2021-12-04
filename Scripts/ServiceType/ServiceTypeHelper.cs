@@ -11,6 +11,7 @@ public static class ServiceTypeHelper
     static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
     static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap; 
 
+    internal static void Init( ) { }
     static ServiceTypeHelper()
     {
         allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
@@ -20,9 +21,8 @@ public static class ServiceTypeHelper
             serviceTypes,
             out serviceToNonAbstractTypeMap, 
             out nonAbstractToServiceTypeMap);
- 
     }
-    
+
     static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> allTypes)
     {
         var result = new HashSet<Type>();
@@ -80,6 +80,7 @@ public static class ServiceTypeHelper
 
         return false;
     }
+    
     
     // EXTENSION
  

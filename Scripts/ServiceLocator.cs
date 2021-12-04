@@ -106,6 +106,9 @@ public static class ServiceLocator
         return false;
     }
 
+    public static void InitTypeMap() => ServiceTypeHelper.Init();
+
+
     public static bool TryResolve(Type looseServiceType, object[] tags, out object service)
     {
         foreach ((IServiceSourceProvider installer, ServiceSource source) in Environment.ServiceSources)
