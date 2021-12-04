@@ -13,8 +13,7 @@ abstract class DynamicServiceSource
     readonly List<Type> _dynamicServiceTypes = new List<Type>();
     readonly List<Type> _possibleAdditionalTypes = new List<Type>(); 
     readonly List<Type> _allNonAbstractTypes = new List<Type>(); 
-    readonly List<IServiceSourceCondition> _resolvingConditions = new List<IServiceSourceCondition>(); 
-    ServiceSource _setting;
+    readonly List<IServiceSourceCondition> _resolvingConditions = new List<IServiceSourceCondition>();
     ServiceSourceComponent _serviceSourceComponent;
     bool _isDynamicTypeDataInitialized = false;
 

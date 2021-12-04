@@ -15,28 +15,17 @@ namespace UnityServiceLocator
 
 public static class ServiceLocator
 {
+    static readonly bool debugLogs = false;
+    public static TimeSpan SetupTime { get; private set; }
+
     static readonly ServiceEnvironment environment = new ServiceEnvironment();
     public static ServiceEnvironment Environment => environment;
-    internal static bool IsDestroying { get; private set; }
-    internal static bool IsSceneLoaded { get; private set; } // After all Awake & OnEnable
+    internal static bool IsDestroying { get; private set; } 
+    internal static bool AreServiceLocatorInitialized { get; private set; } 
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    internal static void UpdateGlobalInstallers()
-    { 
-        if(IsSceneLoaded) return;
-        
-        environment.SetAllGlobalInstallers(FindGlobalInstallers);
-        environment.InitServiceSources();
-        IsDestroying = false; 
-
-#if UNITY_EDITOR
-        EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
-#endif 
-    }
+    static ServiceLocator() => Init();
     
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    internal static void AfterSceneLoad() => IsSceneLoaded = true;
-    
+    static Transform _parentObject;
 
 #if UNITY_EDITOR
     static void OnUnityPlayModeChanged(PlayModeStateChange change)
@@ -49,13 +38,30 @@ public static class ServiceLocator
     }
 #endif
 
+    internal static void Init()
+    {
+        if (AreServiceLocatorInitialized) return;
+        DateTime start = DateTime.Now;
+        
+        #if UNITY_EDITOR
+                EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
+        #endif
+        environment.SetAllGlobalInstallers(FindGlobalInstallers);
+        environment.InitServiceSources();
+        ServiceTypeHelper.Init();
+        IsDestroying = false;
+        AreServiceLocatorInitialized = true;
+        
+        SetupTime = DateTime.Now - start;
+        if(debugLogs) 
+            Debug.Log($"Init {SetupTime.TotalMilliseconds} ms");
+    }
+
     internal static List<ServiceSourceSet> FindGlobalInstallers =>
         Resources
             .LoadAll<ServiceSourceSet>(string.Empty)
             .Where(contextInstaller => contextInstaller.automaticallyUseAsGlobalInstaller)
             .ToList();
-
-    static Transform _parentObject;
 
     public static Transform ParentObject
     {
@@ -111,6 +117,13 @@ public static class ServiceLocator
 
     public static bool TryResolve(Type looseServiceType, object[] tags, out object service)
     {
+        if(debugLogs)
+            Debug.Log("Resolve");
+
+        if (!ServiceLocationSetupData.Instance.enableTags && !tags.IsNullOrEmpty())
+            Debug.LogWarning("If You want to use Service Tags, enable them in Service Locator's settings menu."+
+                             "(Tools / Service Locator / Open Settings in top right corner)");
+        
         foreach ((IServiceSourceProvider installer, ServiceSource source) in Environment.ServiceSources)
         { 
             if (!source.IsServiceSource) continue;
@@ -170,5 +183,6 @@ public static class ServiceLocator
 
     internal static IEnumerable<IServiceSourceProvider> GetAllInstallers() => 
         Environment.GetAllInstallers();
+ 
 }
 }

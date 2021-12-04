@@ -148,12 +148,13 @@ class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
         const float buttonW = 43;
         const float indent = 4;
         const float margin = 2;
+        const float settingButtonW = 20;
         position.x += indent;
         position.width -= indent; 
         GUI.Label(position, "Resolve" );
 
         var buttonRect = new Rect(
-            position.xMax - buttonW - margin,
+            position.xMax - buttonW - margin - settingButtonW,
             position.y + margin,
             buttonW,
             position.height - 2 * margin);

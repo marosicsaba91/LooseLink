@@ -235,7 +235,7 @@ public class ServiceEnvironment
     static HashSet<Type> _tempTypes = new HashSet<Type>();
     void InvokeEnvironmentChanged(IEnumerable<Type> types)
     {
-        if (!ServiceLocator.IsSceneLoaded) return;
+        if (!ServiceLocator.AreServiceLocatorInitialized) return;
         if (ServiceLocator.IsDestroying) return;
         
         _tempTypes = EnumerableToHashSet(types);
