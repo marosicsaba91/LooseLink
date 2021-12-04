@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
 {

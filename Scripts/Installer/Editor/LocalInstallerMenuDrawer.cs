@@ -2,43 +2,47 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace UnityServiceLocator.Editor
+namespace LooseLink.Editor
 {
 static class LocalInstallerMenuDrawer
 {
     public static void DrawLocalInstallerSettingMenu(
         SerializedObject serializedObject,
         InstallerComponent installerComponent)
-    { 
+    {
+        bool installAutomatically = installerComponent.InstallAutomatically;
 
-        GUI.enabled = !Application.isPlaying;
-        bool newDontDestroyOnLoad =
-            EditorGUILayout.Toggle("Don't Destroy On Load", installerComponent.AutoDontDestroyOnLoad);
-        if (newDontDestroyOnLoad != installerComponent.AutoDontDestroyOnLoad)
+        if (installAutomatically)
         {
-            Undo.RecordObject(serializedObject.targetObject, "Scene Installer changed.");
-            installerComponent.AutoDontDestroyOnLoad = newDontDestroyOnLoad;
-            EditorUtility.SetDirty(serializedObject.targetObject);
-        }
+            GUI.enabled = !Application.isPlaying;
+            bool newDontDestroyOnLoad =
+                EditorGUILayout.Toggle("Don't Destroy On Load", installerComponent.AutoDontDestroyOnLoad);
+            if (newDontDestroyOnLoad != installerComponent.AutoDontDestroyOnLoad)
+            {
+                Undo.RecordObject(serializedObject.targetObject, "Scene Installer changed.");
+                installerComponent.AutoDontDestroyOnLoad = newDontDestroyOnLoad;
+                EditorUtility.SetDirty(serializedObject.targetObject);
+            }
 
-        GUI.enabled = true;
+            GUI.enabled = true;
 
-        LocalInstallerPriority priority = installerComponent.Priority;
-        int priorityValue = priority.priorityValueSetting; 
-        var newPriorityType = (LocalInstallerPriority.Type)
-            EditorGUILayout.EnumPopup("Priority Type", priority.type);
+            LocalInstallerPriority priority = installerComponent.Priority;
+            int priorityValue = priority.priorityValueSetting;
+            var newPriorityType = (LocalInstallerPriority.Type)
+                EditorGUILayout.EnumPopup("Priority Type", priority.type);
 
-        GUI.enabled = true;
-        if (priority.type == LocalInstallerPriority.Type.ConcreteValue)
-            priorityValue = EditorGUILayout.IntField("Priority", priorityValue);
+            GUI.enabled = true;
+            if (priority.type == LocalInstallerPriority.Type.ConcreteValue)
+                priorityValue = EditorGUILayout.IntField("Priority", priorityValue);
 
-        if (newPriorityType != priority.type || priorityValue != priority.priorityValueSetting)
-        {
-            priority.type = newPriorityType;
-            priority.priorityValueSetting = priorityValue;
-            Undo.RecordObject(serializedObject.targetObject, "Scene Installer Priority Changed.");
-            installerComponent.Priority = priority;
-            EditorUtility.SetDirty(serializedObject.targetObject);
+            if (newPriorityType != priority.type || priorityValue != priority.priorityValueSetting)
+            {
+                priority.type = newPriorityType;
+                priority.priorityValueSetting = priorityValue;
+                Undo.RecordObject(serializedObject.targetObject, "Scene Installer Priority Changed.");
+                installerComponent.Priority = priority;
+                EditorUtility.SetDirty(serializedObject.targetObject);
+            }
         }
     }
 }

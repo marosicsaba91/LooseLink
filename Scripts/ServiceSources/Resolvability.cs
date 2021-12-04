@@ -1,6 +1,6 @@
 ﻿  using UnityEngine;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 
 readonly struct Resolvability
@@ -40,15 +40,14 @@ readonly struct Resolvability
         string text =
             type == Type.AlwaysResolved ? "Resolved" :
             type == Type.Resolvable ? "Resolvable" :
-            type == Type.BlockedInEditorTime ? "Blocked in Editor Time" :
-            type == Type.BlockedByCondition ? "Blocked by Condition" :
+            type == Type.BlockedInEditorTime ? "Resolve is blocked in Editor Time" :
+            type == Type.BlockedByCondition ? "Resolve is blocked by Condition" :
             type == Type.Error ? "Can't Resolve!" :
             null;
         Texture image = ToImage(type);
 
         return new GUIContent(text, image, message);
     }
-    
 
     static Texture ToImage(Type resolvabilityType)
     {

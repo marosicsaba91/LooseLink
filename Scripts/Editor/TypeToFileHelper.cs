@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 using UnityEditor;
 #endif
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 static class TypeToFileHelper
 {

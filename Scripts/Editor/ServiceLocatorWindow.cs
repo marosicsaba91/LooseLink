@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ServiceLocatorWindow : EditorWindow
 {
@@ -32,12 +32,12 @@ class ServiceLocatorWindow : EditorWindow
     public string searchServicesText = string.Empty;
     public string searchServiceSourcesText = string.Empty;
     
-    [MenuItem("Tools/Unity Service Locator")]
+    [MenuItem("Tools/Loose Link Services")]
     static void ShowWindow()
     {
         var window = GetWindow<ServiceLocatorWindow>();
         window.minSize = minimumSize;
-        window.titleContent = new GUIContent("Service Locator");
+        window.titleContent = new GUIContent("Loose Link Services");
         window.Show();
     }
     
@@ -205,7 +205,7 @@ class ServiceLocatorWindow : EditorWindow
     List<FoldableRow<ServiceLocatorRow>> GenerateTreeView()
     {
         var roots = new List<TreeNode<ServiceLocatorRow>>();
-        foreach (IServiceSourceProvider installer in ServiceLocator.GetAllInstallers())
+        foreach (IServiceSourceProvider installer in Services.GetAllInstallers())
         { 
             TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(installer, parentEnabled: true);
             if(installerNode!= null)

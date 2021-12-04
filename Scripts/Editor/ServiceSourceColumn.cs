@@ -5,7 +5,7 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
 {

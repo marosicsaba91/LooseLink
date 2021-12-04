@@ -4,7 +4,7 @@ using UnityEngine;
 using MUtility; 
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 [Serializable]
 public class Tag
@@ -13,10 +13,9 @@ public class Tag
     public Tag(string objectTag) => Init(objectTag, TagType.String); 
     public Tag(Object objectTag) => Init(objectTag, TagType.Object);
     public Tag(object objectTag) => Init(objectTag, TagType.Other);
-    
-    
-    void Init(object tag, TagType type)
-    {
+
+    void Init(object tag, TagType type )
+    { 
         tagType = type;
         switch (tagType)
         {
@@ -93,7 +92,9 @@ public class Tag
                 case TagType.Object:
                     return unityObjectTag == null ? "null" : unityObjectTag.name;
                 case TagType.Other:
-                    return _otherTypeTag == null ? "null" : _otherTypeTag.ToString();
+                    return _otherTypeTag == null ? "null" :
+                        _otherTypeTag is Object o ? o.name :
+                        _otherTypeTag.ToString();
                 default:
                     return null;
             }

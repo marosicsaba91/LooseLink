@@ -4,7 +4,7 @@ using MUtility;
 using UnityEngine; 
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 [CreateAssetMenu(fileName = "New Service Source Set", menuName = "Service Source Set")]
 public class ServiceSourceSet : ScriptableObject, IServiceSourceProvider
@@ -30,7 +30,7 @@ public class ServiceSourceSet : ScriptableObject, IServiceSourceProvider
             if(priority == value)
                 return;
             priority = value;
-            ServiceLocator.Environment.SortInstallers();
+            Services.Environment.SortInstallers();
         }
     }
   

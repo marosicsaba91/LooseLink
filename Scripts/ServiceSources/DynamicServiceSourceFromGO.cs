@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 
 abstract class DynamicServiceSourceFromGO : DynamicServiceSource
@@ -16,8 +16,10 @@ abstract class DynamicServiceSourceFromGO : DynamicServiceSource
         this.gameObject = gameObject;
     }
     
-    protected sealed override IEnumerable<Type> GetNonAbstractTypes() => 
-        gameObject.GetComponents<Component>().Select(component => component.GetType());
+    protected sealed override IEnumerable<Type> GetNonAbstractTypes() =>
+        gameObject?.GetComponents<Component>()
+            .Where(component => component!= null)
+            .Select(component => component.GetType());
 
     protected sealed override object GetServiceFromServerObject(Type type, Object serverObject) =>
         ((GameObject) serverObject).GetComponent(type);

@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
 {
@@ -59,9 +59,11 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             return;
         }
 
-        IReadOnlyList<Tag> tags = row.element.source.Tags;
+        var tags = new List<Tag>();
+        tags.AddRange(row.element.source.DynamicTags.Select(tag =>new Tag(tag)));
+        tags.AddRange(row.element.source.SerializedTags);
 
-        if (tags == null || tags.Count == 0)
+        if (tags.Count == 0)
         {
             GUI.Label(position, "-", ServicesEditorHelper.SmallCenterLabelStyle);
             return;
@@ -72,6 +74,8 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
             position.y + 1,
             position.width - (2 * spacing),
             position.height - spacing);
+        
+        
         DrawTags(tagsPos, tags);
     }
 
@@ -201,7 +205,7 @@ class TagsColumn : Column<FoldableRow<ServiceLocatorRow>>
     }
 
     public bool ApplyTagSearchOnSource(IServiceSourceProvider provider, ServiceSource source) =>
-        ApplyTagSearchOnTagArray(source.Tags);
+        ApplyTagSearchOnTagArray(source.SerializedTags);
 
     public static void TryPing(object pingable)
     {

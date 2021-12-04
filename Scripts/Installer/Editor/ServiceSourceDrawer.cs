@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine; 
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator.Editor
+namespace LooseLink.Editor
 {
     static class ServiceSourceDrawer
     {
@@ -59,9 +59,11 @@ namespace UnityServiceLocator.Editor
         static List<Type> _dynamicServiceTypes  = new List<Type>();
         static List<SerializableType> _additionalServiceTypes = new List<SerializableType>();
         static List<Type> _possibleAdditionalServiceTypes= new List<Type>();
-        static List<Tag> _tags= new List<Tag>();
+        static List<Tag> _serializedTags= new List<Tag>();
+        static List<object> _dynamicTags= new List<object>();
         static List<IServiceSourceCondition> _conditions = new List<IServiceSourceCondition>();
         static int _typeCount;
+        static int _tagCount;
         
         public static void DrawInstallerInspectorGUI(UnityEditor.Editor editor, IServiceSourceProvider provider)
         {
@@ -76,7 +78,7 @@ namespace UnityServiceLocator.Editor
             {
                 Undo.RecordObject(editor.serializedObject.targetObject, "Add new service source setting.");
                 provider.ClearDynamicData_NoEnvironmentChangeEvent();
-                ServiceLocator.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
+                Services.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
             }
         }
 
@@ -121,11 +123,13 @@ namespace UnityServiceLocator.Editor
             _insideSet = _source.GetServiceSourceSet(); 
             _source.ClearCachedTypes_NoEnvironmentChangeEvent();
             _additionalServiceTypes = _source.additionalTypes;
-            _tags = _source.Tags;
+            _serializedTags = _source.SerializedTags;
+            _dynamicTags = _source.DynamicTags?.ToList();
             _conditions = _source.Conditions;
             _possibleAdditionalServiceTypes = _source?.GetPossibleAdditionalTypes()?.ToList() ?? new List<Type>();
             _dynamicServiceTypes = _source?.GetDynamicServiceTypes()?.ToList();
             _typeCount = (_dynamicServiceTypes?.Count ?? 0) + (_additionalServiceTypes?.Count ?? 0);
+            _tagCount = (_dynamicTags?.Count ?? 0) + (_serializedTags?.Count ?? 0);
 
             float height = PixelHeightOfSource();
             var position = new Rect(startPosition, new Vector2(width, height));
@@ -153,7 +157,7 @@ namespace UnityServiceLocator.Editor
             {
                 lineCount++;
                 if (_source.isTagsExpanded)
-                    lineCount += 1 + _tags.Count;
+                    lineCount += 1 + _tagCount;
             }
 
             lineCount+= _conditions.Count; 
@@ -291,7 +295,7 @@ namespace UnityServiceLocator.Editor
                         _containingProvider.SwapSources(_sourceIndex, _sourceIndex - 1);
                         ServiceSource source1 = _containingProvider.GetSourceAt(_sourceIndex);
                         ServiceSource source2 = _containingProvider.GetSourceAt(_sourceIndex - 1);
-                        ServiceLocator.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
+                        Services.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
                     }
 
                     if (action == ListAction.MoveDown)
@@ -299,13 +303,13 @@ namespace UnityServiceLocator.Editor
                         _containingProvider.SwapSources(_sourceIndex, _sourceIndex + 1);
                         ServiceSource source1 = _containingProvider.GetSourceAt(_sourceIndex );
                         ServiceSource source2 = _containingProvider.GetSourceAt(_sourceIndex + 1 );
-                        ServiceLocator.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
+                        Services.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
                     }
 
                     if (action == ListAction.Delete)
                     {
                         _containingProvider.RemoveSourceAt(_sourceIndex);
-                        ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
+                        Services.Environment.InvokeEnvironmentChangedOnSource(_source);
                     }
 
                     _anyChange = true;
@@ -403,7 +407,7 @@ namespace UnityServiceLocator.Editor
             {
                 Type oldType = serializableType.Type;
                 serializableType.Type = popupTypeList[newIndex];
-                ServiceLocator.Environment.InvokeEnvironmentChangedOnTypes(oldType, serializableType.Type);
+                Services.Environment.InvokeEnvironmentChangedOnTypes(oldType, serializableType.Type);
                 _anyChange = true;
             }
 
@@ -427,13 +431,13 @@ namespace UnityServiceLocator.Editor
 
         static Rect DrawTags(Rect position)
         {
-            if (_tags == null || !ServiceLocationSetupData.Instance.enableTags)
+            if (_serializedTags == null || !ServiceLocationSetupData.Instance.enableTags)
             {
                 position.x -= foldoutW;
                 return position;
             }
             
-            var title = $"Tags ({_tags.Count})";
+            var title = $"Tags ({_tagCount})";
             _source.isTagsExpanded = EditorGUI.Foldout(position, _source.isTagsExpanded, title);
 
             position.y += lineHeight + space;
@@ -445,10 +449,16 @@ namespace UnityServiceLocator.Editor
 
             bool changeable = !_source.IsTypesAndTagsComingFromDifferentServiceSourceComponent;
             
+            foreach (object tag in _dynamicTags)
+            {
+                DrawDynamicTag(position, tag);
+                position.y += lineHeight + space;
+            }
+            
             if (_source.additionalTypes != null)
-                for (var index = 0; index < _tags.Count; index++)
+                for (var index = 0; index < _serializedTags.Count; index++)
                 {
-                    DrawTag(position, _tags, index, changeable);
+                    DrawTag(position, _serializedTags, index, changeable);
                     position.y += lineHeight + space;
                 }
  
@@ -458,12 +468,19 @@ namespace UnityServiceLocator.Editor
             {
                 _source.AddTag(new Tag());
                 _anyChange = true;
-            } 
+            }
 
             position.y += lineHeight + space;
             position.x -= foldoutW;
             return position;
         }
+        
+        static void DrawDynamicTag(Rect position, object tag)
+        {
+            position.width -= 3 * actionButtonWidth;
+            if (position.width <= 0) return;
+            TagsColumn.DrawTag(position, new Tag(tag), small: false, center: false);
+        } 
 
         static void DrawTag(
             Rect position,
@@ -505,7 +522,7 @@ namespace UnityServiceLocator.Editor
                         {
                             tag.StringTag = newText;
                             _anyChange = true;
-                            ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
+                            Services.Environment.InvokeEnvironmentChangedOnSource(_source);
                         }
 
                         break;
@@ -517,7 +534,7 @@ namespace UnityServiceLocator.Editor
                         {
                             tag.UnityObjectTag = newObject;
                             _anyChange = true;
-                            ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
+                            Services.Environment.InvokeEnvironmentChangedOnSource(_source);
                         }
 
                         break;
@@ -534,7 +551,7 @@ namespace UnityServiceLocator.Editor
                 {
                     tag.Type = newTagType;
                     _anyChange = true;
-                    ServiceLocator.Environment.InvokeEnvironmentChangedOnSource(_source);
+                    Services.Environment.InvokeEnvironmentChangedOnSource(_source);
                 }
 
 

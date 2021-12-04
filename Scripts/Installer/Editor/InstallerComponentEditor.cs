@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
 
-namespace UnityServiceLocator.Editor
+namespace LooseLink.Editor
 {
 [CustomEditor(typeof(InstallerComponent), editorForChildClasses: true)] 
 public class InstallerComponentEditor : UnityEditor.Editor

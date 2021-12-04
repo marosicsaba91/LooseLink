@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
 public class ServiceTypeAttribute : Attribute

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 
 [Serializable]
@@ -24,7 +24,7 @@ public struct LocalInstallerPriority
             if (priorityValueSetting == value) return;
             priorityValueSetting = value;
             type = Type.ConcreteValue;
-            ServiceLocator.Environment.SortInstallers();
+            Services.Environment.SortInstallers();
         }
     }
 

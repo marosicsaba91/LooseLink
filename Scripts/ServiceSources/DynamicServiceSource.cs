@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
  
 abstract class DynamicServiceSource
@@ -14,7 +14,8 @@ abstract class DynamicServiceSource
     readonly List<Type> _possibleAdditionalTypes = new List<Type>(); 
     readonly List<Type> _allNonAbstractTypes = new List<Type>(); 
     readonly List<IServiceSourceCondition> _resolvingConditions = new List<IServiceSourceCondition>();
-    ServiceSourceComponent _serviceSourceComponent;
+    readonly List<ITagged> _dynamicTaggers = new List<ITagged>(); 
+    ServerObject _serverObject;
     bool _isDynamicTypeDataInitialized = false;
 
     public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
@@ -40,12 +41,12 @@ abstract class DynamicServiceSource
     }
 
 
-    public ServiceSourceComponent ServiceSourceComponent
+    public ServerObject ServerObject
     {
         get
         {
             InitDynamicTypeDataIfNeeded();
-            return _serviceSourceComponent;
+            return _serverObject;
         } 
     }
 
@@ -69,7 +70,7 @@ abstract class DynamicServiceSource
             {
                 parentObject = provider != null && provider.GetType().IsSubclassOf(typeof(Component))
                     ? ((Component) provider).transform
-                    : ServiceLocator.ParentObject;
+                    : Services.ParentObject;
             }
             
             LoadedObject = Instantiate(parentObject);
@@ -119,6 +120,12 @@ abstract class DynamicServiceSource
         return _dynamicServiceTypes;
     }
 
+    public IEnumerable<object> GetDynamicTags()
+    {
+        InitDynamicTypeDataIfNeeded();
+        return _dynamicTaggers.SelectMany(tagger => tagger.GetTags()).Where(tag => tag != null);
+    }
+
     public IReadOnlyList<Type> GetPossibleAdditionalTypes()
     {         
         InitDynamicTypeDataIfNeeded();
@@ -139,15 +146,17 @@ abstract class DynamicServiceSource
         _allNonAbstractTypes.AddRange(GetNonAbstractTypes());
         _dynamicServiceTypes.Clear();
         _possibleAdditionalTypes.Clear();
+        _dynamicServiceTypes.Clear();
         _typeToServiceOnSource.Clear();
-        _serviceSourceComponent = (SourceObject as GameObject)?.GetComponent<ServiceSourceComponent>();
+        _serverObject = (SourceObject as GameObject)?.GetComponent<ServerObject>();
         _resolvingConditions.Clear();
         _resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
+        _dynamicTaggers.Clear();
+        _dynamicTaggers.AddRange(GetTypesOf<ITagged>(SourceObject));
         foreach (Type concreteType in _allNonAbstractTypes)
         {
             object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
-
-
+            
             IEnumerable<Type> abstractTypes = ServiceTypeHelper.GetServicesOfNonAbstractType(concreteType)
                 .Where(abstractType => !_dynamicServiceTypes.Contains(abstractType));
 
@@ -165,6 +174,7 @@ abstract class DynamicServiceSource
         _isDynamicTypeDataInitialized = true;
     }
 
+    
     static IEnumerable<T> GetTypesOf<T>(Object obj)
     {
         switch (obj)
@@ -176,9 +186,8 @@ abstract class DynamicServiceSource
                 break;
             }
             case GameObject go:
-            {
-                T[] initializables = go.GetComponents<T>();
-                foreach (T t in initializables)
+            { 
+                foreach (T t in go.GetComponents<T>())
                     yield return t;
                 break;
             }
@@ -190,7 +199,7 @@ abstract class DynamicServiceSource
         if(type == null)
             yield break;
         
-        if(type == typeof(ServiceSourceComponent))
+        if(type == typeof(ServerObject))
             yield break;
         
         if(type == typeof(LocalServiceInstaller))
@@ -204,6 +213,7 @@ abstract class DynamicServiceSource
             {
                 if (interfaceType == typeof(IInitializable)) continue;
                 if (interfaceType == typeof(IServiceSourceCondition)) continue;
+                if (interfaceType == typeof(ITagged)) continue;
                 if (interfaceType == typeof(IServiceSourceProvider)) continue; 
                 yield return interfaceType;
             }

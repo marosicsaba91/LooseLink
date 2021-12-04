@@ -4,16 +4,26 @@ using System.Linq;
 using MUtility;
 using UnityEngine; 
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ServiceLocationSetupData : ScriptableObject
-{ 
+{
+    internal enum CantResolveAction
+    {
+        ReturnNull,
+        ReturnNullWithWarning,
+        ThrowException,
+    }
+
     [SerializeField] ErrorMessage errorMessage; 
     [SerializeField] SetupTimeMessage lastTypeMapSetupTime;
     public bool setupAtPlayInEditor;
     public bool setupAtStartInBuild = true;
     [Space]
     public bool enableTags = false;
+
+    [Space]
+    public CantResolveAction whenServiceCantBeResolved = CantResolveAction.ReturnNullWithWarning;
 
     public bool IsDefault { get; private set; } = false;
 
@@ -52,7 +62,7 @@ class ServiceLocationSetupData : ScriptableObject
         ServiceLocationSetupData instance = Instance;
         if (Application.isEditor && !instance.setupAtPlayInEditor) return;
         if (!Application.isEditor && !instance.setupAtStartInBuild) return;
-        ServiceLocator.Init();
+        Services.Init();
     }
 
     public static bool AreMultipleSetupInstances
@@ -90,7 +100,7 @@ class ServiceLocationSetupData : ScriptableObject
         {
             yield return "Service Locator needs to setup itself once to operate fast after that.";
             yield return "This process takes relatively long time, so it can cause a noticeable hiccup.";
-            yield return "Last setup was:  " + ServiceLocator.SetupTime.Milliseconds + " ms.";
+            yield return "Last setup was:  " + Services.SetupTime.Milliseconds + " ms.";
             yield return "You can choose to do this at the start of the software or at the first use of the Service Locator.";
         }
 

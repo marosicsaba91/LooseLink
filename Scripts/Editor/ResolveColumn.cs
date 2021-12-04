@@ -5,7 +5,7 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
 {
@@ -151,7 +151,7 @@ class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
         const float settingButtonW = 20;
         position.x += indent;
         position.width -= indent; 
-        GUI.Label(position, "Resolve" );
+        GUI.Label(position, "Server Object" );
 
         var buttonRect = new Rect(
             position.xMax - buttonW - margin - settingButtonW,
@@ -159,7 +159,7 @@ class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
             buttonW,
             position.height - 2 * margin);
         if (GUI.Button(buttonRect, "Clear"))
-            ServiceLocator.ClearAllCachedData();
+            Services.ClearAllCachedData();
     }
 }
 }

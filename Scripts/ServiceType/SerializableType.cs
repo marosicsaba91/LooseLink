@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 using UnityEditor;
 #endif
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 [Serializable]
 public class SerializableType : ISerializationCallbackReceiver

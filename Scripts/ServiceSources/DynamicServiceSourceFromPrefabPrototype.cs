@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 
 class DynamicServiceSourceFromPrefabPrototype : DynamicServiceSourceFromGO

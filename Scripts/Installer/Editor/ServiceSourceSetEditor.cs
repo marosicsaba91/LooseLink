@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace UnityServiceLocator.Editor
+namespace LooseLink.Editor
 {
 [CustomEditor(typeof(ServiceSourceSet))]
 public class ServiceSourceSetEditor : UnityEditor.Editor

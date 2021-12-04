@@ -1,4 +1,4 @@
-﻿namespace UnityServiceLocator
+﻿namespace LooseLink
 {
 public enum ServiceSourceTypes
 {

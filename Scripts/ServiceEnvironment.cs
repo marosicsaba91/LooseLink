@@ -5,7 +5,7 @@ using MUtility;
 using UnityEngine;
 using UnityEngine.SceneManagement; 
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 public class ServiceEnvironment
 {
@@ -107,13 +107,13 @@ public class ServiceEnvironment
     static IEnumerable<IServiceSourceProvider> FindInstallers()
     {
         sets.Clear();
-        sets.AddRange(ServiceLocator.FindGlobalInstallers);
+        sets.AddRange(Services.FindGlobalInstallers);
 
         var localInstallers = new List<InstallerComponent>();
         localInstallers.AddRange(
             FindObjectsOfTypeAll<LocalServiceInstaller>());
         localInstallers.AddRange(
-            FindObjectsOfTypeAll<ServiceSourceComponent>());
+            FindObjectsOfTypeAll<ServerObject>().Where(serverObj => serverObj.InstallAutomatically));
 
 
         int maxPriority = sets.Count == 0 ? 0 : sets.Select(set => set.PriorityValue).Max();
@@ -235,8 +235,8 @@ public class ServiceEnvironment
     static HashSet<Type> _tempTypes = new HashSet<Type>();
     void InvokeEnvironmentChanged(IEnumerable<Type> types)
     {
-        if (!ServiceLocator.AreServiceLocatorInitialized) return;
-        if (ServiceLocator.IsDestroying) return;
+        if (!Services.AreServiceLocatorInitialized) return;
+        if (Services.IsDestroying) return;
         
         _tempTypes = EnumerableToHashSet(types);
         if(_tempTypes.IsEmpty()) return;

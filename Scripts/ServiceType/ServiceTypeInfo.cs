@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityServiceLocator
+namespace LooseLink
 { 
     struct ServiceTypeInfo
     {

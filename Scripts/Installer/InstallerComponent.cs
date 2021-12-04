@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
 {
     [SerializeField, HideInInspector] LocalInstallerPriority priority;
     [SerializeField, HideInInspector] bool dontDestroyOnLoad = false;
-   
+
+    public abstract bool InstallAutomatically { get; }
+
     public bool AutoDontDestroyOnLoad { 
         get => dontDestroyOnLoad;
         set => dontDestroyOnLoad = value;
@@ -21,7 +23,7 @@ public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
             priority = value; 
             
             if(lastValue != priority.Value)
-                ServiceLocator.Environment.SortInstallers();
+                Services.Environment.SortInstallers();
         }
     }
 
@@ -65,11 +67,11 @@ public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
 
     void Install()
     {
-        Priority.SetInstallationValue(ServiceLocator.Environment.MaxPriority + 1);
-        ServiceLocator.Environment.TryInstallServiceSourceProvider(this);
+        Priority.SetInstallationValue(Services.Environment.MaxPriority + 1);
+        Services.Environment.TryInstallServiceSourceProvider(this);
     }
 
-    void UnInstall() => ServiceLocator.Environment.TryUninstallServiceSourceProvider(this);
+    void UnInstall() => Services.Environment.TryUninstallServiceSourceProvider(this);
 
 }
 }

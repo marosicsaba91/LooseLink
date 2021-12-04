@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using MUtility;
 using UnityEngine; 
-namespace UnityServiceLocator
+namespace LooseLink
 {
-public class PlatformServiceSourceCondition : MonoBehaviour, IServiceSourceCondition
+public class PlatformCondition : MonoBehaviour, IServiceSourceCondition
 {
     [SerializeField] List<RuntimePlatform> platforms;
 
@@ -24,7 +24,7 @@ public class PlatformServiceSourceCondition : MonoBehaviour, IServiceSourceCondi
 
         return CanResolve() ? 
             $"Current platform ({Application.platform}) is supported." :
-            $"Source is only available on these platforms: { string.Join(", ", platforms)}.";
+            $"Available only on these platforms: { string.Join(", ", platforms)}.";
     }
 }
 }

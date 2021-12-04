@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 public interface IServiceSourceProvider 
 { 

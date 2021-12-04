@@ -4,7 +4,7 @@ using UnityEngine;
 using MUtility;
 using UnityEditor;
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 class ServiceSourceTypeColumn: Column<FoldableRow<ServiceLocatorRow>>
 {

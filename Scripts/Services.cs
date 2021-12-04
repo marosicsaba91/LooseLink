@@ -10,10 +10,10 @@ using Object = UnityEngine.Object;
 using UnityEditor;
 #endif
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 
-public static class ServiceLocator
+public static class Services
 {
     static readonly bool debugLogs = false;
     public static TimeSpan SetupTime { get; private set; }
@@ -23,7 +23,7 @@ public static class ServiceLocator
     internal static bool IsDestroying { get; private set; } 
     internal static bool AreServiceLocatorInitialized { get; private set; } 
 
-    static ServiceLocator() => Init();
+    static Services() => Init();
     
     static Transform _parentObject;
 
@@ -83,26 +83,26 @@ public static class ServiceLocator
             installerSourcePair.source?.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
     }
 
-    public static TService Resolve<TService>(params object[] tags) =>
-        (TService) Resolve(typeof(TService), tags);
+    public static TService Get<TService>(params object[] tags) =>
+        (TService) Get(typeof(TService), tags);
 
-    public static object Resolve(Type looseServiceType, params object[] tags)
+    public static object Get(Type looseServiceType, params object[] tags)
     {
-        if (TryResolve(looseServiceType, tags, out object service))
+        if (TryGet(looseServiceType, tags, out object service))
             return service;
 
-        throw CantFindService(looseServiceType, tags);
+        return CantFindService(looseServiceType, tags);
     }
 
-    public static bool TryResolve<TService>(out TService service) =>
-        TryResolve(tags: null, out service);
+    public static bool TryGet<TService>(out TService service) =>
+        TryGet(tags: null, out service);
 
-    public static bool TryResolve(Type looseServiceType, out object service) =>
-        TryResolve(looseServiceType, tags: null, out service);
+    public static bool TryGet(Type looseServiceType, out object service) =>
+        TryGet(looseServiceType, tags: null, out service);
 
-    public static bool TryResolve<TService>(object[] tags, out TService service)
+    public static bool TryGet<TService>(object[] tags, out TService service)
     {
-        if (TryResolve(typeof(TService), tags, out object service1))
+        if (TryGet(typeof(TService), tags, out object service1))
         {
             service = (TService) service1;
             return true;
@@ -112,7 +112,7 @@ public static class ServiceLocator
         return false;
     }
 
-    public static bool TryResolve(Type looseServiceType, object[] tags, out object service)
+    public static bool TryGet(Type looseServiceType, object[] tags, out object service)
     {
         if(debugLogs)
             Debug.Log("Resolve");
@@ -160,22 +160,35 @@ public static class ServiceLocator
         return true;
     }
 
-    static Exception CantFindService(Type looseServiceType, object[] tags)
+    static object CantFindService(Type looseServiceType, object[] tags)
     {
-        if(tags.IsNullOrEmpty())
-            return new ArgumentException($"Can't find Services of this Type: {looseServiceType}");
-          
-        var tagNames = new StringBuilder();
-        for (var i = 0; i < tags.Length; i++)
-        {
-            object tag = tags[i];
-            tagNames.Append(new Tag(tag).Name);
-            if(i< tags.Length-1)
-                tagNames.Append(", ");
-        }
+        ServiceLocationSetupData.CantResolveAction action = ServiceLocationSetupData.Instance.whenServiceCantBeResolved;
 
-        return new ArgumentException(
-            $"Can't find Services of this Type: {looseServiceType} with these tags: [{tagNames}]");
+        if (action == ServiceLocationSetupData.CantResolveAction.ReturnNull)
+            return null;
+        
+        string text;
+        if (tags.IsNullOrEmpty())
+            text = $"Can't find Services of this Type: {looseServiceType}";
+        else
+        {
+            var tagNames = new StringBuilder();
+            for (var i = 0; i < tags.Length; i++)
+            {
+                object tag = tags[i];
+                tagNames.Append(new Tag(tag).Name);
+                if (i < tags.Length - 1)
+                    tagNames.Append(", ");
+            }
+
+            text = $"Can't find Services of this Type: {looseServiceType} with these tags: [{tagNames}]";
+        }
+        
+        if (action == ServiceLocationSetupData.CantResolveAction.ThrowException)
+            throw new ArgumentException(text);
+        
+        Debug.LogWarning(text);
+        return null;
     }
 
     internal static IEnumerable<IServiceSourceProvider> GetAllInstallers() => 

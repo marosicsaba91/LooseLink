@@ -5,7 +5,7 @@ using MUtility;
 using UnityEditor;
 using UnityEngine; 
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 static class ServicesEditorHelper
 {

@@ -2,12 +2,14 @@
 using MUtility;
 using UnityEngine;  
 
-namespace UnityServiceLocator
+namespace LooseLink
 {
 [DefaultExecutionOrder(order: -1000001)]
 public class LocalServiceInstaller : InstallerComponent
 {
     [SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>();
+
+    public override bool InstallAutomatically => true;
 
     public override bool IsSingleSourceProvider => false;
     public override ServiceSource GetSourceAt(int index)
