@@ -35,3 +35,5 @@ All of these approaches have at least one problem but mostly more from the follo
 8. **Need to rely on name**, Which makes our architecture extremely fragile.
 
 Unfortunately there are no good solution to this problem available in Unity out of the box.
+
+TEST
