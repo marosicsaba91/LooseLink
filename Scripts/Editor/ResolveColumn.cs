@@ -106,9 +106,8 @@ class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
             }
             else
             {
-                // Resolve Button 
-                
-                if (GUI.Button(actionButtonRect, "Resolve", ServicesEditorHelper.SmallCenterButtonStyle))
+                // Resolve Button
+                if (GUI.Button(actionButtonRect, "Instantiate", ServicesEditorHelper.SmallCenterButtonStyle))
                     row.element.source?.ResolveAllServices();
             }
 

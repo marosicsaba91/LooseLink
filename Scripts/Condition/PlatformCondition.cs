@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MUtility;
 using UnityEngine; 
 namespace LooseLink
@@ -10,11 +11,11 @@ public class PlatformCondition : MonoBehaviour, IServiceSourceCondition
     public bool CanResolve()
     { 
         if (platforms.IsNullOrEmpty())
-            return false;
- 
-        return platforms.Contains(Application.platform);  
+            return false; 
+        
+        return platforms.Contains(Application.platform);
     }
-     
+
     public string GetConditionMessage()
     { 
         if (platforms.IsNullOrEmpty())
