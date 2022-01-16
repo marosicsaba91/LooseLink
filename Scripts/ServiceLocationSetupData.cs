@@ -81,7 +81,7 @@ class ServiceLocationSetupData : ScriptableObject
     [Serializable]
     class ErrorMessage : InspectorMessage<ServiceLocationSetupData>
     {
-        protected override string Text(ServiceLocationSetupData parentObject, string originalLabel) =>
+        protected override string GetLabel(ServiceLocationSetupData parentObject, string originalLabel) =>
             !parentObject.IsInResources() 
                 ? "ServiceLocationSetupData only works in a Resources folder!" 
                 : "There are more than one ServiceLocationSetupData instance!";
