@@ -17,6 +17,7 @@ abstract class DynamicServiceSource
     readonly List<ITagged> _dynamicTaggers = new List<ITagged>(); 
     ServerObject _serverObject;
     bool _isDynamicTypeDataInitialized = false;
+    bool _isInitialized;
 
     public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
@@ -74,8 +75,9 @@ abstract class DynamicServiceSource
             }
             
             LoadedObject = Instantiate(parentObject);
-            TryInitializeService();
         }
+
+        TryInitializeService();
 
         if (!_instantiatedServices.ContainsKey(type))
             _instantiatedServices.Add(type, GetServiceFromServerObject(type, LoadedObject));
@@ -86,9 +88,11 @@ abstract class DynamicServiceSource
 
     void TryInitializeService()
     {
+        if(_isInitialized) return;
         if (LoadedObject == null) return;
         foreach (IInitializable initializable in GetTypesOf<IInitializable>(LoadedObject))
             initializable.Initialize();
+        _isInitialized = true;
     }
     
     bool IsResolvableByConditions(out string message)

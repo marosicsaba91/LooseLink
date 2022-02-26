@@ -4,5 +4,16 @@
   "displayName": "LooseLink",
   "description": "A tool for locating high level services developed specifically for Unity",
   "unity": "2019.4",
-  "type": "library"
+  "type": "library",
+  
+  "dependencies": {
+    "com.marosi.utility": "1.1.3"
+  },
+
+  "samples": [
+    {
+      "displayName": "LooseLink Sample",
+      "description": "Sample project using LooseLink",
+      "path": "Samples~"
+    },
 }

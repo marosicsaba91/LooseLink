@@ -167,12 +167,8 @@ public class ServiceSource
             _sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
     }
 
-    public bool TryAddServiceType<T>()
-    {
-        return TryAddServiceType(typeof(T));
-    }
 
-    public bool TryAddServiceType(Type t)
+    internal bool TryAddServiceType(Type t)
     {
         if (t == null) return false;
         InitDynamicIfNeeded();
