@@ -3,9 +3,9 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "UnityServiceLocator",
-        "ServiceLoactorSample",
-        "MUtility"
+        "Marosi.Utility",
+        "Marosi.LooseLink",
+        "LooseLinkSample"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
