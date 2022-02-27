@@ -8,8 +8,8 @@
   
   "samples": 
     {
-      "displayName": "LooseLink Samples",
+      "displayName": "LooseLink Sample",
       "description": "Sample project using LooseLink",
-      "path": "Samples~"
+      "path": "Samples"
     }
 }
