@@ -1,5 +1,4 @@
-﻿using System;
-using LooseLink;
+﻿using LooseLink;
 using UnityEngine; 
 using Vector3 = UnityEngine.Vector3;
 
@@ -10,8 +9,7 @@ public class Projectile : MonoBehaviour
 
     [SerializeField] new Rigidbody rigidbody;
     [SerializeField] new Collider collider;
-     
- 
+
     float _age;
     BallisticsManager _ballisticsManager;
 
