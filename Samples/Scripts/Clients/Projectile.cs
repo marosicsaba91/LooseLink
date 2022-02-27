@@ -10,6 +10,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] new Rigidbody rigidbody;
     [SerializeField] new Collider collider;
 
+    
     float _age;
     BallisticsManager _ballisticsManager;
 
