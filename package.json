@@ -6,14 +6,10 @@
   "unity": "2019.4",
   "type": "library",
   
-  "dependencies": {
-    "com.marosi.utility": "1.1.3"
-  },
-
-  "samples": [
+  "samples": 
     {
-      "displayName": "LooseLink Sample",
+      "displayName": "LooseLink Samples",
       "description": "Sample project using LooseLink",
       "path": "Samples~"
-    },
+    }
 }
