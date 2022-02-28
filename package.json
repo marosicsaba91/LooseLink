@@ -11,7 +11,7 @@
     "path": "Samples~"
   },
   "dependencies": {
-    "com.marosi.utility": "1.2.2"
+    "com.marosi.utility": "1.2.3"
   },
   "author": {
     "name": "Csaba Marosi",
