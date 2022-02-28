@@ -326,6 +326,9 @@ public class ServiceSource
     {
         if (serviceSourceObject == null) yield break;
         InitDynamicIfNeeded();
+        
+        if(additionalTypes == null)
+            additionalTypes = new List<SerializableType>();
 
         if (IsServiceSource)
         {
