@@ -4,7 +4,7 @@ namespace LooseLink
 {
 
 [Serializable]
-public struct LocalInstallerPriority
+public struct InstallerPriority
 {
     public enum Type
     {

@@ -11,8 +11,9 @@ public class ServiceSourceSet : ScriptableObject, IServiceSourceProvider
 { 
     [SerializeField, HideInInspector] internal bool automaticallyUseAsGlobalInstaller = false;
     [SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>(); 
-    [SerializeField, HideInInspector] int priority = 0; 
-    
+    [SerializeField, HideInInspector] int priority = 0;
+
+    public InstallerPriority.Type PriorityType => InstallerPriority.Type.ConcreteValue;
     public bool IsSingleSourceProvider => false;
     
     public ServiceSource GetSourceAt(int index)

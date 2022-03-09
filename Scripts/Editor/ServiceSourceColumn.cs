@@ -37,24 +37,25 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
         EditorGUI.indentLevel = 0;
         position = DrawFoldout(position, row);
         EditorGUI.indentLevel = indent;
+        DrawPriority(position, row);
         DrawCell(position, row.element, selectElement: true);
     }
     
-    static void DrawCell(Rect position, ServiceLocatorRow locatorRow, bool selectElement)
-    {
+    static void DrawCell(Rect position, ServiceLocatorRow row, bool selectElement)
+    { 
         GUI.enabled = true;
         
-        if (IsRowHighlighted(locatorRow))
+        if (IsRowHighlighted(row))
             EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
 
         GUI.color = Color.white;
  
-        GUI.enabled = locatorRow.enabled;
+        GUI.enabled = row.enabled;
         position.y += (position.height - 16) / 2f;
         position.height = 16;
-        EditorGUI.LabelField(position, locatorRow.GetGUIContent());
+        EditorGUI.LabelField(position, row.GetGUIContent());
  
-        bool isRowSelectable = locatorRow.SelectionObject != null;
+        bool isRowSelectable = row.SelectionObject != null;
         if (isRowSelectable && position.Contains(Event.current.mousePosition))
             EditorGUI.DrawRect(position, EditorHelper.tableHoverColor);
 
@@ -63,11 +64,37 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
         
         GUI.enabled = true;
         if (GUI.Button(position, GUIContent.none, _rowButtonStyle))
-            OnRowClick(locatorRow, selectElement);
+            OnRowClick(row, selectElement);
         
-        GUI.enabled = locatorRow.enabled;
-    } 
+        GUI.enabled = row.enabled;
+    }
+ 
 
+    static void DrawPriority(Rect position, FoldableRow<ServiceLocatorRow> row)
+    {
+        const float w = 50;
+        position.x = position.xMax - w - 4;
+        position.width = w;
+        if(row.level != 0)
+            return;
+        IServiceSourceProvider provider;
+        if( row.element.Category == ServiceLocatorRow.RowCategory.Set)
+            provider = row.element.provider;
+        else 
+            provider = row.element.source?.serviceSourceProvider;
+
+        if (provider == null)
+            return;
+
+        bool hai = provider.PriorityType == InstallerPriority.Type.HighestAtInstallation;
+        var content = new GUIContent(
+            provider.PriorityValue + (hai ? "*" : ""),
+            null,
+            hai ? $"Priority is automatically highest at installation: {provider.PriorityValue}" :
+                $"Priority is a fix value: {provider.PriorityValue}");
+        GUI.Label(position, content, PriorityStyle);
+    }
+    
     static void OnRowClick(ServiceLocatorRow locatorRow, bool selectElement)
     {
         Object obj = locatorRow.SelectionObject;
@@ -128,6 +155,15 @@ class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
      static GUIStyle _rowButtonStyle;
 
      public bool NoSearch => string.IsNullOrEmpty(SearchServiceText);
+     
+     static GUIStyle _priorityStyle;
+     static GUIStyle PriorityStyle => _priorityStyle = _priorityStyle ?? new GUIStyle
+     {
+         alignment = TextAnchor.MiddleRight,
+         fontSize = 10,
+         padding = new RectOffset(left: 2, right: 2,top: 0,bottom: 0),
+         normal = {textColor = GUI.skin.label.normal.textColor},
+     };
 }
 
 }

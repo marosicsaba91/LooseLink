@@ -11,7 +11,7 @@
     "path": "Samples~"
   },
   "dependencies": {
-    "com.marosi.utility": "1.2.3"
+    "com.marosi.utility": "1.2.4"
   },
   "author": {
     "name": "Csaba Marosi",
@@ -19,4 +19,3 @@
     "url": "csabamarosi.net/unity-tools/"
   }
 }
-

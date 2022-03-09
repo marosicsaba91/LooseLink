@@ -4,7 +4,7 @@ namespace LooseLink
 {
 public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
 {
-    [SerializeField, HideInInspector] LocalInstallerPriority priority;
+    [SerializeField, HideInInspector] InstallerPriority priority;
     [SerializeField, HideInInspector] bool dontDestroyOnLoad = false;
 
     public abstract bool InstallAutomatically { get; }
@@ -14,7 +14,7 @@ public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
         set => dontDestroyOnLoad = value;
     } 
 
-    public LocalInstallerPriority Priority
+    public InstallerPriority Priority
     {
         get => priority;
         set
@@ -28,6 +28,7 @@ public abstract class InstallerComponent : MonoBehaviour, IServiceSourceProvider
     }
 
     public int PriorityValue => priority.Value;
+    public InstallerPriority.Type PriorityType => priority.type;
     public abstract bool IsSingleSourceProvider{ get; }
     public abstract void SwapSources(int index1, int index2);
 

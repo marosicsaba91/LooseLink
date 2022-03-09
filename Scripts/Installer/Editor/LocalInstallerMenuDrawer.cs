@@ -26,13 +26,13 @@ static class LocalInstallerMenuDrawer
 
             GUI.enabled = true;
 
-            LocalInstallerPriority priority = installerComponent.Priority;
+            InstallerPriority priority = installerComponent.Priority;
             int priorityValue = priority.priorityValueSetting;
-            var newPriorityType = (LocalInstallerPriority.Type)
+            var newPriorityType = (InstallerPriority.Type)
                 EditorGUILayout.EnumPopup("Priority Type", priority.type);
 
             GUI.enabled = true;
-            if (priority.type == LocalInstallerPriority.Type.ConcreteValue)
+            if (priority.type == InstallerPriority.Type.ConcreteValue)
                 priorityValue = EditorGUILayout.IntField("Priority", priorityValue);
 
             if (newPriorityType != priority.type || priorityValue != priority.priorityValueSetting)

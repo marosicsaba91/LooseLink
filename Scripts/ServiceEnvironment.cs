@@ -119,10 +119,10 @@ public class ServiceEnvironment
         int maxPriority = sets.Count == 0 ? 0 : sets.Select(set => set.PriorityValue).Max();
 
         sets.AddRange(localInstallers.Where(
-            inst => inst.Priority.type == LocalInstallerPriority.Type.ConcreteValue));
+            inst => inst.Priority.type == InstallerPriority.Type.ConcreteValue));
 
         foreach (InstallerComponent localInstaller in localInstallers.Where(
-            inst => inst.Priority.type == LocalInstallerPriority.Type.HighestAtInstallation))
+            inst => inst.Priority.type == InstallerPriority.Type.HighestAtInstallation))
         {
             maxPriority++;
             localInstaller.SetInstallationValue(maxPriority);

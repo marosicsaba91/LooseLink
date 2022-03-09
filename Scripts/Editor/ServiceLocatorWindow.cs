@@ -68,7 +68,7 @@ class ServiceLocatorWindow : EditorWindow
     void GenerateServiceSourceTable()
     {
         if (_serviceTable != null) return;
-        
+
         _serviceSourcesColumn = new ServiceSourceColumn(this);
         _tagsColumn = new TagsColumn(this);
         _servicesColumn = new ServicesColumn(this);

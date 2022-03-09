@@ -336,13 +336,28 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
+      propertyPath: priority.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
+        type: 3}
       propertyPath: source.isTagsExpanded
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}
+      propertyPath: source.isTypesExpanded
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
+        type: 3}
       propertyPath: source.preferredSourceType
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
+        type: 3}
+      propertyPath: priority.priorityValueSetting
+      value: 218
       objectReference: {fileID: 0}
     - target: {fileID: 4284991992337719392, guid: 6b11993b0fc28604fb7fd5453465d0f7,
         type: 3}

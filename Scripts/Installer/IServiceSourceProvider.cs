@@ -2,12 +2,13 @@
 using Object = UnityEngine.Object;
 
 namespace LooseLink
-{
-public interface IServiceSourceProvider 
 { 
+public interface IServiceSourceProvider 
+{
     string Name { get; } 
     void ClearDynamicData_NoEnvironmentChangeEvent();
     int PriorityValue { get; }
+    InstallerPriority.Type PriorityType { get; }
     bool IsSingleSourceProvider { get; } 
     
     int SourceCount { get; }
