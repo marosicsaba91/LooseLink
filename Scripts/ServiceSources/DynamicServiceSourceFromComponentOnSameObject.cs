@@ -19,12 +19,3 @@ abstract class DynamicServiceSourceFromComponentOnTheSameObject : DynamicService
 
 }
 }
-
-public static class AAA
-{
-
-    public static void Reeesolve(this Object self)
-    {
-    }
-
-}
