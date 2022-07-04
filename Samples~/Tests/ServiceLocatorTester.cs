@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LooseLink;
-using MUtility;
+using MarosiUtility;
 using UnityEngine;
 
 public class ServiceLocatorTester : MonoBehaviour

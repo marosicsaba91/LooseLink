@@ -90,9 +90,9 @@ abstract class DynamicServiceSource
     {
         if(_isInitialized) return;
         if (LoadedObject == null) return;
-        foreach (IInitializable initializable in GetTypesOf<IInitializable>(LoadedObject))
-            initializable.Initialize();
         _isInitialized = true;
+        foreach (IInitializable initializable in GetTypesOf<IInitializable>(LoadedObject))
+            initializable.Initialize(); 
     }
     
     bool IsResolvableByConditions(out string message)
