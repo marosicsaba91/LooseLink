@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using MUtility;
 using UnityEngine;
 
@@ -17,15 +18,15 @@ class ServiceLocationSetupData : ScriptableObject
     DisplayMessage errorMessage = new DisplayMessage(nameof(GetErrorMessage), true)
         { messageType = MessageType.Error };
 
-    
-    [SerializeField] DisplayMessage lastTypeMapSetupTime = new DisplayMessage(
+    [SerializeField] DisplayMessage lastTypeMapSetupTime = new DisplayMessage(nameof(InfoMessage), true)
+        { messageType = MessageType.Info };
+
+    string InfoMessage =>
         "Service Locator needs to setup itself once to operate fast after that." +
         "This process takes relatively long time, so it can cause a noticeable hiccup." +
         "Last setup was:  " + Services.SetupTime.Milliseconds + " ms." +
-        "You can choose to do this at the start of the software or at the first use of the Service Locator.")
-        { messageType = MessageType.Info };
+        "You can choose to do this at the start of the software or at the first use of the Service Locator.";
     
-
     public bool setupAtPlayInEditor;
     public bool setupAtStartInBuild = true;
     [Space] public bool enableTags = false;

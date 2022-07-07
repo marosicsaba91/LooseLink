@@ -93,7 +93,6 @@ class ServiceLocatorWindow : EditorWindow
             DrawSetup();
         else
             DrawFullServicesMenu();
-
     }
 
     void DrawSetup()
