@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using MUtility;
-using UnityEngine; 
+using UnityEngine;
 
 namespace LooseLink
 {
@@ -15,53 +13,62 @@ class ServiceLocationSetupData : ScriptableObject
         ThrowException,
     }
 
-    [SerializeField] ErrorMessage errorMessage; 
-    [SerializeField] SetupTimeMessage lastTypeMapSetupTime;
+    [ShowIf(nameof(ShowError))] [SerializeField]
+    DisplayMessage errorMessage = new DisplayMessage(nameof(GetErrorMessage), true)
+        { messageType = MessageType.Error };
+
+    
+    [SerializeField] DisplayMessage lastTypeMapSetupTime = new DisplayMessage(
+        "Service Locator needs to setup itself once to operate fast after that." +
+        "This process takes relatively long time, so it can cause a noticeable hiccup." +
+        "Last setup was:  " + Services.SetupTime.Milliseconds + " ms." +
+        "You can choose to do this at the start of the software or at the first use of the Service Locator.")
+        { messageType = MessageType.Info };
+    
+
     public bool setupAtPlayInEditor;
     public bool setupAtStartInBuild = true;
-    [Space]
-    public bool enableTags = false;
+    [Space] public bool enableTags = false;
 
-    [Space]
-    public CantResolveAction whenServiceCantBeResolved = CantResolveAction.ReturnNullWithWarning;
+    [Space] public CantResolveAction whenServiceCantBeResolved = CantResolveAction.ReturnNullWithWarning;
 
     public bool IsDefault { get; private set; } = false;
 
-    static ServiceLocationSetupData[] _allInstances = null; 
-    static ServiceLocationSetupData _instance = null;
-    
+    static ServiceLocationSetupData[] allInstances = null;
+    static ServiceLocationSetupData instance = null;
+
     public static ServiceLocationSetupData Instance
     {
         get
         {
             if (Application.isEditor)
             {
-                _allInstances = Resources.LoadAll<ServiceLocationSetupData>(string.Empty);
-                if (!_allInstances.IsNullOrEmpty())
-                    return _allInstances.First();
+                allInstances = Resources.LoadAll<ServiceLocationSetupData>(string.Empty);
+                if (!allInstances.IsNullOrEmpty())
+                    return allInstances.First();
             }
-            else if (_allInstances == null)
+            else if (allInstances == null)
             {
-                _allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
-                _instance = _allInstances.FirstOrDefault();
+                allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+                instance = allInstances.FirstOrDefault();
             }
 
-            if (_instance == null)
+            if (instance == null)
             {
-                _instance = CreateInstance<ServiceLocationSetupData>();
-                _instance.IsDefault = true;
+                instance = CreateInstance<ServiceLocationSetupData>();
+                instance.IsDefault = true;
             }
 
-            return _instance;
+            return instance;
         }
     }
-    
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     internal static void UpdateGlobalInstallers()
     {
-        ServiceLocationSetupData instance = Instance;
-        if (Application.isEditor && !instance.setupAtPlayInEditor) return;
-        if (!Application.isEditor && !instance.setupAtStartInBuild) return;
+        ServiceLocationSetupData inst = Instance;
+        if (Application.isEditor && !inst.setupAtPlayInEditor) return;
+        if (!Application.isEditor && !inst.setupAtStartInBuild) return;
         Services.Init();
     }
 
@@ -69,43 +76,18 @@ class ServiceLocationSetupData : ScriptableObject
     {
         get
         {
-            if (_allInstances == null)
-                _allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
-            return _allInstances.Length > 1;
+            if (allInstances == null)
+                allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+            return allInstances.Length > 1;
         }
     }
 
-    internal bool IsInResources() => 
+    internal bool IsInResources() =>
         Resources.LoadAll<ServiceLocationSetupData>(string.Empty).Any(so => so == this);
-    
-    [Serializable]
-    class ErrorMessage : InspectorMessage<ServiceLocationSetupData>
-    {
-        protected override string GetLabel(ServiceLocationSetupData parentObject, string originalLabel) =>
-            !parentObject.IsInResources() 
-                ? "ServiceLocationSetupData only works in a Resources folder!" 
-                : "There are more than one ServiceLocationSetupData instance!";
-        
-        protected override InspectorMessageType MessageType(ServiceLocationSetupData parentObject) => 
-            InspectorMessageType.Error;
 
-        protected override bool IsVisible(ServiceLocationSetupData parentObject) =>
-            !parentObject.IsDefault && (!parentObject.IsInResources() || AreMultipleSetupInstances);
-    }
-    
-    [Serializable]
-    class SetupTimeMessage : InspectorMessage<ServiceLocationSetupData>
-    {
-        protected override IEnumerable<string> GetLines(ServiceLocationSetupData parentObject)
-        {
-            yield return "Service Locator needs to setup itself once to operate fast after that.";
-            yield return "This process takes relatively long time, so it can cause a noticeable hiccup.";
-            yield return "Last setup was:  " + Services.SetupTime.Milliseconds + " ms.";
-            yield return "You can choose to do this at the start of the software or at the first use of the Service Locator.";
-        }
-
-        protected override InspectorMessageType MessageType(ServiceLocationSetupData parentObject) => 
-            InspectorMessageType.Info;
-    }
+    bool ShowError() => !IsDefault && (!IsInResources() || AreMultipleSetupInstances);
+    string GetErrorMessage() => !IsInResources()
+        ? "ServiceLocationSetupData only works in a Resources folder!"
+        : "There are more than one ServiceLocationSetupData instance!";
 }
 }
