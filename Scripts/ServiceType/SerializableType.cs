@@ -60,6 +60,7 @@ public class SerializableType : ISerializationCallbackReceiver
     public void OnBeforeSerialize()
     {
         if(_type == null) return;
+        if (typeName != null) return;
         UpdateSerializedValues();
     }
 
