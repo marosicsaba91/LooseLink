@@ -1,17 +1,17 @@
 ﻿namespace LooseLink
 {
-public enum ServiceSourceTypes
-{
-    Non,
-    
-    FromSceneGameObject,
-    FromPrefabFile,
-    FromPrefabPrototype,
+	public enum ServiceSourceTypes
+	{
+		Non,
 
-    FromScriptableObjectFile,
-    FromScriptableObjectPrototype,
+		FromSceneGameObject,
+		FromPrefabFile,
+		FromPrefabPrototype,
 
-    FromMonoBehaviourType,
-    FromScriptableObjectType,
-}
+		FromScriptableObjectFile,
+		FromScriptableObjectPrototype,
+
+		FromMonoBehaviourType,
+		FromScriptableObjectType,
+	}
 }

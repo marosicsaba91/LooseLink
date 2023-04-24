@@ -7,159 +7,160 @@ using Object = UnityEngine.Object;
 
 namespace LooseLink
 {
-class ResolveColumn: Column<FoldableRow<ServiceLocatorRow>>
-{
-    ServiceLocatorWindow _serviceLocatorWindow;
-    public ResolveColumn(ServiceLocatorWindow serviceLocatorWindow)
-    {
-        columnInfo = new ColumnInfo
-        {
-            customHeaderDrawer = DrawHeader,
-            relativeWidthWeight = 0.5f,
-            fixWidth = 75,
-        };
-        _serviceLocatorWindow = serviceLocatorWindow;
-    }
+	class ResolveColumn : Column<FoldableRow<ServiceLocatorRow>>
+	{
+		ServiceLocatorWindow _serviceLocatorWindow;
+		public ResolveColumn(ServiceLocatorWindow serviceLocatorWindow)
+		{
+			columnInfo = new ColumnInfo
+			{
+				customHeaderDrawer = DrawHeader,
+				relativeWidthWeight = 0.5f,
+				fixWidth = 75,
+			};
+			_serviceLocatorWindow = serviceLocatorWindow;
+		}
 
-    GUIStyle _rowButtonStyle;
+		GUIStyle _rowButtonStyle;
 
-    public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
-    {
-        GUI.enabled = row.element.enabled;
-        
-        if (row.element.Category == ServiceLocatorRow.RowCategory.Set) 
-        {
-            ServicesEditorHelper.DrawLine(position, start: 0,end: 0.95f);
-            return;
-        }
+		public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
+		{
+			GUI.enabled = row.element.enabled;
 
-        if (IsRowHighlighted(row))
-            EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
+			if (row.element.Category == ServiceLocatorRow.RowCategory.Set)
+			{
+				ServicesEditorHelper.DrawLine(position, start: 0, end: 0.95f);
+				return;
+			}
 
-        ServiceSource source = row.element.source;
-        Resolvability.Type resolvability = source.Resolvability.type; 
-        Object resolvedObject = row.element.resolvedInstance;
+			if (IsRowHighlighted(row))
+				EditorGUI.DrawRect(position, EditorHelper.tableSelectedColor);
 
-        var contentPos = new Rect(
-            position.x + 1,
-            position.y + (position.height - 16) / 2f,
-            position.width - 2,
-            height: 16);
+			ServiceSource source = row.element.source;
+			Resolvability.Type resolvability = source.Resolvability.type;
+			Object resolvedObject = row.element.resolvedInstance;
 
-        // Resolved Element
-        bool resolvable = resolvedObject != null &&
-                          (resolvability == Resolvability.Type.Resolvable ||
-                          resolvability == Resolvability.Type.AlwaysResolved);
-        if (resolvable)
-        {
-            bool isRowSelectable = row.element.resolvedInstance != null;
-            if (isRowSelectable && position.Contains(Event.current.mousePosition))
-                EditorGUI.DrawRect(position, EditorHelper.tableHoverColor);
-        
-            bool unResolvable = resolvability != Resolvability.Type.AlwaysResolved;
-            const float unResolveButtonWidth = 23;
-            if (unResolvable)
-                contentPos.width -= unResolveButtonWidth;
-            if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
-            {
-                var resolvedContent = 
-                    new GUIContent(resolvedObject.name, ResolvedObjectIcon(resolvedObject.GetType())); 
-                EditorGUI.LabelField(contentPos, resolvedContent, ServicesEditorHelper.SmallLeftLabelStyle);
-            }
+			var contentPos = new Rect(
+				position.x + 1,
+				position.y + (position.height - 16) / 2f,
+				position.width - 2,
+				height: 16);
 
-            // Ping The Object
-            if (resolvedObject == null) return;
-            _rowButtonStyle = _rowButtonStyle ?? new GUIStyle(GUI.skin.label);
-            if (GUI.Button(contentPos, GUIContent.none, _rowButtonStyle))
-                OnRowClick(row);
+			// Resolved Element
+			bool resolvable = resolvedObject != null &&
+							  (resolvability == Resolvability.Type.Resolvable ||
+							  resolvability == Resolvability.Type.AlwaysResolved);
+			if (resolvable)
+			{
+				bool isRowSelectable = row.element.resolvedInstance != null;
+				if (isRowSelectable && position.Contains(Event.current.mousePosition))
+					EditorGUI.DrawRect(position, EditorHelper.tableHoverColor);
 
-            // UnResolve Button
-            if (unResolvable)
-            {
-                var unResolveButtonRect = new Rect(
-                    contentPos.xMax,
-                    contentPos.y,
-                    unResolveButtonWidth,
-                    contentPos.height);
-                GUIContent unResolveContent =
-                    EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin
-                        ? "d_winbtn_win_close"
-                        : "winbtn_win_close");
-                if (GUI.Button(unResolveButtonRect, unResolveContent))
-                    source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
-            }
-        }
-        else
-        { 
-            var actionButtonRect = new Rect(
-                contentPos.x ,
-                contentPos.y,
-                position.width-2,
-                contentPos.height);
+				bool unResolvable = resolvability != Resolvability.Type.AlwaysResolved;
+				const float unResolveButtonWidth = 23;
+				if (unResolvable)
+					contentPos.width -= unResolveButtonWidth;
+				if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
+				{
+					var resolvedContent =
+						new GUIContent(resolvedObject.name, ResolvedObjectIcon(resolvedObject.GetType()));
+					EditorGUI.LabelField(contentPos, resolvedContent, ServicesEditorHelper.SmallLeftLabelStyle);
+				}
 
-            bool isResolved = source != null && source.Resolvability.IsResolvable;
-            if (!isResolved)
-            {
-                // Resolvability Error
-                GUIContent resolvabilityError = row.element.resolvability.GetGuiContent();
-                GUI.Label(actionButtonRect, resolvabilityError, ServicesEditorHelper.SmallLeftLabelStyle);
-            }
-            else
-            {
-                // Resolve Button
-                if (GUI.Button(actionButtonRect, "Instantiate", ServicesEditorHelper.SmallCenterButtonStyle))
-                    row.element.source?.ResolveAllServices();
-            }
+				// Ping The Object
+				if (resolvedObject == null)
+					return;
+				_rowButtonStyle = _rowButtonStyle ?? new GUIStyle(GUI.skin.label);
+				if (GUI.Button(contentPos, GUIContent.none, _rowButtonStyle))
+					OnRowClick(row);
 
-            GUI.enabled = true;
-        }
-    }
+				// UnResolve Button
+				if (unResolvable)
+				{
+					var unResolveButtonRect = new Rect(
+						contentPos.xMax,
+						contentPos.y,
+						unResolveButtonWidth,
+						contentPos.height);
+					GUIContent unResolveContent =
+						EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin
+							? "d_winbtn_win_close"
+							: "winbtn_win_close");
+					if (GUI.Button(unResolveButtonRect, unResolveContent))
+						source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+				}
+			}
+			else
+			{
+				var actionButtonRect = new Rect(
+					contentPos.x,
+					contentPos.y,
+					position.width - 2,
+					contentPos.height);
 
+				bool isResolved = source != null && source.Resolvability.IsResolvable;
+				if (!isResolved)
+				{
+					// Resolvability Error
+					GUIContent resolvabilityError = row.element.resolvability.GetGuiContent();
+					GUI.Label(actionButtonRect, resolvabilityError, ServicesEditorHelper.SmallLeftLabelStyle);
+				}
+				else
+				{
+					// Resolve Button
+					if (GUI.Button(actionButtonRect, "Instantiate", ServicesEditorHelper.SmallCenterButtonStyle))
+						row.element.source?.ResolveAllServices();
+				}
 
-    static Texture ResolvedObjectIcon(Type type)
-    {
-        if (type.IsSubclassOf(typeof(ScriptableObject)))
-            return EditorGUIUtility.IconContent("ScriptableObject Icon").image;
-        return EditorGUIUtility.IconContent("GameObject Icon").image;
-    }
+				GUI.enabled = true;
+			}
+		}
 
 
-    protected override GUIStyle GetDefaultStyle() => null;
+		static Texture ResolvedObjectIcon(Type type)
+		{
+			if (type.IsSubclassOf(typeof(ScriptableObject)))
+				return EditorGUIUtility.IconContent("ScriptableObject Icon").image;
+			return EditorGUIUtility.IconContent("GameObject Icon").image;
+		}
 
 
-    static void OnRowClick(FoldableRow<ServiceLocatorRow> row)
-    { 
-        Object obj = row.element.resolvedInstance;
-        if (Selection.objects.Length == 1 && Selection.objects[0] == obj)
-            Selection.objects = new Object[]{};
-        else
-            Selection.objects = new[] {obj};
-    }
+		protected override GUIStyle GetDefaultStyle() => null;
 
-    static bool IsRowHighlighted(FoldableRow<ServiceLocatorRow> row) => 
-        row.element.resolvedInstance!=null && Selection.objects.Contains(row.element.resolvedInstance);
-    
-  
 
-    
-    void DrawHeader(Rect position)
-    {
-        const float buttonW = 43;
-        const float indent = 4;
-        const float margin = 2;
-        const float settingButtonW = 20;
-        position.x += indent;
-        position.width -= indent; 
-        GUI.Label(position, "Server Object" );
+		static void OnRowClick(FoldableRow<ServiceLocatorRow> row)
+		{
+			Object obj = row.element.resolvedInstance;
+			if (Selection.objects.Length == 1 && Selection.objects[0] == obj)
+				Selection.objects = new Object[] { };
+			else
+				Selection.objects = new[] { obj };
+		}
 
-        var buttonRect = new Rect(
-            position.xMax - buttonW - margin - settingButtonW,
-            position.y + margin,
-            buttonW,
-            position.height - 2 * margin);
-        if (GUI.Button(buttonRect, "Clear"))
-            Services.ClearAllCachedData();
-    }
-}
+		static bool IsRowHighlighted(FoldableRow<ServiceLocatorRow> row) =>
+			row.element.resolvedInstance != null && Selection.objects.Contains(row.element.resolvedInstance);
+
+
+
+
+		void DrawHeader(Rect position)
+		{
+			const float buttonW = 43;
+			const float indent = 4;
+			const float margin = 2;
+			const float settingButtonW = 20;
+			position.x += indent;
+			position.width -= indent;
+			GUI.Label(position, "Server Object");
+
+			var buttonRect = new Rect(
+				position.xMax - buttonW - margin - settingButtonW,
+				position.y + margin,
+				buttonW,
+				position.height - 2 * margin);
+			if (GUI.Button(buttonRect, "Clear"))
+				Services.ClearAllCachedData();
+		}
+	}
 }
 #endif

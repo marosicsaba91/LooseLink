@@ -6,38 +6,38 @@ using Object = UnityEngine.Object;
 namespace LooseLink
 {
 
-class DynamicServiceSourceFromScriptableObjectPrototype : DynamicServiceSource
-{
-    public ScriptableObject prototype;
-  
-    protected override IEnumerable<Type> GetNonAbstractTypes()
-    {
-        if (prototype != null)
-            yield return prototype.GetType();
-    }
+	class DynamicServiceSourceFromScriptableObjectPrototype : DynamicServiceSource
+	{
+		public ScriptableObject prototype;
 
-    internal DynamicServiceSourceFromScriptableObjectPrototype(ScriptableObject prototype)
-    {
-        this.prototype = prototype;
-    }
+		protected override IEnumerable<Type> GetNonAbstractTypes()
+		{
+			if (prototype != null)
+				yield return prototype.GetType();
+		}
 
-    public override Resolvability TypeResolvability => prototype == null
-        ? new Resolvability(Resolvability.Type.Error,  "No Prototype") 
-        : Resolvability.Resolvable;
+		internal DynamicServiceSourceFromScriptableObjectPrototype(ScriptableObject prototype)
+		{
+			this.prototype = prototype;
+		}
 
-    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectPrototype;
+		public override Resolvability TypeResolvability => prototype == null
+			? new Resolvability(Resolvability.Type.Error, "No Prototype")
+			: Resolvability.Resolvable;
 
-    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes 
-    { get { yield return ServiceSourceTypes.FromScriptableObjectFile; } }
-    
-    protected override bool NeedParentTransformForLoad => false;
-    protected override Object Instantiate(Transform parent) => Object.Instantiate(prototype);
+		public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectPrototype;
 
-    protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
-    public override object GetServiceOnSourceObject(Type type) => prototype;
- 
-    public override string Name => prototype != null ? prototype.name : string.Empty;
-    public override Object SourceObject => prototype; 
+		public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes
+		{ get { yield return ServiceSourceTypes.FromScriptableObjectFile; } }
 
-}
+		protected override bool NeedParentTransformForLoad => false;
+		protected override Object Instantiate(Transform parent) => Object.Instantiate(prototype);
+
+		protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
+		public override object GetServiceOnSourceObject(Type type) => prototype;
+
+		public override string Name => prototype != null ? prototype.name : string.Empty;
+		public override Object SourceObject => prototype;
+
+	}
 }

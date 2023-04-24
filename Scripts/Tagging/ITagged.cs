@@ -2,8 +2,8 @@
 
 namespace LooseLink
 {
-public interface ITagged
-{
-    IEnumerable<object> GetTags();
-}
+	public interface ITagged
+	{
+		IEnumerable<object> GetTags();
+	}
 }

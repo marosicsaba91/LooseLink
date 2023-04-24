@@ -2,8 +2,8 @@
 
 namespace LooseLink
 {
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-public class ServiceTypeAttribute : Attribute
-{
-}
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+	public class ServiceTypeAttribute : Attribute
+	{
+	}
 }

@@ -6,52 +6,53 @@ using Object = UnityEngine.Object;
 namespace LooseLink
 {
 
-class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource
-{
-    public readonly Type scriptableObjectType;
- 
-    public DynamicServiceSourceFromScriptableObjectType(Type scriptableObjectType)
-    {
-        this.scriptableObjectType = scriptableObjectType;
-    }
+	class DynamicServiceSourceFromScriptableObjectType : DynamicServiceSource
+	{
+		public readonly Type scriptableObjectType;
 
-    protected override IEnumerable<Type> GetNonAbstractTypes()
-    {
-        if (scriptableObjectType != null)
-            yield return scriptableObjectType;
-    }
-    
-    public override Resolvability TypeResolvability => scriptableObjectType == null
-        ? new Resolvability(Resolvability.Type.Error,  "No Type") 
-        : Resolvability.Resolvable;
+		public DynamicServiceSourceFromScriptableObjectType(Type scriptableObjectType)
+		{
+			this.scriptableObjectType = scriptableObjectType;
+		}
 
-    protected override bool NeedParentTransformForLoad => false;
-    protected override Object Instantiate(Transform parent)
-    {
-        Object obj = ScriptableObject.CreateInstance(scriptableObjectType);
-        obj.name = $"New {scriptableObjectType.Name}";
+		protected override IEnumerable<Type> GetNonAbstractTypes()
+		{
+			if (scriptableObjectType != null)
+				yield return scriptableObjectType;
+		}
 
-        return obj;
-    }
-    
-    public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectType;
+		public override Resolvability TypeResolvability => scriptableObjectType == null
+			? new Resolvability(Resolvability.Type.Error, "No Type")
+			: Resolvability.Resolvable;
 
-    public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
+		protected override bool NeedParentTransformForLoad => false;
+		protected override Object Instantiate(Transform parent)
+		{
+			Object obj = ScriptableObject.CreateInstance(scriptableObjectType);
+			obj.name = $"New {scriptableObjectType.Name}";
 
-    protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
+			return obj;
+		}
 
-    public override object GetServiceOnSourceObject(Type type) => null;
- 
-    public override string Name => scriptableObjectType != null ? scriptableObjectType.Name : string.Empty;
-    public override Object SourceObject {
-        get
-        {
+		public override ServiceSourceTypes SourceType => ServiceSourceTypes.FromScriptableObjectType;
+
+		public override IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get { yield break; } }
+
+		protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;
+
+		public override object GetServiceOnSourceObject(Type type) => null;
+
+		public override string Name => scriptableObjectType != null ? scriptableObjectType.Name : string.Empty;
+		public override Object SourceObject
+		{
+			get
+			{
 #if UNITY_EDITOR
-            return TypeToFileHelper.GetObject(scriptableObjectType);
+				return TypeToFileHelper.GetObject(scriptableObjectType);
 #else
             return null;
 #endif
-        }
-    } 
-}
+			}
+		}
+	}
 }
