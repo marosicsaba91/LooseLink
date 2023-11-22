@@ -142,7 +142,7 @@ namespace LooseLink
 		{
 			for (int i = 0; i < SceneManager.sceneCount; i++)
 			{
-				Scene scene = SceneManager.GetSceneAt(i);
+				UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
 				if (!scene.isLoaded || !scene.IsValid())
 					continue;
 				foreach (GameObject go in scene.GetRootGameObjects())

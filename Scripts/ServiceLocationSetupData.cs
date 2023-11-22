@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using MUtility;
 using UnityEngine;
 
@@ -16,11 +15,11 @@ namespace LooseLink
 
 		[ShowIf(nameof(ShowError))]
 		[SerializeField]
-		DisplayMessage errorMessage = new DisplayMessage(nameof(GetErrorMessage), true)
+		EasyMessage errorMessage = new(nameof(GetErrorMessage))
 		{ messageType = MessageType.Error };
 
 		[SerializeField]
-		DisplayMessage lastTypeMapSetupTime = new DisplayMessage(nameof(InfoMessage), true)
+		EasyMessage lastTypeMapSetupTime = new(nameof(InfoMessage))
 		{ messageType = MessageType.Info };
 
 		string InfoMessage =>
