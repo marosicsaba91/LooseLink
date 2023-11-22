@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using MUtility;
 using UnityEditor;
+using EasyInspector;
 
 namespace LooseLink
 {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using EasyInspector;
 
 namespace LooseLink
 {
@@ -185,13 +186,12 @@ namespace LooseLink
 					_serviceSearchWords = new string[0];
 				return;
 			}
-
-			bool modernUI = EditorHelper.IsModernEditorUI;
+			 
 
 			float searchTextW = Mathf.Min(200f, pos.width - 75f);
 			Rect searchTypePos = new(
 				pos.xMax - searchTextW - 2,
-				pos.y + 3 + (modernUI ? 0 : 1),
+				pos.y + 3,
 				searchTextW,
 				pos.height - 5);
 			SearchServicesText = EditorGUI.TextField(searchTypePos, SearchServicesText, GUI.skin.FindStyle("ToolbarSeachTextField"));

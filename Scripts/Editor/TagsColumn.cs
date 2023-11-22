@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using EasyInspector;
 
 namespace LooseLink
 {
@@ -190,12 +191,11 @@ namespace LooseLink
 				return;
 			}
 
-			bool modernUI = EditorHelper.IsModernEditorUI;
 
 			float searchTextW = Mathf.Min(200f, pos.width - 55f);
 			Rect searchTagPos = new(
 				pos.xMax - searchTextW - 2,
-				pos.y + 3 + (modernUI ? 0 : 1),
+				pos.y + 3,
 				searchTextW,
 				pos.height - 5);
 

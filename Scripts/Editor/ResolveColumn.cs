@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
+using EasyInspector;
 
 namespace LooseLink
 {

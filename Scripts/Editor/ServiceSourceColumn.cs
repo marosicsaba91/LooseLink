@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
+using EasyInspector;
 
 namespace LooseLink
 {
@@ -123,13 +124,10 @@ namespace LooseLink
 			position.width -= indent;
 			GUI.Label(position, "Service Sources", LabelStyle);
 
-
-			bool modernUI = EditorHelper.IsModernEditorUI;
-
 			Rect searchServicePos = new(
 				position.xMax - (searchTextW + margin),
-				position.y + margin + 1 + (modernUI ? 0 : 1),
-				searchTextW + (modernUI ? 0 : 1),
+				position.y + margin + 1 ,
+				searchTextW,
 				position.height - (2 * margin));
 
 			SearchServiceText =

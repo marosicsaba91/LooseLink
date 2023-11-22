@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 
 using System.Linq;
+using EasyInspector;
 using MUtility;
 using UnityEditor;
 using UnityEngine;
