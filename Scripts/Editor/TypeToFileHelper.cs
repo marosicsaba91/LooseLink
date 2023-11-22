@@ -11,7 +11,7 @@ namespace LooseLink
 {
 	static class TypeToFileHelper
 	{
-		static readonly Dictionary<Type, Object> typeObjectDictionary = new Dictionary<Type, Object>();
+		static readonly Dictionary<Type, Object> typeObjectDictionary = new();
 
 		public static Object GetObject(Type type)
 		{
@@ -54,7 +54,7 @@ namespace LooseLink
 		public static Type GetType(Object obj)
 		{
 #if UNITY_EDITOR
-			var monoScript = obj as MonoScript;
+			MonoScript monoScript = obj as MonoScript;
 			if (monoScript != null && monoScript.GetClass() != null)
 				return monoScript.GetClass();
 #endif

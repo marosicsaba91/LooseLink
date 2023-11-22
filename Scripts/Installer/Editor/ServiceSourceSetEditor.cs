@@ -11,7 +11,7 @@ namespace LooseLink.Editor
 		{
 			DrawDefaultInspector();
 			GUI.enabled = !Application.isPlaying;
-			var set = target as ServiceSourceSet;
+			ServiceSourceSet set = target as ServiceSourceSet;
 
 			bool newGI = EditorGUILayout.Toggle("Use as Global Installer", set.automaticallyUseAsGlobalInstaller);
 			if (newGI != set.automaticallyUseAsGlobalInstaller)

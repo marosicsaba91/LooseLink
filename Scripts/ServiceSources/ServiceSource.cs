@@ -14,9 +14,9 @@ namespace LooseLink
 		[SerializeField] bool enabled = true;
 		[SerializeField] Object serviceSourceObject;
 		[SerializeField] ServiceSourceTypes preferredSourceType;
-		[SerializeField] internal List<SerializableType> additionalTypes = new List<SerializableType>();
+		[SerializeField] internal List<SerializableType> additionalTypes = new();
 
-		[SerializeField] List<Tag> tags = new List<Tag>();
+		[SerializeField] List<Tag> tags = new();
 
 		[SerializeField] internal bool isTypesExpanded;
 		[SerializeField] internal bool isTagsExpanded;
@@ -310,7 +310,7 @@ namespace LooseLink
 			Type type = sourceObject.GetType();
 			if (type == typeof(GameObject))
 			{
-				var gameObject = (GameObject)sourceObject;
+				GameObject gameObject = (GameObject)sourceObject;
 				if (gameObject.scene.name != null)
 					return new DynamicServiceSourceFromSceneObject(gameObject);
 

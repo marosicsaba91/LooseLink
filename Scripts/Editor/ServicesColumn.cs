@@ -104,7 +104,7 @@ namespace LooseLink
 				return;
 
 			int overflowCount = typeInfos.Count - overflowIndex;
-			var overflownTypes = new List<ServiceTypeInfo>(overflowCount);
+			List<ServiceTypeInfo> overflownTypes = new(overflowCount);
 			for (int i = overflowIndex; i < typeInfos.Count; i++)
 				overflownTypes.Add(typeInfos[i]);
 
@@ -122,7 +122,7 @@ namespace LooseLink
 		{
 			if (error)
 			{
-				var pos = new Rect(position.x + 10, position.y + 1, position.width - 6, position.height - 3);
+				Rect pos = new(position.x + 10, position.y + 1, position.width - 6, position.height - 3);
 				EditorHelper.DrawBox(pos, EditorHelper.ErrorBackgroundColor);
 			}
 
@@ -169,7 +169,7 @@ namespace LooseLink
 		void DrawHeader(Rect pos)
 		{
 			const float labelWidth = 45;
-			var labelPos = new Rect(
+			Rect labelPos = new(
 				pos.x + 2,
 				pos.y + 2,
 				labelWidth,
@@ -189,7 +189,7 @@ namespace LooseLink
 			bool modernUI = EditorHelper.IsModernEditorUI;
 
 			float searchTextW = Mathf.Min(200f, pos.width - 75f);
-			var searchTypePos = new Rect(
+			Rect searchTypePos = new(
 				pos.xMax - searchTextW - 2,
 				pos.y + 3 + (modernUI ? 0 : 1),
 				searchTextW,

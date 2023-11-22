@@ -40,7 +40,7 @@ namespace LooseLink
 			Resolvability.Type resolvability = source.Resolvability.type;
 			Object resolvedObject = row.element.resolvedInstance;
 
-			var contentPos = new Rect(
+			Rect contentPos = new(
 				position.x + 1,
 				position.y + (position.height - 16) / 2f,
 				position.width - 2,
@@ -62,8 +62,8 @@ namespace LooseLink
 					contentPos.width -= unResolveButtonWidth;
 				if (row.element.Category == ServiceLocatorRow.RowCategory.Source)
 				{
-					var resolvedContent =
-						new GUIContent(resolvedObject.name, ResolvedObjectIcon(resolvedObject.GetType()));
+					GUIContent resolvedContent =
+						new(resolvedObject.name, ResolvedObjectIcon(resolvedObject.GetType()));
 					EditorGUI.LabelField(contentPos, resolvedContent, ServicesEditorHelper.SmallLeftLabelStyle);
 				}
 
@@ -77,7 +77,7 @@ namespace LooseLink
 				// UnResolve Button
 				if (unResolvable)
 				{
-					var unResolveButtonRect = new Rect(
+					Rect unResolveButtonRect = new(
 						contentPos.xMax,
 						contentPos.y,
 						unResolveButtonWidth,
@@ -92,7 +92,7 @@ namespace LooseLink
 			}
 			else
 			{
-				var actionButtonRect = new Rect(
+				Rect actionButtonRect = new(
 					contentPos.x,
 					contentPos.y,
 					position.width - 2,
@@ -153,7 +153,7 @@ namespace LooseLink
 			position.width -= indent;
 			GUI.Label(position, "Server Object");
 
-			var buttonRect = new Rect(
+			Rect buttonRect = new(
 				position.xMax - buttonW - margin - settingButtonW,
 				position.y + margin,
 				buttonW,

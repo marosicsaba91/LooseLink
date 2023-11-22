@@ -7,7 +7,7 @@ namespace LooseLink
 	[DefaultExecutionOrder(order: -1000001)]
 	public class LocalServiceInstaller : InstallerComponent
 	{
-		[SerializeField, HideInInspector] List<ServiceSource> serviceSources = new List<ServiceSource>();
+		[SerializeField, HideInInspector] List<ServiceSource> serviceSources = new();
 
 		public override bool InstallAutomatically => true;
 

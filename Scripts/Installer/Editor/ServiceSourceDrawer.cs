@@ -21,8 +21,8 @@ namespace LooseLink.Editor
 		static readonly float space = EditorGUIUtility.standardVerticalSpacing;
 		static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
 
-		static readonly GUIContent invalidObjectContent = new GUIContent("Invalid Object", typeTooltip);
-		static readonly GUIContent noObjectContent = new GUIContent("Select an Object", typeTooltip);
+		static readonly GUIContent invalidObjectContent = new("Invalid Object", typeTooltip);
+		static readonly GUIContent noObjectContent = new("Select an Object", typeTooltip);
 
 		const string typeTooltip =
 			"Selected object should be one of these:\n" +
@@ -56,12 +56,12 @@ namespace LooseLink.Editor
 		static ServiceSource _source;
 		static int _sourceIndex;
 		static Object _serializedObject;
-		static List<Type> _dynamicServiceTypes = new List<Type>();
-		static List<SerializableType> _additionalServiceTypes = new List<SerializableType>();
-		static List<Type> _possibleAdditionalServiceTypes = new List<Type>();
-		static List<Tag> _serializedTags = new List<Tag>();
-		static List<object> _dynamicTags = new List<object>();
-		static List<IServiceSourceCondition> _conditions = new List<IServiceSourceCondition>();
+		static List<Type> _dynamicServiceTypes = new();
+		static List<SerializableType> _additionalServiceTypes = new();
+		static List<Type> _possibleAdditionalServiceTypes = new();
+		static List<Tag> _serializedTags = new();
+		static List<object> _dynamicTags = new();
+		static List<IServiceSourceCondition> _conditions = new();
 		static int _typeCount;
 		static int _tagCount;
 
@@ -135,7 +135,7 @@ namespace LooseLink.Editor
 			_tagCount = (_dynamicTags?.Count ?? 0) + (_serializedTags?.Count ?? 0);
 
 			float height = PixelHeightOfSource();
-			var position = new Rect(startPosition, new Vector2(width, height));
+			Rect position = new(startPosition, new Vector2(width, height));
 			DrawSource(position);
 			GUI.enabled = true;
 			return height;
@@ -210,7 +210,7 @@ namespace LooseLink.Editor
 
 			if (!_containingProvider.IsSingleSourceProvider)
 			{
-				var togglePos = new Rect(position.x + space, position.y, toggleW, lineHeight);
+				Rect togglePos = new(position.x + space, position.y, toggleW, lineHeight);
 				bool enabled = EditorGUI.Toggle(togglePos, _source.Enabled);
 				if (enabled != _source.Enabled)
 				{
@@ -223,7 +223,7 @@ namespace LooseLink.Editor
 			}
 
 			float w = withRemained - (serviceTypeW + space * 4 + actionButtonWidth * 3);
-			var objectPos = new Rect(x + space * 2, position.y, w, lineHeight);
+			Rect objectPos = new(x + space * 2, position.y, w, lineHeight);
 			GUI.enabled = !_containingProvider.IsSingleSourceProvider;
 			Object obj = EditorGUI.ObjectField(
 				objectPos,
@@ -232,7 +232,7 @@ namespace LooseLink.Editor
 				allowSceneObjects: true);
 			GUI.enabled = true;
 
-			var sourceTypePos = new Rect(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
+			Rect sourceTypePos = new(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
 
 			ServiceSourceTypes sourceType = _source.PreferredSourceType;
 			if (_source.ServiceSourceObject == null)
@@ -242,12 +242,12 @@ namespace LooseLink.Editor
 				sourceType = _source.SourceType;
 				if (_source.AlternativeSourceTypes.Any())
 				{
-					var options = new List<ServiceSourceTypes> { sourceType };
+					List<ServiceSourceTypes> options = new() { sourceType };
 					options.AddRange(_source.AlternativeSourceTypes);
 					options.Sort();
 					int currentIndex = options.IndexOf(sourceType);
 
-					var guiContentOptions = new GUIContent[options.Count];
+					GUIContent[] guiContentOptions = new GUIContent[options.Count];
 					for (int i = 0; i < options.Count; i++)
 					{
 						ServiceSourceTypes option = options[i];
@@ -262,7 +262,7 @@ namespace LooseLink.Editor
 				}
 				else
 				{
-					var content = new GUIContent(IconHelper.GetShortNameForServiceSource(_source.SourceType),
+					GUIContent content = new(IconHelper.GetShortNameForServiceSource(_source.SourceType),
 						image: null,
 						IconHelper.GetTooltipForServiceSource(_source.SourceType));
 					GUI.Label(sourceTypePos, content);
@@ -292,7 +292,7 @@ namespace LooseLink.Editor
 			if (!_containingProvider.IsSingleSourceProvider)
 			{
 				// Action Buttons 
-				var actionButtonPos = new Rect(sourceTypePos.xMax + space, position.y, actionBarWidth, lineHeight);
+				Rect actionButtonPos = new(sourceTypePos.xMax + space, position.y, actionBarWidth, lineHeight);
 				ListAction action = DrawActionBar(actionButtonPos, _containingProvider.SourceCount, _sourceIndex);
 				if (action != ListAction.Non)
 				{
@@ -554,7 +554,7 @@ namespace LooseLink.Editor
 
 				position.x = position.xMax + space;
 				position.width = tagTypeWidth;
-				var newTagType = (Tag.TagType)EditorGUI.EnumPopup(position, tagType);
+				Tag.TagType newTagType = (Tag.TagType)EditorGUI.EnumPopup(position, tagType);
 				if (newTagType != tagType)
 				{
 					tag.Type = newTagType;
@@ -605,7 +605,7 @@ namespace LooseLink.Editor
 			{
 				bool success = condition.CanResolve();
 				string message = condition.GetConditionMessage();
-				var content = new GUIContent(message, success ? IconHelper.SuccessIcon : IconHelper.BlockedIcon);
+				GUIContent content = new(message, success ? IconHelper.SuccessIcon : IconHelper.BlockedIcon);
 				GUI.Label(position, content);
 				position.y += lineHeight + space;
 			}

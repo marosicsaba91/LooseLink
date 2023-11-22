@@ -153,7 +153,7 @@ namespace LooseLink
 		static string FirstOrUpperLetters(string input)
 		{
 			char[] separators = new[] { ' ', '-', ',', '.' };
-			var result = new StringBuilder(input.Length);
+			StringBuilder result = new(input.Length);
 			bool makeUpperNext = true;
 			foreach (char c in input)
 			{

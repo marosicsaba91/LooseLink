@@ -18,10 +18,10 @@ namespace LooseLink
 		public readonly string message;
 
 		public bool IsResolvable => type == Type.Resolvable;
-		public static Resolvability AlwaysResolved => new Resolvability(Type.AlwaysResolved);
-		public static Resolvability Resolvable => new Resolvability(Type.Resolvable);
-		public static Resolvability NoSourceObject => new Resolvability(Type.Error, "No Service Source Object!");
-		public static Resolvability WrongSourcesObjectType => new Resolvability(Type.Error, "Wrong Service Source Type!");
+		public static Resolvability AlwaysResolved => new(Type.AlwaysResolved);
+		public static Resolvability Resolvable => new(Type.Resolvable);
+		public static Resolvability NoSourceObject => new(Type.Error, "No Service Source Object!");
+		public static Resolvability WrongSourcesObjectType => new(Type.Error, "Wrong Service Source Type!");
 
 		public Resolvability(Type type)
 		{

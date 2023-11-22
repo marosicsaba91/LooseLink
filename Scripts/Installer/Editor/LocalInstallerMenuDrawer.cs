@@ -28,7 +28,7 @@ namespace LooseLink.Editor
 
 				InstallerPriority priority = installerComponent.Priority;
 				int priorityValue = priority.priorityValueSetting;
-				var newPriorityType = (InstallerPriority.Type)
+				InstallerPriority.Type newPriorityType = (InstallerPriority.Type)
 					EditorGUILayout.EnumPopup("Priority Type", priority.type);
 
 				GUI.enabled = true;

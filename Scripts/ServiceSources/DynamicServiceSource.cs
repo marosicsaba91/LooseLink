@@ -9,19 +9,19 @@ namespace LooseLink
 
 	abstract class DynamicServiceSource
 	{
-		readonly Dictionary<Type, object> _typeToServiceOnSource = new Dictionary<Type, object>();
-		readonly List<Type> _dynamicServiceTypes = new List<Type>();
-		readonly List<Type> _possibleAdditionalTypes = new List<Type>();
-		readonly List<Type> _allNonAbstractTypes = new List<Type>();
-		readonly List<IServiceSourceCondition> _resolvingConditions = new List<IServiceSourceCondition>();
-		readonly List<ITagged> _dynamicTaggers = new List<ITagged>();
+		readonly Dictionary<Type, object> _typeToServiceOnSource = new();
+		readonly List<Type> _dynamicServiceTypes = new();
+		readonly List<Type> _possibleAdditionalTypes = new();
+		readonly List<Type> _allNonAbstractTypes = new();
+		readonly List<IServiceSourceCondition> _resolvingConditions = new();
+		readonly List<ITagged> _dynamicTaggers = new();
 		ServerObject _serverObject;
 		bool _isDynamicTypeDataInitialized = false;
 		bool _isInitialized;
 
 		public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
-		readonly Dictionary<Type, object> _instantiatedServices = new Dictionary<Type, object>();
+		readonly Dictionary<Type, object> _instantiatedServices = new();
 
 
 		public abstract Resolvability TypeResolvability { get; }

@@ -38,7 +38,7 @@ namespace LooseLink
 
 		protected override Object Instantiate(Transform parent)
 		{
-			var go = new GameObject(monoBehaviourType.Name);
+			GameObject go = new(monoBehaviourType.Name);
 			go.transform.SetParent(parent);
 			go.transform.localPosition = Vector3.zero;
 			go.transform.localRotation = Quaternion.identity;

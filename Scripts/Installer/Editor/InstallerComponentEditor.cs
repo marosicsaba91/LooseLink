@@ -10,8 +10,8 @@ namespace LooseLink.Editor
 		{
 			DrawDefaultInspector();
 
-			var sourceSet = target as IServiceSourceProvider;
-			var localInstaller = target as InstallerComponent;
+			IServiceSourceProvider sourceSet = target as IServiceSourceProvider;
+			InstallerComponent localInstaller = target as InstallerComponent;
 
 			LocalInstallerMenuDrawer.DrawLocalInstallerSettingMenu(serializedObject, localInstaller);
 			ServiceSourceDrawer.DrawInstallerInspectorGUI(this, sourceSet);

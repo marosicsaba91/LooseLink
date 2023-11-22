@@ -64,7 +64,7 @@ namespace LooseLink
 			Object sourceObject,
 			ServiceSourceTypes preferredType = ServiceSourceTypes.Non)
 		{
-			var newServiceSource = new ServiceSource(sourceObject, provider, preferredType);
+			ServiceSource newServiceSource = new(sourceObject, provider, preferredType);
 			provider.AddSource(newServiceSource);
 			return newServiceSource;
 		}

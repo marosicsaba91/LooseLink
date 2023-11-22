@@ -12,7 +12,7 @@ namespace LooseLink
 	class ServiceLocatorWindow : EditorWindow
 	{
 		const string editorPrefsKey = "ServiceLocatorWindowState";
-		static readonly Vector2 minimumSize = new Vector2(300, 100);
+		static readonly Vector2 minimumSize = new (300, 100);
 
 		ServiceSourceColumn _serviceSourcesColumn;
 		ServiceSourceTypeColumn _typeColumn;
@@ -23,7 +23,7 @@ namespace LooseLink
 		GUIContent _settingIcon;
 		bool _showSetup = false;
 
-		[SerializeField] List<string> openedElements = new List<string>();
+		[SerializeField] List<string> openedElements = new();
 		public bool isSourceCategoryOpen = false;
 		public bool isTagsOpen = false;
 		public bool isServicesOpen = false;
@@ -59,12 +59,14 @@ namespace LooseLink
 			Selection.selectionChanged -= Repaint;
 		}
 
+		/*
 		void OnEnvironmentChanged()
 		{
 			if (!Application.isPlaying)
 				return;
 			Repaint();
 		}
+		*/
 
 		void GenerateServiceSourceTable()
 		{
@@ -77,8 +79,8 @@ namespace LooseLink
 			_typeColumn = new ServiceSourceTypeColumn(this);
 			_resolveColumn = new ResolveColumn(this);
 
-			var componentTypeColumns = new List<IColumn<FoldableRow<ServiceLocatorRow>>>
-			{ _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn };
+			List<IColumn<FoldableRow<ServiceLocatorRow>>> componentTypeColumns = new()
+				{ _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn };
 
 			_serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)
 			{
@@ -103,7 +105,7 @@ namespace LooseLink
 			float s = EditorGUIUtility.standardVerticalSpacing;
 			const float buttonW = 80;
 
-			var settingsRect = new Rect(
+			Rect settingsRect = new(
 				new Vector2(s, s),
 				new Vector2(position.width - (s * 3) - buttonW, h));
 			ServiceLocationSetupData setup = ServiceLocationSetupData.Instance;
@@ -128,7 +130,7 @@ namespace LooseLink
 			settingsRect.y += h + (3 * s);
 
 			GUI.enabled = true;
-			var servicesButtonRect = new Rect(
+			Rect servicesButtonRect = new (
 				new Vector2(position.width - buttonW - s, s),
 				new Vector2(buttonW, h));
 			if (GUI.Button(servicesButtonRect, "Exit Settings"))
@@ -163,20 +165,20 @@ namespace LooseLink
 
 		internal static bool DoDrawDefaultInspector(Object obj)
 		{
-			var editor = UnityEditor.Editor.CreateEditor(obj);
-			SerializedObject sobj = editor.serializedObject;
+			UnityEditor.Editor editor = UnityEditor.Editor.CreateEditor(obj);
+			SerializedObject sObj = editor.serializedObject;
 			EditorGUI.BeginChangeCheck();
-			sobj.UpdateIfRequiredOrScript();
-			SerializedProperty iterator = sobj.GetIterator();
-			int inxex = 0;
+			sObj.UpdateIfRequiredOrScript();
+			SerializedProperty iterator = sObj.GetIterator();
+			int index = 0;
 			for (bool enterChildren = true; iterator.NextVisible(enterChildren); enterChildren = false)
 			{
 				using (new EditorGUI.DisabledScope("m_Script" == iterator.propertyPath))
 					if (iterator.propertyPath != "m_Script")
 						EditorGUILayout.PropertyField(iterator, true);
-				inxex++;
+				index++;
 			}
-			sobj.ApplyModifiedProperties();
+			sObj.ApplyModifiedProperties();
 			return EditorGUI.EndChangeCheck();
 		}
 
@@ -191,7 +193,7 @@ namespace LooseLink
 			_serviceTable.Draw(new Rect(x: 0, 0, position.width, position.height), rows);
 
 			const float buttonS = 22;
-			var setupButtonRect = new Rect(new Vector2(
+			Rect setupButtonRect = new(new Vector2(
 					position.width - buttonS + 1, 0),
 				new Vector2(buttonS, buttonS));
 
@@ -204,7 +206,7 @@ namespace LooseLink
 
 		List<FoldableRow<ServiceLocatorRow>> GenerateTreeView()
 		{
-			var roots = new List<TreeNode<ServiceLocatorRow>>();
+			List<TreeNode<ServiceLocatorRow>> roots = new();
 			foreach (IServiceSourceProvider installer in Services.GetAllInstallers())
 			{
 				TreeNode<ServiceLocatorRow> installerNode = GetInstallerNode(installer, parentEnabled: true);
@@ -217,7 +219,7 @@ namespace LooseLink
 
 		TreeNode<ServiceLocatorRow> GetInstallerNode(IServiceSourceProvider provider, bool parentEnabled)
 		{
-			var installerRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Set)
+			ServiceLocatorRow installerRow = new(ServiceLocatorRow.RowCategory.Set)
 			{
 				enabled = provider.IsEnabled && parentEnabled,
 				provider = provider
@@ -233,7 +235,7 @@ namespace LooseLink
 
 		List<TreeNode<ServiceLocatorRow>> GetChildNodes(IServiceSourceProvider iProvider, bool enabled)
 		{
-			var nodes = new List<TreeNode<ServiceLocatorRow>>();
+			List<TreeNode<ServiceLocatorRow>> nodes = new();
 			ServiceSource[] sources = iProvider.GetSources().ToArray();
 
 			bool noServiceSearch = _serviceSourcesColumn.NoSearch;
@@ -259,7 +261,7 @@ namespace LooseLink
 					{
 
 						source.ClearCachedTypes_NoEnvironmentChangeEvent();
-						var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
+						ServiceLocatorRow sourceRow = new(ServiceLocatorRow.RowCategory.Source)
 						{
 							enabled = enabled && source.Enabled,
 							provider = iProvider,
@@ -268,13 +270,13 @@ namespace LooseLink
 							resolvability = new Resolvability(Resolvability.Type.Resolvable)
 						};
 
-						var abstractTypes = new List<TreeNode<ServiceLocatorRow>>();
+						List<TreeNode<ServiceLocatorRow>> abstractTypes = new();
 						sourceNode = new TreeNode<ServiceLocatorRow>(sourceRow, abstractTypes);
 						sourceRow.resolvability = source.Resolvability;
 					}
 					else
 					{
-						var sourceRow = new ServiceLocatorRow(ServiceLocatorRow.RowCategory.Source)
+						ServiceLocatorRow sourceRow = new(ServiceLocatorRow.RowCategory.Source)
 						{
 							enabled = enabled && source.Enabled,
 							provider = null,

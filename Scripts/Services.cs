@@ -18,7 +18,7 @@ namespace LooseLink
 		static readonly bool debugLogs = false;
 		public static TimeSpan SetupTime { get; private set; }
 
-		static readonly ServiceEnvironment environment = new ServiceEnvironment();
+		static readonly ServiceEnvironment environment = new();
 		public static ServiceEnvironment Environment => environment;
 		internal static bool IsDestroying { get; private set; }
 		internal static bool AreServiceLocatorInitialized { get; private set; }
@@ -178,7 +178,7 @@ namespace LooseLink
 				text = $"Can't find Services of this Type: {looseServiceType}";
 			else
 			{
-				var tagNames = new StringBuilder();
+				StringBuilder tagNames = new();
 				for (int i = 0; i < tags.Length; i++)
 				{
 					object tag = tags[i];

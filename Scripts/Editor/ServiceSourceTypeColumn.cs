@@ -32,7 +32,7 @@ namespace LooseLink
 		void DrawHeader(Rect pos)
 		{
 			const float labelWidth = 45;
-			var labelPos = new Rect(
+			Rect labelPos = new(
 				pos.x + 2,
 				pos.y + 2,
 				labelWidth,

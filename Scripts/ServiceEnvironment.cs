@@ -9,7 +9,7 @@ namespace LooseLink
 {
 	public class ServiceEnvironment
 	{
-		readonly List<IServiceSourceProvider> _installers = new List<IServiceSourceProvider>();
+		readonly List<IServiceSourceProvider> _installers = new();
 
 		// INSTALL & UNINSTALL SETS ---------------
 
@@ -108,13 +108,13 @@ namespace LooseLink
 					yield return serviceSourceSet;
 		}
 
-		static readonly List<IServiceSourceProvider> sets = new List<IServiceSourceProvider>();
+		static readonly List<IServiceSourceProvider> sets = new();
 		static IEnumerable<IServiceSourceProvider> FindInstallers()
 		{
 			sets.Clear();
 			sets.AddRange(Services.FindGlobalInstallers);
 
-			var localInstallers = new List<InstallerComponent>();
+			List<InstallerComponent> localInstallers = new();
 			localInstallers.AddRange(
 				FindObjectsOfTypeAll<LocalServiceInstaller>());
 			localInstallers.AddRange(
@@ -172,7 +172,7 @@ namespace LooseLink
 		// SUBSCRIPTION ---------------------
 
 		public event Action EnvironmentChanged;
-		readonly Dictionary<Type, HashSet<Action>> _subscribers = new Dictionary<Type, HashSet<Action>>();
+		readonly Dictionary<Type, HashSet<Action>> _subscribers = new();
 
 		public void SubscribeToEnvironmentChange<T>(Action callback) =>
 			SubscribeToEnvironmentChange(typeof(T), callback);
@@ -238,7 +238,7 @@ namespace LooseLink
 			InvokeEnvironmentChanged(types);
 		}
 
-		static HashSet<Type> _tempTypes = new HashSet<Type>();
+		static HashSet<Type> _tempTypes = new();
 		void InvokeEnvironmentChanged(IEnumerable<Type> types)
 		{
 			if (!Services.AreServiceLocatorInitialized)

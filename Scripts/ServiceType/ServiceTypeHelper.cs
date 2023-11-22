@@ -25,12 +25,12 @@ namespace LooseLink
 
 		static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> allTypes)
 		{
-			var result = new HashSet<Type>();
+			HashSet<Type> result = new();
 			foreach (Type type in allTypes)
 			{
 				if (type.ContainsGenericParameters)
 					continue;
-				var attribute = (ServiceTypeAttribute)
+				ServiceTypeAttribute attribute = (ServiceTypeAttribute)
 					Attribute.GetCustomAttribute(type, typeof(ServiceTypeAttribute), inherit: false);
 				if (attribute != null)
 					result.Add(type);

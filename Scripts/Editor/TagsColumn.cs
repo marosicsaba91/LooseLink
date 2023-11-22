@@ -59,7 +59,7 @@ namespace LooseLink
 				return;
 			}
 
-			var tags = new List<Tag>();
+			List<Tag> tags = new();
 			tags.AddRange(row.element.source.DynamicTags.Select(tag => new Tag(tag)));
 			tags.AddRange(row.element.source.SerializedTags);
 
@@ -69,7 +69,7 @@ namespace LooseLink
 				return;
 			}
 
-			var tagsPos = new Rect(
+			Rect tagsPos = new(
 				position.x + spacing,
 				position.y + 1,
 				position.width - (2 * spacing),
@@ -93,7 +93,7 @@ namespace LooseLink
 				? (int)(position.xMax - minTagWidth - spacing)
 				: (int)position.xMax;
 
-			var tagsToDrawInPopup = new List<Tag>();
+			List<Tag> tagsToDrawInPopup = new();
 			int startPos = (int)position.x;
 
 			int i = 0;
@@ -125,7 +125,7 @@ namespace LooseLink
 		public static void DrawTag(Rect position, Tag tag, bool small, bool center)
 		{
 
-			var content = new GUIContent
+			GUIContent content = new()
 			{
 				text = tag.ShortText(position.width),
 				tooltip = tag.GetObjectType() == null ? null : tag.TextWithType(),
@@ -175,7 +175,7 @@ namespace LooseLink
 		{
 			const float fullButtonWidth = 45;
 			float buttonWidth = IsColumnOpen ? fullButtonWidth : pos.width - 4;
-			var buttonPos = new Rect(
+			Rect buttonPos = new(
 				pos.x + 4,
 				pos.y,
 				buttonWidth,
@@ -193,7 +193,7 @@ namespace LooseLink
 			bool modernUI = EditorHelper.IsModernEditorUI;
 
 			float searchTextW = Mathf.Min(200f, pos.width - 55f);
-			var searchTagPos = new Rect(
+			Rect searchTagPos = new(
 				pos.xMax - searchTextW - 2,
 				pos.y + 3 + (modernUI ? 0 : 1),
 				searchTextW,

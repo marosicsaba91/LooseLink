@@ -87,7 +87,7 @@ namespace LooseLink
 				return;
 
 			bool hai = provider.PriorityType == InstallerPriority.Type.HighestAtInstallation;
-			var content = new GUIContent(
+			GUIContent content = new(
 				provider.PriorityValue + (hai ? "*" : ""),
 				null,
 				hai ? $"Priority is automatically highest at installation: {provider.PriorityValue}" :
@@ -126,7 +126,7 @@ namespace LooseLink
 
 			bool modernUI = EditorHelper.IsModernEditorUI;
 
-			var searchServicePos = new Rect(
+			Rect searchServicePos = new(
 				position.xMax - (searchTextW + margin),
 				position.y + margin + 1 + (modernUI ? 0 : 1),
 				searchTextW + (modernUI ? 0 : 1),
