@@ -130,8 +130,8 @@ namespace LooseLink
 				searchTextW,
 				position.height - (2 * margin));
 
-			SearchServiceText =
-				EditorGUI.TextField(searchServicePos, SearchServiceText, GUI.skin.FindStyle("ToolbarSeachTextField"));
+			GUIStyle style = GUI.skin.FindStyle("ToolbarSearchTextField");
+			SearchServiceText = EditorGUI.TextField(searchServicePos, SearchServiceText, style);
 		}
 
 		public bool ApplyServiceSourceSearch(ServiceSource source) => ApplyServiceSearchOnType(source.Name);

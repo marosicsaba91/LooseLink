@@ -199,7 +199,7 @@ namespace LooseLink
 				searchTextW,
 				pos.height - 5);
 
-			SearchTagText = EditorGUI.TextField(searchTagPos, SearchTagText, GUI.skin.FindStyle("ToolbarSeachTextField"));
+			SearchTagText = EditorGUI.TextField(searchTagPos, SearchTagText, GUI.skin.FindStyle("ToolbarSearchTextField"));
 
 			_tagSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchTagText);
 		}

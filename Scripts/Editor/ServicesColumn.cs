@@ -194,12 +194,12 @@ namespace LooseLink
 				pos.y + 3,
 				searchTextW,
 				pos.height - 5);
-			SearchServicesText = EditorGUI.TextField(searchTypePos, SearchServicesText, GUI.skin.FindStyle("ToolbarSeachTextField"));
+			SearchServicesText = EditorGUI.TextField(searchTypePos, SearchServicesText, GUI.skin.FindStyle("ToolbarSearchTextField"));
 
 			_serviceSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchServicesText);
 		}
 
-		public bool ApplyTypeSearchOnSource(IServiceSourceProvider provider, ServiceSource source) =>
+		public bool ApplyTypeSearchOnSource(ServiceSource source) =>
 			ApplyTypeSearchOnTypeArray(source.GetServiceTypesRecursively());
 
 		public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)

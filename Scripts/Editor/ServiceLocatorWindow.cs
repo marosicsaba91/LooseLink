@@ -292,7 +292,7 @@ namespace LooseLink
 					}
 
 					bool serviceMatchSearch = _serviceSourcesColumn.ApplyServiceSourceSearch(source);
-					bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(iProvider, source);
+					bool typeMatchSearch = _servicesColumn.ApplyTypeSearchOnSource(source);
 					bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iProvider, source);
 
 					if (!anySearch)
