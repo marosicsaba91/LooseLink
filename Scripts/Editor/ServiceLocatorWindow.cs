@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using EasyInspector;
+using EasyEditor;
 using MUtility;
 using UnityEditor;
 using UnityEngine;
@@ -59,15 +59,6 @@ namespace LooseLink
 			EditorPrefs.SetString(editorPrefsKey, data);
 			Selection.selectionChanged -= Repaint;
 		}
-
-		/*
-		void OnEnvironmentChanged()
-		{
-			if (!Application.isPlaying)
-				return;
-			Repaint();
-		}
-		*/
 
 		void GenerateServiceSourceTable()
 		{

@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 using UnityEditor;
-using EasyInspector;
+using EasyEditor;
 
 namespace LooseLink
 {

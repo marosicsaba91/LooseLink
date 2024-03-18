@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using EasyInspector;
+using EasyEditor;
 using MUtility;
 using UnityEngine;
 

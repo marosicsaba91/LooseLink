@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using EasyInspector;
+using EasyEditor;
 
 namespace LooseLink
 {
