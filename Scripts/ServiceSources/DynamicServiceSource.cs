@@ -75,6 +75,7 @@ namespace LooseLink
 				}
 
 				LoadedObject = Instantiate(parentObject);
+				_instantiatedServices.Clear();
 			}
 
 			TryInitializeService();
