@@ -69,10 +69,10 @@ namespace LooseLink
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		internal static void UpdateGlobalInstallers()
 		{
-			ServiceLocationSetupData inst = Instance;
-			if (Application.isEditor && !inst.setupAtPlayInEditor)
+			ServiceLocationSetupData instance = Instance;
+			if (Application.isEditor && !instance.setupAtPlayInEditor)
 				return;
-			if (!Application.isEditor && !inst.setupAtStartInBuild)
+			if (!Application.isEditor && !instance.setupAtStartInBuild)
 				return;
 			Services.Init();
 		}
@@ -81,8 +81,7 @@ namespace LooseLink
 		{
 			get
 			{
-				if (allInstances == null)
-					allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+				allInstances ??= Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
 				return allInstances.Length > 1;
 			}
 		}
