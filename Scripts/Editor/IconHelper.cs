@@ -20,19 +20,14 @@ namespace LooseLink
 		public static Texture GetIconOfSource(FileType fileType)
 		{
 #if UNITY_EDITOR
-			switch (fileType)
+			return fileType switch
 			{
-				case FileType.Prefab:
-					return EditorGUIUtility.IconContent("Prefab Icon").image;
-				case FileType.GameObject:
-					return EditorGUIUtility.IconContent("GameObject Icon").image;
-				case FileType.ScriptableObject:
-					return EditorGUIUtility.IconContent("ScriptableObject Icon").image;
-				case FileType.CsFile:
-					return EditorGUIUtility.IconContent("cs Script Icon").image;
-				default:
-					return null;
-			}
+				FileType.Prefab => EditorGUIUtility.IconContent("Prefab Icon").image,
+				FileType.GameObject => EditorGUIUtility.IconContent("GameObject Icon").image,
+				FileType.ScriptableObject => EditorGUIUtility.IconContent("ScriptableObject Icon").image,
+				FileType.CsFile => EditorGUIUtility.IconContent("cs Script Icon").image,
+				_ => null
+			};
 #else
         return null;
 #endif
