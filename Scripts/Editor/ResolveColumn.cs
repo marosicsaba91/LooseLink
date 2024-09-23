@@ -71,7 +71,7 @@ namespace LooseLink
 				// Ping The Object
 				if (resolvedObject == null)
 					return;
-				_rowButtonStyle = _rowButtonStyle ?? new GUIStyle(GUI.skin.label);
+				_rowButtonStyle ??= new GUIStyle(GUI.skin.label);
 				if (GUI.Button(contentPos, GUIContent.none, _rowButtonStyle))
 					OnRowClick(row);
 
@@ -83,13 +83,11 @@ namespace LooseLink
 						contentPos.y,
 						unResolveButtonWidth,
 						contentPos.height);
-					GUIContent unResolveContent =
-						EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin
-							? "d_winbtn_win_close"
-							: "winbtn_win_close");
+					GUIContent unResolveContent =new(EditorHelper.GetIcon(IconType.Cross));
 					if (GUI.Button(unResolveButtonRect, unResolveContent))
 						source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
 				}
+
 			}
 			else
 			{

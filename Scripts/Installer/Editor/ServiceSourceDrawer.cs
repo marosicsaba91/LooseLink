@@ -642,7 +642,7 @@ namespace LooseLink.Editor
 
 		static readonly GUIContent upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
 		static readonly GUIContent downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
-		static readonly GUIContent deleteIcon = EditorGUIUtility.IconContent("winbtn_win_close");
+		static readonly GUIContent deleteIcon = new (EditorHelper.GetIcon(IconType.Cross));
 		static readonly GUIContent addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
 
 		static bool DrawButton(Rect position, ListAction action, bool enabled = true)
