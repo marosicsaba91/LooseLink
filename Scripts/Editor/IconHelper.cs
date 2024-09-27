@@ -39,7 +39,7 @@ namespace LooseLink
 		static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
 		static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
 		static readonly Texture successIcon = EditorGUIUtility.IconContent("TestPassed").image;
-		static readonly Texture blockedIcon = EditorHelper.GetIcon(IconType.Cross);
+		static readonly Texture blockedIcon = EditorHelper.GetIcon(IconType.X);
 		static readonly Texture resolvableIcon = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
 #endif
 

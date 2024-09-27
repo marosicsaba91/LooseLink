@@ -83,7 +83,7 @@ namespace LooseLink
 						contentPos.y,
 						unResolveButtonWidth,
 						contentPos.height);
-					GUIContent unResolveContent =new(EditorHelper.GetIcon(IconType.Cross));
+					GUIContent unResolveContent =new(EditorHelper.GetIcon(IconType.X));
 					if (GUI.Button(unResolveButtonRect, unResolveContent))
 						source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
 				}
