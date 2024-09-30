@@ -24,9 +24,7 @@ namespace LooseLink
 			};
 			_serviceLocatorWindow = serviceLocatorWindow;
 		}
-
-		GUIStyle _rowButtonStyle;
-
+		
 		float GetColumnFixWidth() => IsColumnOpen ? 120 : 60f;
 
 		void DrawHeader(Rect pos)
@@ -59,7 +57,7 @@ namespace LooseLink
 		protected override GUIStyle GetDefaultStyle() => null;
 
 		static GUIStyle _categoryStyle;
-		static GUIStyle CategoryStyle => _categoryStyle = _categoryStyle ?? new GUIStyle
+		static GUIStyle CategoryStyle => _categoryStyle ??= new GUIStyle
 		{
 			alignment = TextAnchor.MiddleLeft,
 			fontSize = 10,

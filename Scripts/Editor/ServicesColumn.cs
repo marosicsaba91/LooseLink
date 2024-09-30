@@ -67,12 +67,12 @@ namespace LooseLink
 			DrawServices(position, types);
 		}
 
-		void DrawServices(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfos)
+		void DrawServices(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfo)
 		{
 			const float space = 4;
-			const float iconWidth = 20;
+			const float iconWidth = 30;
 			const float popupWidth = 25;
-			if (typeInfos.Count <= 0)
+			if (typeInfo.Count <= 0)
 				return;
 
 			Rect typePosition = position;
@@ -80,15 +80,18 @@ namespace LooseLink
 			typePosition.height = 16;
 			bool overflow = false;
 			int overflowIndex = -1;
-			for (int i = 0; i < typeInfos.Count; i++)
+			for (int i = 0; i < typeInfo.Count; i++)
 			{
-				Type type = typeInfos[i].type;
-				GUIContent content = IconHelper.GetGUIContentToType(typeInfos[i]);
-				float w = ServicesEditorHelper.SmallLeftLabelStyle.CalcSize(new GUIContent(content.text)).x + iconWidth;
+				Type type = typeInfo[i].type;
+				GUIContent content = IconHelper.GetGUIContentToType(typeInfo[i]);
+				GUIContent iconContent = new (content.image, content.tooltip);
+				GUIContent textContent = new (content.text, content.tooltip);
+				 
+				float textW = ServicesEditorHelper.SmallCenterLabelStyle.CalcSize(textContent).x + iconWidth;
 
-				overflow = i == typeInfos.Count - 1
-					? typePosition.x + w > position.xMax
-					: typePosition.x + w > position.xMax - popupWidth;
+				overflow = i == typeInfo.Count - 1
+					? typePosition.x + textW > position.xMax
+					: typePosition.x + textW > position.xMax - popupWidth;
 
 				if (overflow)
 				{
@@ -96,20 +99,21 @@ namespace LooseLink
 					break;
 				}
 
-				typePosition.width = w - space;
-				DrawType(typePosition, content, type, typeInfos[i].isMissing);
-				typePosition.x += w + space;
+				typePosition.width = textW - space;
+
+				DrawType(typePosition, textContent, iconContent, type, typeInfo[i].isMissing);
+				typePosition.x += textW + space;
 			}
 
 			if (!overflow)
 				return;
 
-			int overflowCount = typeInfos.Count - overflowIndex;
+			int overflowCount = typeInfo.Count - overflowIndex;
 			List<ServiceTypeInfo> overflownTypes = new(overflowCount);
-			for (int i = overflowIndex; i < typeInfos.Count; i++)
-				overflownTypes.Add(typeInfos[i]);
+			for (int i = overflowIndex; i < typeInfo.Count; i++)
+				overflownTypes.Add(typeInfo[i]);
 
-			bool allOverflown = overflowCount == typeInfos.Count;
+			bool allOverflown = overflowCount == typeInfo.Count;
 			Rect popupRect = allOverflown
 				? position
 				: new Rect(position.xMax - popupWidth, position.y, popupWidth, position.height);
@@ -119,7 +123,7 @@ namespace LooseLink
 
 		}
 
-		public static void DrawType(Rect position, GUIContent content, Type type, bool error)
+		public static void DrawType(Rect position, GUIContent textContent, GUIContent iconContent, Type type, bool error)
 		{
 			if (error)
 			{
@@ -127,7 +131,15 @@ namespace LooseLink
 				EditorHelper.DrawBox(pos, EditorHelper.ErrorBackgroundColor);
 			}
 
-			if (GUI.Button(position, content, ServicesEditorHelper.SmallCenterLabelStyle))
+			Rect labelRect = position;
+			Rect iconRect = labelRect.SliceOut(18, Side.Left);
+			labelRect.x -= 4;
+			labelRect.width += 4;
+
+
+			GUI.Label(iconRect, iconContent);
+			GUI.Label(labelRect, textContent, ServicesEditorHelper.SmallCenterLabelStyle);
+			if (GUI.Button(position, GUIContent.none, ServicesEditorHelper.SmallCenterLabelStyle))
 				TryPing(type);
 		}
 
