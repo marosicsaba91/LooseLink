@@ -139,7 +139,7 @@ namespace MUtility
 			{
 				slice.width = pixels;
 				float newWidth = self.width - pixels;
-				if (addSpace) 
+				if (addSpace)
 					newWidth -= standardVerticalSpacing;
 				self.width = Mathf.Max(0, newWidth);
 
@@ -162,6 +162,24 @@ namespace MUtility
 			}
 
 			return slice;
+		}
+
+		public static Rect GetColum(this Rect rect, int index, int columnCount, bool addSpaces = true)
+		{
+			float space = addSpaces ? standardVerticalSpacing : 0;
+			float allSpaces = space * (columnCount - 1);
+			float columnWidth = (rect.width - allSpaces) / columnCount;
+			float x = rect.x + (columnWidth + space) * index;
+			return new Rect(x, rect.y, columnWidth, rect.height);
+		}
+
+		public static Rect GetRow(this Rect rect, int index, int rowCount, bool addSpaces = true)
+		{
+			float space = addSpaces ? standardVerticalSpacing : 0;
+			float allSpaces = space * (rowCount - 1);
+			float rowHeight = (rect.height - allSpaces) / rowCount;
+			float y = rect.y + (rowHeight + space) * index;
+			return new Rect(rect.x, y, rect.width, rowHeight);
 		}
 	}
 }
