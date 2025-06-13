@@ -157,8 +157,6 @@ namespace LooseLink
 			ServiceSource source,
 			object[] tags, out object service)
 		{
-			service = null;
-
 			if (!source.TryGetService(looseServiceType, provider, tags, out service))
 				return false;
 
