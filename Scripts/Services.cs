@@ -58,11 +58,10 @@ namespace LooseLink
 				Debug.Log($"Init {SetupTime.TotalMilliseconds} ms");
 		}
 
-		internal static List<ServiceSourceSet> FindGlobalInstallers =>
-			Resources
-				.LoadAll<ServiceSourceSet>(string.Empty)
-				.Where(contextInstaller => contextInstaller.automaticallyUseAsGlobalInstaller)
-				.ToList();
+		internal static List<ServiceSourceSet> FindGlobalInstallers => Resources
+			.LoadAll<ServiceSourceSet>(string.Empty)
+			.Where(contextInstaller => contextInstaller.automaticallyUseAsGlobalInstaller)
+			.ToList();
 
 		public static Transform ParentObject
 		{

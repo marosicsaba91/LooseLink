@@ -121,7 +121,7 @@ namespace LooseLink
 				FindObjectsOfTypeAll<ServerObject>().Where(serverObj => serverObj.InstallAutomatically));
 
 
-			int maxPriority = sets.Count == 0 ? 0 : sets.Select(set => set.PriorityValue).Max();
+			int maxPriority = sets.Count == 0 ? 0 : sets.Max(set => set.PriorityValue);
 
 			sets.AddRange(localInstallers.Where(
 				inst => inst.Priority.type == InstallerPriority.Type.ConcreteValue));
