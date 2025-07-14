@@ -6,6 +6,7 @@ using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -77,10 +78,14 @@ namespace LooseLink
 			}
 		}
 
+		static readonly List<ServiceSource> _sourceCache = new();
+
 		internal static void ClearAllCachedData()
 		{
-			foreach ((IServiceSourceProvider installer, ServiceSource source) installerSourcePair in Environment.ServiceSources)
-				installerSourcePair.source?.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+			_sourceCache.Clear();
+			Environment.GetAllServiceSources(_sourceCache);
+			foreach (ServiceSource source in _sourceCache)
+				source?.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
 		}
 
 		public static TService Get<TService>(params object[] tags) =>
@@ -121,24 +126,8 @@ namespace LooseLink
 				Debug.LogWarning("If You want to use Service Tags, enable them in Service Locator's settings menu." +
 								 "(Tools / Service Locator / Open Settings in top right corner)");
 
-			foreach ((IServiceSourceProvider installer, ServiceSource source) in Environment.ServiceSources)
+			if (Environment.TryGetSources((s) => Filter(s, looseServiceType), out IServiceSourceProvider installer, out ServiceSource source))
 			{
-				if (!source.IsServiceSource)
-					continue;
-				bool serviceTypeFound = source.GetDynamicServiceTypes().Contains(looseServiceType);
-
-				if (!serviceTypeFound)
-					foreach (SerializableType variable in source.additionalTypes)
-					{
-						if (serviceTypeFound)
-							break;
-						if (variable.Type == looseServiceType)
-							serviceTypeFound = true;
-					}
-
-				if (!serviceTypeFound)
-					continue;
-
 				if (TryGetServiceInSource(looseServiceType, installer, source, tags, out object serv))
 				{
 					service = serv;
@@ -148,7 +137,53 @@ namespace LooseLink
 
 			service = null;
 			return false;
+
+			static bool Filter(ServiceSource source, Type type)
+			{
+				if (!source.IsServiceSource)
+					return false;
+
+				if (source.GetDynamicServiceTypes().Contains(type))
+					return true;
+
+				foreach (SerializableType variable in source.additionalTypes)
+					if (variable.Type == type)
+						return true;
+
+				return false;
+			}
 		}
+
+
+
+
+
+		static bool TrySelect(IServiceSourceProvider installer, ServiceSource source, object[] tags, Type type, out object service)
+		{
+			service = null;
+			if (!source.IsServiceSource)
+				return false;
+			bool serviceTypeFound = source.GetDynamicServiceTypes().Contains(type);
+
+			if (!serviceTypeFound)
+				foreach (SerializableType variable in source.additionalTypes)
+				{
+					if (serviceTypeFound)
+						break;
+					if (variable.Type == type)
+						serviceTypeFound = true;
+				}
+
+			if (!serviceTypeFound)
+				return false;
+
+			if (TryGetServiceInSource(type, installer, source, tags, out service))
+				return true;
+
+			return false;
+		}
+
+
 
 		static bool TryGetServiceInSource(
 			Type looseServiceType,

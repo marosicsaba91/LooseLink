@@ -211,8 +211,12 @@ namespace LooseLink
 			_serviceSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchServicesText);
 		}
 
-		public bool ApplyTypeSearchOnSource(ServiceSource source) =>
-			ApplyTypeSearchOnTypeArray(source.GetServiceTypesRecursively());
+		public bool ApplyTypeSearchOnSource(ServiceSource source)
+		{
+			List<Type> list = new ();  // TODO ALLOC: Might need some optimisation
+			source.CollectServiceTypesRecursively(list);
+			return ApplyTypeSearchOnTypeArray(list);
+		}
 
 		public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)
 		{
@@ -236,7 +240,7 @@ namespace LooseLink
 		protected override GUIStyle GetDefaultStyle() => null;
 
 		static GUIStyle _labelStyle;
-		public static GUIStyle LabelStyle => _labelStyle = _labelStyle ?? new GUIStyle("Label");
+		public static GUIStyle LabelStyle => _labelStyle ??= new GUIStyle("Label");
 	}
 }
 #endif

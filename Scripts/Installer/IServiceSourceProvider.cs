@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
 namespace LooseLink
@@ -34,7 +35,8 @@ namespace LooseLink
 
 	public static class ServiceSourceProviderHelper
 	{
-		public static IEnumerable<ServiceSource> GetEnabledValidSourcesRecursive(this IServiceSourceProvider provider)
+		// TODO ALLOC: Use TryGetSources method instead
+		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<(IServiceSourceProvider, ServiceSource)> result)
 		{
 			for (int i = 0; i < provider.SourceCount; i++)
 			{
@@ -42,15 +44,60 @@ namespace LooseLink
 				if (!serviceSource.Enabled)
 					continue;
 				if (serviceSource.IsServiceSource)
-					yield return serviceSource;
+					result.Add((provider, serviceSource));
 				else if (serviceSource.IsSourceSet)
 				{
 					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
 					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller)
-						foreach (ServiceSource subSource in subSet.GetEnabledValidSourcesRecursive())
-							yield return subSource;
+						subSet.CollectAllEnabled(result);
 				}
 			}
+		}
+
+		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<ServiceSource> result)
+		{
+			for (int i = 0; i < provider.SourceCount; i++)
+			{
+				ServiceSource serviceSource = provider.GetSourceAt(i);
+				if (!serviceSource.Enabled)
+					continue;
+				if (serviceSource.IsServiceSource)
+					result.Add( serviceSource);
+				else if (serviceSource.IsSourceSet)
+				{
+					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
+					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller)
+						subSet.CollectAllEnabled(result);
+				}
+			}
+		}
+
+
+		public static bool TryGetFirstSources(this IServiceSourceProvider provider, Func<ServiceSource, bool> filter, out ServiceSource result)
+		{
+			for (int i = 0; i < provider.SourceCount; i++)
+			{
+				ServiceSource serviceSource = provider.GetSourceAt(i);
+				if (!serviceSource.Enabled)
+					continue;
+				if (serviceSource.IsServiceSource)
+				{
+					if (filter(serviceSource))
+					{
+						result = serviceSource;
+						return true;
+					}
+				}
+				else if (serviceSource.IsSourceSet)
+				{
+					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
+					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller && subSet.TryGetFirstSources(filter, out result))
+						return true;
+				}
+			}
+
+			result = null;
+			return false;
 		}
 
 		internal static IEnumerable<ServiceSource> GetSources(this IServiceSourceProvider provider)

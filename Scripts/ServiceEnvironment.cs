@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using MUtility;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.UI.DefaultControls;
 
 namespace LooseLink
 {
@@ -19,12 +21,13 @@ namespace LooseLink
 		public bool TryUninstallServiceSourceSet(ServiceSourceSet serviceSourceSet) =>
 			TryUninstallServiceSourceProvider(serviceSourceSet);
 
-
+		static readonly List<Type> _typeCache = new();
 		public void UninstallAllSourceSets()
 		{
-			Type[] types = TypesOfWholeEnvironment().ToArray();
+			_typeCache.Clear();
+			TypesOfWholeEnvironment(_typeCache);
 			_installers.Clear();
-			InvokeEnvironmentChanged(types);
+			InvokeEnvironmentChanged(_typeCache);
 		}
 
 		internal bool TryInstallServiceSourceProvider(IServiceSourceProvider serviceSourceProvider)
@@ -95,21 +98,10 @@ namespace LooseLink
 
 		// INSTALLER & SOURCE GETTERS ---------------
 
-		public IEnumerable<IServiceSourceProvider> GetEnabledAndActiveInstallers() =>
-			GetAllInstallers().Where(installer => installer.IsEnabled);
-
-		public IEnumerable<IServiceSourceProvider> GetAllInstallers()
-		{
-			if (Application.isPlaying)
-				foreach (IServiceSourceProvider set in _installers)
-					yield return set;
-			else
-				foreach (IServiceSourceProvider serviceSourceSet in FindInstallers())
-					yield return serviceSourceSet;
-		}
+		public List<IServiceSourceProvider> GetAllInstallers() => Application.isPlaying ? _installers : FindInstallers();
 
 		static readonly List<IServiceSourceProvider> sets = new();
-		static IEnumerable<IServiceSourceProvider> FindInstallers()
+		static List<IServiceSourceProvider> FindInstallers()
 		{
 			sets.Clear();
 			sets.AddRange(Services.FindGlobalInstallers);
@@ -142,7 +134,7 @@ namespace LooseLink
 		{
 			for (int i = 0; i < SceneManager.sceneCount; i++)
 			{
-				UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
+				Scene scene = SceneManager.GetSceneAt(i);
 				if (!scene.isLoaded || !scene.IsValid())
 					continue;
 				foreach (GameObject go in scene.GetRootGameObjects())
@@ -151,22 +143,49 @@ namespace LooseLink
 			}
 		}
 
-		internal IEnumerable<(IServiceSourceProvider installer, ServiceSource source)> ServiceSources
+		// TODO ALLOC: Remove IEnumerable
+
+		internal void GetAllServiceSources(List<(IServiceSourceProvider installer, ServiceSource source)> result)
 		{
-			get
+			foreach (IServiceSourceProvider installer in GetAllInstallers())
 			{
-				foreach (IServiceSourceProvider installer in GetEnabledAndActiveInstallers())
-					foreach (ServiceSource setting in installer.GetEnabledValidSourcesRecursive())
-						yield return (installer, setting);
+				if (installer.IsEnabled)
+					installer.CollectAllEnabled(result);
+			}
+		}
+		internal void GetAllServiceSources(List<ServiceSource> result)
+		{
+			foreach (IServiceSourceProvider installer in GetAllInstallers())
+			{
+				if (installer.IsEnabled)
+					installer.CollectAllEnabled(result);
 			}
 		}
 
+		internal bool TryGetSources(Func<ServiceSource, bool> filter, out IServiceSourceProvider installer, out ServiceSource result)
+		{
+			foreach (IServiceSourceProvider currentInstaller in GetAllInstallers())
+			{
+				installer = currentInstaller;
+				if (installer.IsEnabled && installer.TryGetFirstSources(filter, out result))
+					return true;
+			}
+			installer = null;
+			result = null;
+			return false;
+		}
+
+
 		public int MaxPriority => GetAllInstallers().FirstOrDefault()?.PriorityValue ?? 0;
+
+		static readonly List<ServiceSource> _sourceCache = new();
 
 		internal void InitServiceSources()
 		{
-			foreach ((IServiceSourceProvider installer, ServiceSource source) pair in ServiceSources)
-				pair.source.InitDynamicIfNeeded();
+			_sourceCache.Clear();
+			GetAllServiceSources(_sourceCache);
+			foreach (ServiceSource source in _sourceCache)
+				source.InitDynamicIfNeeded();
 		}
 
 		// SUBSCRIPTION ---------------------
@@ -201,55 +220,69 @@ namespace LooseLink
 
 		// INVOKE SUBSCRIPTION ---------------------
 
+		static readonly List<ServiceSource> _sourcesCached = new();
+
 		public void InvokeEnvironmentChangedOnWholeEnvironment()
 		{
-			// Debug.Log("Whole Environment Change");
-			InvokeEnvironmentChanged(TypesOfWholeEnvironment());
+			// TODO: Save Allocation
+			List<Type> types = new();
+			TypesOfWholeEnvironment(types);
+			InvokeEnvironmentChanged(types);
 		}
 
 		internal void InvokeEnvironmentChangedOnInstaller(IServiceSourceProvider provider)
 		{
-			// Debug.Log($"Installer Change: {provider.Name}"); 
-			InvokeEnvironmentChanged(TypesOfInstaller(provider));
+			// TODO: Save Allocation
+			List<Type> types = new();
+			_sourcesCached.Clear();
+			provider.CollectAllEnabled(_sourcesCached);
+			foreach (ServiceSource source in _sourcesCached)
+				source.CollectServiceTypesRecursively(types);
+
+			InvokeEnvironmentChanged(types);
 		}
 
-		internal void InvokeEnvironmentChangedOnSources(params ServiceSource[] sources)
+		internal void InvokeEnvironmentChangedOnSources(ServiceSource source1, ServiceSource source2)
 		{
-			// string typeNames = string.Join(", ", sources.Select(t => t == null ? "-" : t.Name).ToArray());
-			// Debug.Log($"Sources Change: {typeNames}"); 
-			InvokeEnvironmentChanged(TypesOfSources(sources));
+			// TODO: Save Allocation
+			List<Type> types = new();
+			source1.CollectServiceTypesRecursively(types);
+			source2.CollectServiceTypesRecursively(types);
+			InvokeEnvironmentChanged(types);
 		}
 
 		internal void InvokeEnvironmentChangedOnSource(ServiceSource source)
 		{
-			// Debug.Log($"Source Change: {source.Name}"); 
-			InvokeEnvironmentChanged(TypesOfSource(source));
+			// TODO: Save Allocation
+			List<Type> types = new();
+			source.CollectServiceTypesRecursively(types);
+			InvokeEnvironmentChanged(types);
 		}
 
 		internal void InvokeEnvironmentChangedOnType(Type type)
 		{
-			// Debug.Log($"Type Change Type: {type.Name}");  
-			InvokeEnvironmentChanged(TypesOfType(type));
+			// TODO: Save Allocation
+			List<Type> types = new() { type };
+			InvokeEnvironmentChanged(types);
 		}
-		internal void InvokeEnvironmentChangedOnTypes(params Type[] types)
+		internal void InvokeEnvironmentChangedOnTypes(Type type1, Type type2)
 		{
-			// string typeNames = string.Join(", ", types.Select(t => t == null ? "-" : t.Name).ToArray());
-			// Debug.Log($"Types Changed Type: {typeNames}"); 
+			// TODO: Save Allocation
+			List<Type> types = new() { type1, type2 };
 			InvokeEnvironmentChanged(types);
 		}
 
-		static HashSet<Type> _tempTypes = new();
-		void InvokeEnvironmentChanged(IEnumerable<Type> types)
+		void InvokeEnvironmentChanged(List<Type> types)
 		{
 			if (!Services.AreServiceLocatorInitialized)
 				return;
 			if (Services.IsDestroying)
 				return;
 
-			_tempTypes = EnumerableToHashSet(types);
-			if (_tempTypes.IsEmpty())
+			if (types.IsEmpty())
 				return;
-			foreach (Type type in _tempTypes)
+
+			foreach (Type type in types)
 				if (_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
 				{
 					foreach (Action callback in callbacks)
@@ -258,43 +291,17 @@ namespace LooseLink
 			EnvironmentChanged?.Invoke();
 		}
 
-		static HashSet<Type> EnumerableToHashSet(IEnumerable<Type> types)
-		{
-			_tempTypes.Clear();
-			foreach (Type type in types)
-				if (type != null)
-					_tempTypes.Add(type);
-			return _tempTypes;
-		}
-
-
 		// TYPES OF METHODS ---------------------
-
-		public IReadOnlyList<Type> GetAllInstalledServiceTypes() => EnumerableToHashSet(TypesOfWholeEnvironment()).ToList();
-		IEnumerable<Type> TypesOfWholeEnvironment()
+		void TypesOfWholeEnvironment(List<Type> result)
 		{
-			foreach (IServiceSourceProvider set in GetEnabledAndActiveInstallers())
-				foreach (Type type in TypesOfInstaller(set))
-					yield return type;
+			foreach (IServiceSourceProvider provider in GetAllInstallers())
+			{
+				if (!provider.IsEnabled) continue;
+				_sourcesCached.Clear();
+				provider.CollectAllEnabled(_sourcesCached);
+				foreach (ServiceSource source in _sourcesCached)
+					source.CollectServiceTypesRecursively(result);
+			}
 		}
-
-		static IEnumerable<Type> TypesOfInstaller(IServiceSourceProvider provider)
-		{
-			foreach (ServiceSource source in provider.GetEnabledValidSourcesRecursive())
-				foreach (Type type in TypesOfSource(source))
-					yield return type;
-		}
-
-		static IEnumerable<Type> TypesOfSources(ServiceSource[] sources)
-		{
-			foreach (ServiceSource source in sources)
-				foreach (Type type in TypesOfSource(source))
-					yield return type;
-		}
-
-		static IEnumerable<Type> TypesOfSource(ServiceSource source) => source.GetServiceTypesRecursively();
-
-		static IEnumerable<Type> TypesOfType(Type type) { yield return type; }
-
 	}
 }

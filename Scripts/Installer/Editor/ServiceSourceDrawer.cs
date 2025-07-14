@@ -199,6 +199,7 @@ namespace LooseLink.Editor
 				EditorUtility.SetDirty(_serializedObject);
 		}
 
+		static List<ServiceSource> _sourceCache = new();
 		static Rect DrawHeader(Rect position)
 		{
 			position.x += padding;
@@ -270,8 +271,11 @@ namespace LooseLink.Editor
 				}
 			}
 			else if (_insideSet != null)
-				GUI.Label(sourceTypePos,
-					new GUIContent($"Source Set ({_insideSet.GetEnabledValidSourcesRecursive().Count()})"));
+			{
+				_sourceCache.Clear();
+				_insideSet.CollectAllEnabled(_sourceCache);
+				GUI.Label(sourceTypePos, "Source Set ({_sourceCache.Count()");
+			}
 			else
 				GUI.Label(sourceTypePos, invalidObjectContent);
 
@@ -642,7 +646,7 @@ namespace LooseLink.Editor
 
 		static readonly GUIContent upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
 		static readonly GUIContent downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
-		static readonly GUIContent deleteIcon = new (EditorHelper.GetIcon(IconType.X));
+		static readonly GUIContent deleteIcon = new(EditorHelper.GetIcon(IconType.X));
 		static readonly GUIContent addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
 
 		static bool DrawButton(Rect position, ListAction action, bool enabled = true)

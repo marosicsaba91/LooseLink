@@ -292,7 +292,10 @@ namespace LooseLink
 			DynamicServiceSource dynamicServiceSource = GetDynamicServiceSource();
 			if (dynamicServiceSource == null)
 				return;
-			foreach (Type type in GetServiceTypesRecursively())
+
+			List<Type> types = new();
+			CollectServiceTypesRecursively(types);
+			foreach (Type type in types)
 				dynamicServiceSource.TryGetService(type, provider: null, out object _);
 		}
 
@@ -341,34 +344,31 @@ namespace LooseLink
 		}
 
 
-		public IEnumerable<Type> GetServiceTypesRecursively()
+		public void CollectServiceTypesRecursively(List<Type> result)
 		{
 			if (serviceSourceObject == null)
-				yield break;
+				return;
 			InitDynamicIfNeeded();
 
-			if (additionalTypes == null)
-				additionalTypes = new List<SerializableType>();
+			additionalTypes ??= new List<SerializableType>();
 
 			if (IsServiceSource)
 			{
 				if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
 				{
-					foreach (Type type in GetDynamicServiceSource().ServerObject.Source
-						.GetServiceTypesRecursively())
-						yield return type;
+					ServiceSource s = GetDynamicServiceSource().ServerObject.Source;
+					s.CollectServiceTypesRecursively(result);
 				}
 				else
 				{
-					foreach (Type serviceTypes in _dynamicSource.GetDynamicServiceTypes())
-						if (serviceTypes != null)
-							yield return serviceTypes;
+					IEnumerable<Type> types = _dynamicSource.GetDynamicServiceTypes();   // TODO ALLOC: Pass The List Insead
+					result.AddRange(types);
 
 					foreach (SerializableType typeSetting in additionalTypes)
 					{
 						Type type = typeSetting.Type;
 						if (type != null)
-							yield return type;
+							result.Add(type);
 					}
 				}
 			}
@@ -377,13 +377,12 @@ namespace LooseLink
 				for (int i = 0; i < _sourceSet.SourceCount; i++)
 				{
 					ServiceSource subSource = _sourceSet.GetSourceAt(i);
-					foreach (Type type in subSource.GetServiceTypesRecursively())
-						yield return type;
+					subSource.CollectServiceTypesRecursively(result);
 				}
 			}
 		}
 
-
+		// TODO ALLOC: Use List
 		internal IEnumerable<ServiceTypeInfo> GetAllServiceInfos()
 		{
 			if (serviceSourceObject == null)
