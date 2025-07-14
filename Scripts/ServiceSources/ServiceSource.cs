@@ -293,7 +293,7 @@ namespace LooseLink
 			if (dynamicServiceSource == null)
 				return;
 
-			List<Type> types = new();
+			List<Type> types = new();  // TODO ALLOC
 			CollectServiceTypesRecursively(types);
 			foreach (Type type in types)
 				dynamicServiceSource.TryGetService(type, provider: null, out object _);
@@ -343,11 +343,49 @@ namespace LooseLink
 			return null;
 		}
 
+		internal void ColllectAllServiceTypeInfo(List<ServiceTypeInfo> result)
+		{
+			if (serviceSourceObject == null) return;
+
+			InitDynamicIfNeeded();
+
+			if (!IsServiceSource) return;
+
+			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+			{
+				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
+				source.ColllectAllServiceTypeInfo(result);
+			}
+			else
+			{
+				foreach (Type serviceTypes in _dynamicSource.GetDynamicServiceTypes())
+					if (serviceTypes != null)
+						result.Add(new ServiceTypeInfo
+						{
+							type = serviceTypes,
+							name = serviceTypes.Name,
+							fullName = serviceTypes.FullName,
+							isMissing = false
+						});
+
+				foreach (SerializableType typeSetting in additionalTypes)
+				{
+					Type type = typeSetting.Type;
+					result.Add(new ServiceTypeInfo
+					{
+						type = type,
+						name = typeSetting.Name,
+						fullName = typeSetting.FullName,
+						isMissing = type == null || !_dynamicSource.GetPossibleAdditionalTypes().Contains(type)
+					});
+				}
+			}
+		}
+
 
 		public void CollectServiceTypesRecursively(List<Type> result)
 		{
-			if (serviceSourceObject == null)
-				return;
+			if (serviceSourceObject == null) return;
 			InitDynamicIfNeeded();
 
 			additionalTypes ??= new List<SerializableType>();
@@ -382,47 +420,6 @@ namespace LooseLink
 			}
 		}
 
-		// TODO ALLOC: Use List
-		internal IEnumerable<ServiceTypeInfo> GetAllServiceInfos()
-		{
-			if (serviceSourceObject == null)
-				yield break;
-			InitDynamicIfNeeded();
-
-			if (!IsServiceSource)
-				yield break;
-
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
-			{
-				foreach (ServiceTypeInfo typeInfo in GetDynamicServiceSource().ServerObject.Source
-					.GetAllServiceInfos())
-					yield return typeInfo;
-			}
-			else
-			{
-				foreach (Type serviceTypes in _dynamicSource.GetDynamicServiceTypes())
-					if (serviceTypes != null)
-						yield return new ServiceTypeInfo
-						{
-							type = serviceTypes,
-							name = serviceTypes.Name,
-							fullName = serviceTypes.FullName,
-							isMissing = false
-						};
-
-				foreach (SerializableType typeSetting in additionalTypes)
-				{
-					Type type = typeSetting.Type;
-					yield return new ServiceTypeInfo
-					{
-						type = type,
-						name = typeSetting.Name,
-						fullName = typeSetting.FullName,
-						isMissing = type == null || !_dynamicSource.GetPossibleAdditionalTypes().Contains(type)
-					};
-				}
-			}
-		}
 
 		void SourceChanged()
 		{
@@ -435,8 +432,8 @@ namespace LooseLink
 				_dynamicSource = null;
 
 			bool initNeeded = _dynamicSource == null && _sourceSet == null;
-			if (!initNeeded)
-				return;
+			if (!initNeeded) return;
+
 			InitDynamicSource();
 		}
 
@@ -453,26 +450,47 @@ namespace LooseLink
 				_dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
 		}
 
-		public IReadOnlyList<Type> GetPossibleAdditionalTypes()
+		public void CollectPossibleAdditionalTypes(List<Type> result)
 		{
-			if (!IsServiceSource)
-				return null;
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
-				return null;
-			return GetDynamicServiceSource().GetPossibleAdditionalTypes();
+			if (!IsServiceSource) return;
+			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent) return;
+			foreach (Type t in GetDynamicServiceSource().GetPossibleAdditionalTypes())
+				result.Add(t);
 		}
 
-		public IEnumerable<Type> GetDynamicServiceTypes()
+		public void CollectDynamicServiceTypes(List<Type> result)
 		{
-			if (!IsServiceSource)
-				yield break;
+			if (!IsServiceSource) return;
 			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
-				foreach (ServiceTypeInfo typeInfo in GetDynamicServiceSource().ServerObject.Source
-					.GetAllServiceInfos())
-					yield return typeInfo.type;
+			{
+				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
+				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
+				source.ColllectAllServiceTypeInfo(allInfo);
+				foreach (ServiceTypeInfo info in allInfo)
+					result.Add(info.type);
+			}
 			else
 				foreach (Type type in GetDynamicServiceSource().GetDynamicServiceTypes())
-					yield return type;
+					result.Add(type);
+		}
+
+		public bool TryFindType(Type type)
+		{
+			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+			{
+				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
+				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
+				source.ColllectAllServiceTypeInfo(allInfo);
+				foreach (ServiceTypeInfo info in allInfo)
+					if (info.type == type)
+						return true;
+			}
+			else
+				foreach (Type t in GetDynamicServiceSource().GetDynamicServiceTypes())
+					if (t == type)
+						return true;
+
+			return false;
 		}
 
 		public bool TryGetService(
@@ -486,12 +504,9 @@ namespace LooseLink
 				bool success = true;
 				foreach (object conditionTag in tagConditions)
 				{
-					if (conditionTag == null)
-						continue;
-					if (SerializedTags.Any(serializedTag => serializedTag.TagObject.Equals(conditionTag)))
-						continue;
-					if (DynamicTags.Any(dynamicTags => dynamicTags.Equals(conditionTag)))
-						continue;
+					if (conditionTag == null) continue;
+					if (SerializedTags.Any(serializedTag => serializedTag.TagObject.Equals(conditionTag))) continue;
+					if (DynamicTags.Any(dynamicTags => dynamicTags.Equals(conditionTag))) continue;
 
 					success = false;
 					break;

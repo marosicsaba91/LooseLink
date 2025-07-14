@@ -35,25 +35,6 @@ namespace LooseLink
 
 	public static class ServiceSourceProviderHelper
 	{
-		// TODO ALLOC: Use TryGetSources method instead
-		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<(IServiceSourceProvider, ServiceSource)> result)
-		{
-			for (int i = 0; i < provider.SourceCount; i++)
-			{
-				ServiceSource serviceSource = provider.GetSourceAt(i);
-				if (!serviceSource.Enabled)
-					continue;
-				if (serviceSource.IsServiceSource)
-					result.Add((provider, serviceSource));
-				else if (serviceSource.IsSourceSet)
-				{
-					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
-					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller)
-						subSet.CollectAllEnabled(result);
-				}
-			}
-		}
-
 		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<ServiceSource> result)
 		{
 			for (int i = 0; i < provider.SourceCount; i++)
@@ -71,7 +52,6 @@ namespace LooseLink
 				}
 			}
 		}
-
 
 		public static bool TryGetFirstSources(this IServiceSourceProvider provider, Func<ServiceSource, bool> filter, out ServiceSource result)
 		{

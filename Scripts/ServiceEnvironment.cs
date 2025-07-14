@@ -143,16 +143,6 @@ namespace LooseLink
 			}
 		}
 
-		// TODO ALLOC: Remove IEnumerable
-
-		internal void GetAllServiceSources(List<(IServiceSourceProvider installer, ServiceSource source)> result)
-		{
-			foreach (IServiceSourceProvider installer in GetAllInstallers())
-			{
-				if (installer.IsEnabled)
-					installer.CollectAllEnabled(result);
-			}
-		}
 		internal void GetAllServiceSources(List<ServiceSource> result)
 		{
 			foreach (IServiceSourceProvider installer in GetAllInstallers())

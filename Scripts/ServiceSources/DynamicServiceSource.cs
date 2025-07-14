@@ -31,7 +31,7 @@ namespace LooseLink
 			get
 			{
 				Resolvability result = TypeResolvability;
-				if (result.type == Resolvability.Type.Error || result.type == Resolvability.Type.BlockedInEditorTime)
+				if (result.type is Resolvability.Type.Error or Resolvability.Type.BlockedInEditorTime)
 					return result;
 
 				if (!IsResolvableByConditions(out string message))
@@ -121,19 +121,19 @@ namespace LooseLink
 
 		public abstract Object SourceObject { get; }
 
-		public IEnumerable<Type> GetDynamicServiceTypes()
+		public List<Type> GetDynamicServiceTypes()
 		{
 			InitDynamicTypeDataIfNeeded();
 			return _dynamicServiceTypes;
 		}
 
-		public IEnumerable<object> GetDynamicTags()
+		public IEnumerable<object> GetDynamicTags()  // TODO: Burn Tag System
 		{
 			InitDynamicTypeDataIfNeeded();
 			return _dynamicTaggers.SelectMany(tagger => tagger.GetTags()).Where(tag => tag != null);
 		}
 
-		public IReadOnlyList<Type> GetPossibleAdditionalTypes()
+		public List<Type> GetPossibleAdditionalTypes()
 		{
 			InitDynamicTypeDataIfNeeded();
 			return _possibleAdditionalTypes;
@@ -156,7 +156,7 @@ namespace LooseLink
 			_possibleAdditionalTypes.Clear();
 			_dynamicServiceTypes.Clear();
 			_typeToServiceOnSource.Clear();
-			_serverObject = (SourceObject as GameObject)?.GetComponent<ServerObject>();
+			_serverObject = (SourceObject as GameObject)?.GetComponent<ServerObject>();  // TODO: Fix
 			_resolvingConditions.Clear();
 			_resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
 			_dynamicTaggers.Clear();
@@ -174,9 +174,7 @@ namespace LooseLink
 					_typeToServiceOnSource.Add(abstractType, serviceInstanceOnSourceObject);
 				}
 
-
-				foreach (Type subclass in AllPossibleAdditionalSubclassesOf(concreteType))
-					_possibleAdditionalTypes.Add(subclass);
+				CollectAllPossibleAdditionalSubclasses(concreteType, includeInterfaces: true, _possibleAdditionalTypes);
 			}
 
 			_isDynamicTypeDataInitialized = true;
@@ -202,18 +200,13 @@ namespace LooseLink
 			}
 		}
 
-		IEnumerable<Type> AllPossibleAdditionalSubclassesOf(Type type, bool includeInterfaces = true)
+		void CollectAllPossibleAdditionalSubclasses(Type type, bool includeInterfaces, List<Type> result)
 		{
-			if (type == null)
-				yield break;
+			if (type == null) return;
+			if (type == typeof(ServerObject)) return;
+			if (type == typeof(LocalServiceInstaller)) return;
 
-			if (type == typeof(ServerObject))
-				yield break;
-
-			if (type == typeof(LocalServiceInstaller))
-				yield break;
-
-			yield return type;
+			result.Add(type);
 
 			if (includeInterfaces)
 			{
@@ -227,24 +220,19 @@ namespace LooseLink
 						continue;
 					if (interfaceType == typeof(IServiceSourceProvider))
 						continue;
-					yield return interfaceType;
+					result.Add(interfaceType);
 				}
 			}
 
 			Type baseType = type.BaseType;
-			if (baseType == null)
-				yield break;
-			if (baseType == typeof(ScriptableObject))
-				yield break;
-			if (baseType == typeof(Component))
-				yield break;
-			if (baseType == typeof(Behaviour))
-				yield break;
-			if (baseType == typeof(MonoBehaviour))
-				yield break;
 
-			foreach (Type b in AllPossibleAdditionalSubclassesOf(baseType, includeInterfaces: false))
-				yield return b;
+			if (baseType == null) return;
+			if (baseType == typeof(ScriptableObject)) return;
+			if (baseType == typeof(Component)) return;
+			if (baseType == typeof(Behaviour)) return;
+			if (baseType == typeof(MonoBehaviour)) return;
+
+			CollectAllPossibleAdditionalSubclasses(baseType, includeInterfaces: false, result);
 		}
 
 		protected abstract IEnumerable<Type> GetNonAbstractTypes();

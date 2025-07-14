@@ -130,8 +130,10 @@ namespace LooseLink.Editor
 			_serializedTags = _source.SerializedTags;
 			_dynamicTags = _source.DynamicTags?.ToList();
 			_conditions = _source.Conditions;
-			_possibleAdditionalServiceTypes = _source?.GetPossibleAdditionalTypes()?.ToList() ?? new List<Type>();
-			_dynamicServiceTypes = _source?.GetDynamicServiceTypes()?.ToList();
+			_possibleAdditionalServiceTypes.Clear();
+			_source?.CollectPossibleAdditionalTypes(_possibleAdditionalServiceTypes);
+			_dynamicServiceTypes.Clear();
+			_source?.CollectDynamicServiceTypes(_dynamicServiceTypes);
 			_typeCount = (_dynamicServiceTypes?.Count ?? 0) + (_additionalServiceTypes?.Count ?? 0);
 			_tagCount = (_dynamicTags?.Count ?? 0) + (_serializedTags?.Count ?? 0);
 

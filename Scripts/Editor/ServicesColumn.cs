@@ -56,7 +56,9 @@ namespace LooseLink
 				return;
 			}
 
-			List<ServiceTypeInfo> types = row.element.source.GetAllServiceInfos().ToList();
+			// TODO ALLOC: Reuse this List
+			List<ServiceTypeInfo> types = new();
+			row.element.source.ColllectAllServiceTypeInfo(types);
 
 			if (types.IsNullOrEmpty())
 			{
@@ -84,9 +86,9 @@ namespace LooseLink
 			{
 				Type type = typeInfo[i].type;
 				GUIContent content = IconHelper.GetGUIContentToType(typeInfo[i]);
-				GUIContent iconContent = new (content.image, content.tooltip);
-				GUIContent textContent = new (content.text, content.tooltip);
-				 
+				GUIContent iconContent = new(content.image, content.tooltip);
+				GUIContent textContent = new(content.text, content.tooltip);
+
 				float textW = ServicesEditorHelper.SmallCenterLabelStyle.CalcSize(textContent).x + iconWidth;
 
 				overflow = i == typeInfo.Count - 1
@@ -198,7 +200,7 @@ namespace LooseLink
 					_serviceSearchWords = new string[0];
 				return;
 			}
-			 
+
 
 			float searchTextW = Mathf.Min(200f, pos.width - 75f);
 			Rect searchTypePos = new(
@@ -211,23 +213,18 @@ namespace LooseLink
 			_serviceSearchWords = ServicesEditorHelper.GenerateSearchWords(SearchServicesText);
 		}
 
-		public bool ApplyTypeSearchOnSource(ServiceSource source)
+		public bool IsSourceIncludedInSearch(ServiceSource source)
 		{
-			List<Type> list = new ();  // TODO ALLOC: Might need some optimisation
-			source.CollectServiceTypesRecursively(list);
-			return ApplyTypeSearchOnTypeArray(list);
-		}
+			List<Type> types = new();
+			source.CollectServiceTypesRecursively(types);
 
-		public bool ApplyTypeSearchOnTypeArray(IEnumerable<Type> typesOnService)
-		{
 			if (string.IsNullOrEmpty(SearchServicesText))
 				return true;
 			if (_serviceSearchWords == null)
 				return true;
-			if (typesOnService == null)
+			if (types == null)
 				return false;
 
-			Type[] types = typesOnService.ToArray();
 			string[] typeTexts = types.Select(type => type.FullName.ToLower()).ToArray();
 
 			foreach (string searchWord in _serviceSearchWords)

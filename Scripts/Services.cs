@@ -143,7 +143,7 @@ namespace LooseLink
 				if (!source.IsServiceSource)
 					return false;
 
-				if (source.GetDynamicServiceTypes().Contains(type))
+				if (source.TryFindType(type))
 					return true;
 
 				foreach (SerializableType variable in source.additionalTypes)
@@ -157,13 +157,13 @@ namespace LooseLink
 
 
 
-
+		/*
 		static bool TrySelect(IServiceSourceProvider installer, ServiceSource source, object[] tags, Type type, out object service)
 		{
 			service = null;
 			if (!source.IsServiceSource)
 				return false;
-			bool serviceTypeFound = source.GetDynamicServiceTypes().Contains(type);
+			bool serviceTypeFound = source.CollectDynamicServiceTypes().Contains(type);
 
 			if (!serviceTypeFound)
 				foreach (SerializableType variable in source.additionalTypes)
@@ -182,7 +182,7 @@ namespace LooseLink
 
 			return false;
 		}
-
+		*/
 
 
 		static bool TryGetServiceInSource(
