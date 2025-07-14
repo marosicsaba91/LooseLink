@@ -88,26 +88,20 @@ namespace LooseLink
 				source?.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
 		}
 
-		public static TService Get<TService>(params object[] tags) =>
-			(TService)Get(typeof(TService), tags);
+		public static TService Get<TService>() =>
+			(TService)Get(typeof(TService));
 
-		public static object Get(Type looseServiceType, params object[] tags)
+		public static object Get(Type looseServiceType)
 		{
-			if (TryGet(looseServiceType, tags, out object service))
+			if (TryGet(looseServiceType, out object service))
 				return service;
 
-			return CantFindService(looseServiceType, tags);
+			return CantFindService(looseServiceType);
 		}
 
-		public static bool TryGet<TService>(out TService service) =>
-			TryGet(tags: null, out service);
-
-		public static bool TryGet(Type looseServiceType, out object service) =>
-			TryGet(looseServiceType, tags: null, out service);
-
-		public static bool TryGet<TService>(object[] tags, out TService service)
+		public static bool TryGet<TService>(out TService service)
 		{
-			if (TryGet(typeof(TService), tags, out object service1))
+			if (TryGet(typeof(TService), out object service1))
 			{
 				service = (TService)service1;
 				return true;
@@ -117,18 +111,14 @@ namespace LooseLink
 			return false;
 		}
 
-		public static bool TryGet(Type looseServiceType, object[] tags, out object service)
+		public static bool TryGet(Type looseServiceType, out object service)
 		{
 			if (debugLogs)
 				Debug.Log("Resolve");
 
-			if (!ServiceLocationSetupData.Instance.enableTags && !tags.IsNullOrEmpty())
-				Debug.LogWarning("If You want to use Service Tags, enable them in Service Locator's settings menu." +
-								 "(Tools / Service Locator / Open Settings in top right corner)");
-
 			if (Environment.TryGetSources((s) => Filter(s, looseServiceType), out IServiceSourceProvider installer, out ServiceSource source))
 			{
-				if (TryGetServiceInSource(looseServiceType, installer, source, tags, out object serv))
+				if (TryGetServiceInSource(looseServiceType, installer, source, out object serv))
 				{
 					service = serv;
 					return true;
@@ -154,73 +144,27 @@ namespace LooseLink
 			}
 		}
 
-
-
-
-		/*
-		static bool TrySelect(IServiceSourceProvider installer, ServiceSource source, object[] tags, Type type, out object service)
-		{
-			service = null;
-			if (!source.IsServiceSource)
-				return false;
-			bool serviceTypeFound = source.CollectDynamicServiceTypes().Contains(type);
-
-			if (!serviceTypeFound)
-				foreach (SerializableType variable in source.additionalTypes)
-				{
-					if (serviceTypeFound)
-						break;
-					if (variable.Type == type)
-						serviceTypeFound = true;
-				}
-
-			if (!serviceTypeFound)
-				return false;
-
-			if (TryGetServiceInSource(type, installer, source, tags, out service))
-				return true;
-
-			return false;
-		}
-		*/
-
-
 		static bool TryGetServiceInSource(
 			Type looseServiceType,
 			IServiceSourceProvider provider,
 			ServiceSource source,
-			object[] tags, out object service)
+			out object service)
 		{
-			if (!source.TryGetService(looseServiceType, provider, tags, out service))
+			if (!source.TryGetService(looseServiceType, provider, out service))
 				return false;
 
 			return true;
 		}
 
 
-		static object CantFindService(Type looseServiceType, object[] tags)
+		static object CantFindService(Type looseServiceType)
 		{
 			ServiceLocationSetupData.CantResolveAction action = ServiceLocationSetupData.Instance.whenServiceCantBeResolved;
 
 			if (action == ServiceLocationSetupData.CantResolveAction.ReturnNull)
 				return null;
 
-			string text;
-			if (tags.IsNullOrEmpty())
-				text = $"Can't find Services of this Type: {looseServiceType}";
-			else
-			{
-				StringBuilder tagNames = new();
-				for (int i = 0; i < tags.Length; i++)
-				{
-					object tag = tags[i];
-					tagNames.Append(new Tag(tag).Name);
-					if (i < tags.Length - 1)
-						tagNames.Append(", ");
-				}
-
-				text = $"Can't find Services of this Type: {looseServiceType} with these tags: [{tagNames}]";
-			}
+			string text = $"Can't find Services of this Type: {looseServiceType}";
 
 			if (action == ServiceLocationSetupData.CantResolveAction.ThrowException)
 				throw new ArgumentException(text);

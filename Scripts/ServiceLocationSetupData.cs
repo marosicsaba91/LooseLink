@@ -14,14 +14,10 @@ namespace LooseLink
 			ThrowException,
 		}
 
-		[ShowIf(nameof(ShowError))]
-		[SerializeField]
-		EasyMessage errorMessage = new(nameof(GetErrorMessage))
+		[ShowIf(nameof(ShowError))] public EasyMessage errorMessage = new(nameof(GetErrorMessage))
 		{ messageType = MessageType.Error };
 
-		[SerializeField]
-		EasyMessage lastTypeMapSetupTime = new(nameof(InfoMessage))
-		{ messageType = MessageType.Info };
+		public EasyMessage lastTypeMapSetupTime = new(nameof(InfoMessage)) { messageType = MessageType.Info };
 
 		string InfoMessage =>
 			"Service Locator needs to setup itself once to operate fast after that." +
@@ -31,7 +27,6 @@ namespace LooseLink
 
 		public bool setupAtPlayInEditor;
 		public bool setupAtStartInBuild = true;
-		[Space] public bool enableTags = false;
 
 		[Space] public CantResolveAction whenServiceCantBeResolved = CantResolveAction.ReturnNullWithWarning;
 

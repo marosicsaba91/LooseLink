@@ -18,7 +18,6 @@ namespace LooseLink
 		ServiceSourceColumn _serviceSourcesColumn;
 		ServiceSourceTypeColumn _typeColumn;
 		ServicesColumn _servicesColumn;
-		TagsColumn _tagsColumn;
 		ResolveColumn _resolveColumn;
 		GUITable<FoldableRow<ServiceLocatorRow>> _serviceTable;
 		GUIContent _settingIcon;
@@ -26,9 +25,7 @@ namespace LooseLink
 
 		[SerializeField] List<string> openedElements = new();
 		public bool isSourceCategoryOpen = false;
-		public bool isTagsOpen = false;
 		public bool isServicesOpen = false;
-		public string searchTagsText = string.Empty;
 		public string searchServicesText = string.Empty;
 		public string searchServiceSourcesText = string.Empty;
 
@@ -66,13 +63,12 @@ namespace LooseLink
 				return;
 
 			_serviceSourcesColumn = new ServiceSourceColumn(this);
-			_tagsColumn = new TagsColumn(this);
 			_servicesColumn = new ServicesColumn(this);
 			_typeColumn = new ServiceSourceTypeColumn(this);
 			_resolveColumn = new ResolveColumn(this);
 
 			List<IColumn<FoldableRow<ServiceLocatorRow>>> componentTypeColumns = new()
-				{ _serviceSourcesColumn, _typeColumn, _servicesColumn, _tagsColumn, _resolveColumn };
+			{ _serviceSourcesColumn, _typeColumn, _servicesColumn, _resolveColumn };
 
 			_serviceTable = new GUITable<FoldableRow<ServiceLocatorRow>>(componentTypeColumns, this)
 			{
@@ -82,9 +78,6 @@ namespace LooseLink
 
 		void OnGUI()
 		{
-			if (!ServiceLocationSetupData.Instance.enableTags)
-				searchTagsText = string.Empty;
-
 			if (_showSetup)
 				DrawSetup();
 			else
@@ -232,8 +225,7 @@ namespace LooseLink
 
 			bool noServiceSearch = _serviceSourcesColumn.NoSearch;
 			bool noTypeSearch = _servicesColumn.NoSearch;
-			bool noTagSearch = _tagsColumn.NoSearch;
-			bool anySearch = !(noServiceSearch && noTypeSearch && noTagSearch);
+			bool anySearch = !(noServiceSearch && noTypeSearch);
 
 			foreach (ServiceSource source in sources)
 			{
@@ -284,11 +276,10 @@ namespace LooseLink
 
 					bool serviceMatchSearch = _serviceSourcesColumn.ApplyServiceSourceSearch(source);
 					bool typeMatchSearch = _servicesColumn.IsSourceIncludedInSearch(source);
-					bool tagMatchSearch = _tagsColumn.ApplyTagSearchOnSource(iProvider, source);
 
 					if (!anySearch)
 						nodes.Add(sourceNode);
-					else if (serviceMatchSearch && tagMatchSearch && typeMatchSearch)
+					else if (serviceMatchSearch && typeMatchSearch)
 						nodes.Add(sourceNode);
 				}
 			}

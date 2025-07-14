@@ -16,10 +16,7 @@ namespace LooseLink
 		[SerializeField] ServiceSourceTypes preferredSourceType;
 		[SerializeField] internal List<SerializableType> additionalTypes = new();
 
-		[SerializeField] List<Tag> tags = new();
-
 		[SerializeField] internal bool isTypesExpanded;
-		[SerializeField] internal bool isTagsExpanded;
 		[SerializeField] internal bool isConditionsExpanded;
 
 		[SerializeField] SerializableType monoScriptType;
@@ -124,15 +121,7 @@ namespace LooseLink
 		public IEnumerable<ServiceSourceTypes> AlternativeSourceTypes => GetDynamicServiceSource().AlternativeSourceTypes;
 		public Object LoadedObject => GetDynamicServiceSource().LoadedObject;
 
-		public List<Tag> SerializedTags =>
-			!IsServiceSource ? null :
-			IsTypesAndTagsComingFromDifferentServiceSourceComponent ? GetDynamicServiceSource().ServerObject.Source.SerializedTags :
-			tags;
-
-		public IEnumerable<object> DynamicTags =>
-			!IsServiceSource ? null : GetDynamicServiceSource()?.GetDynamicTags();
-
-		internal bool IsTypesAndTagsComingFromDifferentServiceSourceComponent
+		internal bool AreTypesComingFromDifferentServiceSourceComponent
 		{
 			get
 			{
@@ -146,7 +135,7 @@ namespace LooseLink
 		}
 
 		public List<IServiceSourceCondition> Conditions =>
-			IsTypesAndTagsComingFromDifferentServiceSourceComponent ?
+			AreTypesComingFromDifferentServiceSourceComponent ?
 			GetDynamicServiceSource()?.ServerObject.Source.Conditions :
 			GetDynamicServiceSource()?.Conditions;
 
@@ -205,65 +194,6 @@ namespace LooseLink
 			{
 				additionalTypes.Remove(removable);
 				Services.Environment.InvokeEnvironmentChangedOnType(removable.Type);
-			}
-
-			return removable != null;
-		}
-
-		public void AddTag(string tagString)
-		{
-			AddTag(new Tag(tagString));
-		}
-
-		public void AddTag(Object tagObject)
-		{
-			AddTag(new Tag(tagObject));
-		}
-
-		public void AddTag(object tagObject)
-		{
-			AddTag(new Tag(tagObject));
-		}
-
-		internal void AddTag(Tag tag)
-		{
-			tags.Add(tag);
-			SourceChanged();
-		}
-
-		public void AddTags(params object[] tagObjects)
-		{
-			foreach (object t in tagObjects)
-			{
-				Tag tag;
-				if (t is string ts)
-					tag = new Tag(ts);
-				else if (t is Object to)
-					tag = new Tag(to);
-				else
-					tag = new Tag(t);
-
-				tags.Add(tag);
-			}
-
-			SourceChanged();
-		}
-
-
-		public bool RemoveTag(object tagObject)
-		{
-			if (tagObject == null)
-				return false;
-			Tag removable = tags.Find(st => st.TagObject.Equals(tagObject));
-			return RemoveTag(removable);
-		}
-
-		public bool RemoveTag(Tag removable)
-		{
-			if (removable != null)
-			{
-				tags.Remove(removable);
-				SourceChanged();
 			}
 
 			return removable != null;
@@ -351,7 +281,7 @@ namespace LooseLink
 
 			if (!IsServiceSource) return;
 
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+			if (AreTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
 				source.ColllectAllServiceTypeInfo(result);
@@ -392,7 +322,7 @@ namespace LooseLink
 
 			if (IsServiceSource)
 			{
-				if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+				if (AreTypesComingFromDifferentServiceSourceComponent)
 				{
 					ServiceSource s = GetDynamicServiceSource().ServerObject.Source;
 					s.CollectServiceTypesRecursively(result);
@@ -453,7 +383,7 @@ namespace LooseLink
 		public void CollectPossibleAdditionalTypes(List<Type> result)
 		{
 			if (!IsServiceSource) return;
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent) return;
+			if (AreTypesComingFromDifferentServiceSourceComponent) return;
 			foreach (Type t in GetDynamicServiceSource().GetPossibleAdditionalTypes())
 				result.Add(t);
 		}
@@ -461,7 +391,7 @@ namespace LooseLink
 		public void CollectDynamicServiceTypes(List<Type> result)
 		{
 			if (!IsServiceSource) return;
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+			if (AreTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
 				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
@@ -476,7 +406,7 @@ namespace LooseLink
 
 		public bool TryFindType(Type type)
 		{
-			if (IsTypesAndTagsComingFromDifferentServiceSourceComponent)
+			if (AreTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
 				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
@@ -493,33 +423,7 @@ namespace LooseLink
 			return false;
 		}
 
-		public bool TryGetService(
-			Type looseServiceType,
-			IServiceSourceProvider provider,
-			object[] tagConditions,
-			out object service)
-		{
-			if (!tagConditions.IsNullOrEmpty())
-			{
-				bool success = true;
-				foreach (object conditionTag in tagConditions)
-				{
-					if (conditionTag == null) continue;
-					if (SerializedTags.Any(serializedTag => serializedTag.TagObject.Equals(conditionTag))) continue;
-					if (DynamicTags.Any(dynamicTags => dynamicTags.Equals(conditionTag))) continue;
-
-					success = false;
-					break;
-				}
-
-				if (!success)
-				{
-					service = default;
-					return false;
-				}
-			}
-
-			return GetDynamicServiceSource().TryGetService(looseServiceType, provider, out service);
-		}
+		public bool TryGetService(Type looseServiceType, IServiceSourceProvider provider, out object service) => 
+			GetDynamicServiceSource().TryGetService(looseServiceType, provider, out service);
 	}
 }

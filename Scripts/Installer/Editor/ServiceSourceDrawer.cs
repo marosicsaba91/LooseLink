@@ -57,14 +57,11 @@ namespace LooseLink.Editor
 		static ServiceSource _source;
 		static int _sourceIndex;
 		static Object _serializedObject;
-		static List<Type> _dynamicServiceTypes = new();
 		static List<SerializableType> _additionalServiceTypes = new();
-		static List<Type> _possibleAdditionalServiceTypes = new();
-		static List<Tag> _serializedTags = new();
-		static List<object> _dynamicTags = new();
+		static readonly List<Type> _dynamicServiceTypes = new();
+		static readonly List<Type> _possibleAdditionalServiceTypes = new();
 		static List<IServiceSourceCondition> _conditions = new();
 		static int _typeCount;
-		static int _tagCount;
 
 		public static void DrawInstallerInspectorGUI(UnityEditor.Editor editor, IServiceSourceProvider provider)
 		{
@@ -127,15 +124,12 @@ namespace LooseLink.Editor
 			_insideSet = _source.GetServiceSourceSet();
 			_source.ClearCachedTypes_NoEnvironmentChangeEvent();
 			_additionalServiceTypes = _source.additionalTypes;
-			_serializedTags = _source.SerializedTags;
-			_dynamicTags = _source.DynamicTags?.ToList();
 			_conditions = _source.Conditions;
 			_possibleAdditionalServiceTypes.Clear();
 			_source?.CollectPossibleAdditionalTypes(_possibleAdditionalServiceTypes);
 			_dynamicServiceTypes.Clear();
 			_source?.CollectDynamicServiceTypes(_dynamicServiceTypes);
 			_typeCount = (_dynamicServiceTypes?.Count ?? 0) + (_additionalServiceTypes?.Count ?? 0);
-			_tagCount = (_dynamicTags?.Count ?? 0) + (_serializedTags?.Count ?? 0);
 
 			float height = PixelHeightOfSource();
 			Rect position = new(startPosition, new Vector2(width, height));
@@ -162,13 +156,6 @@ namespace LooseLink.Editor
 			if (_source.isTypesExpanded)
 				lineCount += 1 + _typeCount;
 
-			if (ServiceLocationSetupData.Instance.enableTags)
-			{
-				lineCount++;
-				if (_source.isTagsExpanded)
-					lineCount += 1 + _tagCount;
-			}
-
 			lineCount += _conditions.Count;
 
 
@@ -190,9 +177,7 @@ namespace LooseLink.Editor
 				typesPos.x += foldoutW + space;
 				typesPos.width -= foldoutW + space;
 
-				Rect tagsPosition = DrawServices(typesPos);
-
-				Rect conditionsPosition = DrawTags(tagsPosition);
+				Rect conditionsPosition = DrawServices(typesPos);
 
 				DrawConditions(conditionsPosition);
 			}
@@ -201,7 +186,7 @@ namespace LooseLink.Editor
 				EditorUtility.SetDirty(_serializedObject);
 		}
 
-		static List<ServiceSource> _sourceCache = new();
+		static readonly List<ServiceSource> _sourceCache = new();
 		static Rect DrawHeader(Rect position)
 		{
 			position.x += padding;
@@ -440,155 +425,6 @@ namespace LooseLink.Editor
 				if (action == ListAction.Delete)
 					source.RemoveServiceTypeType(serializedTypes[typeIndex].Type);
 				_anyChange = true;
-			}
-		}
-
-		static Rect DrawTags(Rect position)
-		{
-			if (_serializedTags == null || !ServiceLocationSetupData.Instance.enableTags)
-			{
-				position.x -= foldoutW;
-				return position;
-			}
-
-			string title = $"Tags ({_tagCount})";
-			_source.isTagsExpanded = EditorGUI.Foldout(position, _source.isTagsExpanded, title);
-
-			position.y += lineHeight + space;
-			if (!_source.isTagsExpanded)
-			{
-				position.x -= foldoutW;
-				return position;
-			}
-
-			bool changeable = !_source.IsTypesAndTagsComingFromDifferentServiceSourceComponent;
-
-			foreach (object tag in _dynamicTags)
-			{
-				DrawDynamicTag(position, tag);
-				position.y += lineHeight + space;
-			}
-
-			if (_source.additionalTypes != null)
-				for (int index = 0; index < _serializedTags.Count; index++)
-				{
-					DrawTag(position, _serializedTags, index, changeable);
-					position.y += lineHeight + space;
-				}
-
-			Rect buttonPos = position;
-			buttonPos.width -= actionBarWidth + space;
-			if (DrawButton(buttonPos, ListAction.Add, changeable))
-			{
-				_source.AddTag(new Tag());
-				_anyChange = true;
-			}
-
-			position.y += lineHeight + space;
-			position.x -= foldoutW;
-			return position;
-		}
-
-		static void DrawDynamicTag(Rect position, object tag)
-		{
-			position.width -= 3 * actionButtonWidth;
-			if (position.width <= 0)
-				return;
-			TagsColumn.DrawTag(position, new Tag(tag), small: false, center: false);
-		}
-
-		static void DrawTag(
-			Rect position,
-			IList<Tag> tagList,
-			int tagIndex,
-			bool changeable)
-		{
-			Tag tag = tagList[tagIndex];
-			Tag.TagType tagType = tag.Type;
-			string text = string.Empty;
-			Type tagTypeExact = null;
-
-			switch (tagType)
-			{
-				case Tag.TagType.String:
-					text = tag.StringTag;
-					tagTypeExact = typeof(string);
-					break;
-				case Tag.TagType.Object:
-					text = tag.UnityObjectTag == null ? "" : tag.UnityObjectTag.name;
-					tagTypeExact = typeof(Object);
-					break;
-				case Tag.TagType.Other:
-					text = tag.OtherTypeTag == null ? "null" : tag.OtherTypeTag.ToString();
-					tagTypeExact = tag.OtherTypeTag?.GetType();
-					break;
-			}
-
-			if (changeable)
-			{
-				const float tagTypeWidth = 70;
-				position.width -= 3 * actionButtonWidth + tagTypeWidth + space;
-
-				switch (tagType)
-				{
-					case Tag.TagType.String:
-						string newText = EditorGUI.TextField(position, text);
-						if (newText != text)
-						{
-							tag.StringTag = newText;
-							_anyChange = true;
-							Services.Environment.InvokeEnvironmentChangedOnSource(_source);
-						}
-
-						break;
-					case Tag.TagType.Object:
-						Object unityObject = tag.UnityObjectTag;
-						Object newObject =
-							EditorGUI.ObjectField(position, unityObject, typeof(Object), allowSceneObjects: true);
-						if (newObject != unityObject)
-						{
-							tag.UnityObjectTag = newObject;
-							_anyChange = true;
-							Services.Environment.InvokeEnvironmentChangedOnSource(_source);
-						}
-
-						break;
-					case Tag.TagType.Other:
-						DrawPingBox(position, tag.TagObject,
-							tag.TagObject == null ? "null" : $"{text} ({tagTypeExact})");
-						break;
-				}
-
-				position.x = position.xMax + space;
-				position.width = tagTypeWidth;
-				Tag.TagType newTagType = (Tag.TagType)EditorGUI.EnumPopup(position, tagType);
-				if (newTagType != tagType)
-				{
-					tag.Type = newTagType;
-					_anyChange = true;
-					Services.Environment.InvokeEnvironmentChangedOnSource(_source);
-				}
-
-
-				position.x = position.xMax + space;
-				position.width = actionBarWidth;
-				ListAction action = DrawActionBar(position, tagList.Count, tagIndex);
-
-				if (action != ListAction.Non)
-				{
-					if (action == ListAction.MoveUp)
-						tagList.Swap(tagIndex, tagIndex - 1);
-					if (action == ListAction.MoveDown)
-						tagList.Swap(tagIndex, tagIndex + 1);
-					if (action == ListAction.Delete)
-						_source.RemoveTag(tagList[tagIndex]);
-					_anyChange = true;
-				}
-			}
-			else
-			{
-				position.width -= 3 * actionButtonWidth;
-				DrawPingBox(position, tag.TagObject, $"{text} ({text})");
 			}
 		}
 

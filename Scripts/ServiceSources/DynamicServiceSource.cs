@@ -14,7 +14,6 @@ namespace LooseLink
 		readonly List<Type> _possibleAdditionalTypes = new();
 		readonly List<Type> _allNonAbstractTypes = new();
 		readonly List<IServiceSourceCondition> _resolvingConditions = new();
-		readonly List<ITagged> _dynamicTaggers = new();
 		ServerObject _serverObject;
 		bool _isDynamicTypeDataInitialized = false;
 		bool _isInitialized;
@@ -127,12 +126,6 @@ namespace LooseLink
 			return _dynamicServiceTypes;
 		}
 
-		public IEnumerable<object> GetDynamicTags()  // TODO: Burn Tag System
-		{
-			InitDynamicTypeDataIfNeeded();
-			return _dynamicTaggers.SelectMany(tagger => tagger.GetTags()).Where(tag => tag != null);
-		}
-
 		public List<Type> GetPossibleAdditionalTypes()
 		{
 			InitDynamicTypeDataIfNeeded();
@@ -159,8 +152,7 @@ namespace LooseLink
 			_serverObject = (SourceObject as GameObject)?.GetComponent<ServerObject>();  // TODO: Fix
 			_resolvingConditions.Clear();
 			_resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
-			_dynamicTaggers.Clear();
-			_dynamicTaggers.AddRange(GetTypesOf<ITagged>(SourceObject));
+
 			foreach (Type concreteType in _allNonAbstractTypes)
 			{
 				object serviceInstanceOnSourceObject = GetServiceOnSourceObject(concreteType);
@@ -209,20 +201,14 @@ namespace LooseLink
 			result.Add(type);
 
 			if (includeInterfaces)
-			{
 				foreach (Type interfaceType in type.GetInterfaces())
 				{
-					if (interfaceType == typeof(IInitializable))
-						continue;
-					if (interfaceType == typeof(IServiceSourceCondition))
-						continue;
-					if (interfaceType == typeof(ITagged))
-						continue;
-					if (interfaceType == typeof(IServiceSourceProvider))
-						continue;
+					if (interfaceType == typeof(IInitializable)) continue;
+					if (interfaceType == typeof(IServiceSourceCondition)) continue;
+					if (interfaceType == typeof(IServiceSourceProvider)) continue;
 					result.Add(interfaceType);
 				}
-			}
+
 
 			Type baseType = type.BaseType;
 
