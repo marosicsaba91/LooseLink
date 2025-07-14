@@ -83,7 +83,7 @@ namespace LooseLink
 					return new GUIContent(IconHelper.GetTooltipForISet(provider));
 				case RowCategory.Source:
 					string text;
-					if (source.IsServiceSource)
+					if (source.IsSourceAndNotSet)
 						text = isShort
 							? IconHelper.GetShortNameForServiceSourceCategory(source.SourceType)
 							: IconHelper.GetNameForServiceSourceCategory(source.SourceType);

@@ -128,7 +128,7 @@ namespace LooseLink.Editor
 			_possibleAdditionalServiceTypes.Clear();
 			_source?.CollectPossibleAdditionalTypes(_possibleAdditionalServiceTypes);
 			_dynamicServiceTypes.Clear();
-			_source?.CollectDynamicServiceTypes(_dynamicServiceTypes);
+			_source?.CollectDynamicServiceTypes_NotSet(_dynamicServiceTypes);
 			_typeCount = (_dynamicServiceTypes?.Count ?? 0) + (_additionalServiceTypes?.Count ?? 0);
 
 			float height = PixelHeightOfSource();
@@ -149,7 +149,7 @@ namespace LooseLink.Editor
 			if (set != null)
 				return oneLine;
 
-			if (!_source.IsServiceSource)
+			if (!_source.IsSourceAndNotSet)
 				return oneLine;
 
 			int lineCount = 2;
@@ -172,7 +172,7 @@ namespace LooseLink.Editor
 			_anyChange = false;
 			Rect typesPos = DrawHeader(position);
 
-			if (_source.IsServiceSource)
+			if (_source.IsSourceAndNotSet)
 			{
 				typesPos.x += foldoutW + space;
 				typesPos.width -= foldoutW + space;
@@ -226,7 +226,7 @@ namespace LooseLink.Editor
 			ServiceSourceTypes sourceType = _source.PreferredSourceType;
 			if (_source.ServiceSourceObject == null)
 				GUI.Label(sourceTypePos, noObjectContent);
-			else if (_source.IsServiceSource)
+			else if (_source.IsSourceAndNotSet)
 			{
 				sourceType = _source.SourceType;
 				if (_source.AlternativeSourceTypes.Any())

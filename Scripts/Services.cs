@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -116,7 +115,7 @@ namespace LooseLink
 			if (debugLogs)
 				Debug.Log("Resolve");
 
-			if (Environment.TryGetSources((s) => Filter(s, looseServiceType), out IServiceSourceProvider installer, out ServiceSource source))
+			if (Environment.TryGetSourceWithType(looseServiceType, out IServiceSourceProvider installer, out ServiceSource source))
 			{
 				if (TryGetServiceInSource(looseServiceType, installer, source, out object serv))
 				{
@@ -127,21 +126,6 @@ namespace LooseLink
 
 			service = null;
 			return false;
-
-			static bool Filter(ServiceSource source, Type type)
-			{
-				if (!source.IsServiceSource)
-					return false;
-
-				if (source.TryFindType(type))
-					return true;
-
-				foreach (SerializableType variable in source.additionalTypes)
-					if (variable.Type == type)
-						return true;
-
-				return false;
-			}
 		}
 
 		static bool TryGetServiceInSource(

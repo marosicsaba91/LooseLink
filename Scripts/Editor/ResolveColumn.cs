@@ -5,6 +5,7 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 using EasyEditor;
+using System.Collections.Generic;
 
 namespace LooseLink
 {
@@ -108,13 +109,22 @@ namespace LooseLink
 				{
 					// Resolve Button
 					if (GUI.Button(actionButtonRect, "Instantiate", ServicesEditorHelper.SmallCenterButtonStyle))
-						row.element.source?.ResolveAllServices();
+					{
+						ServiceSource service = row.element.source;
+						DynamicServiceSource dynamicServiceSource = service.GetDynamicServiceSource();
+						if (dynamicServiceSource == null)
+							return;
+
+						List<Type> types = new();
+						service.CollectServiceTypesRecursively(types);
+						foreach (Type type in types)
+							dynamicServiceSource.TryGetService(type, provider: null, out object _);
+					}
 				}
 
 				GUI.enabled = true;
 			}
 		}
-
 
 		static Texture ResolvedObjectIcon(Type type)
 		{

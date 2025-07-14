@@ -241,7 +241,7 @@ namespace LooseLink
 				else
 				{
 					TreeNode<ServiceLocatorRow> sourceNode;
-					if (source.IsServiceSource)
+					if (source.IsSourceAndNotSet)
 					{
 
 						source.ClearCachedTypes_NoEnvironmentChangeEvent();

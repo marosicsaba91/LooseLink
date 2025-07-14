@@ -47,6 +47,7 @@ namespace LooseLink
 		float GetColumnRelativeWidth() => IsColumnOpen ? 0.5f : 0f;
 
 
+		static readonly List<ServiceTypeInfo> _typesCache = new();
 		public override void DrawCell(Rect position, FoldableRow<ServiceLocatorRow> row, GUIStyle style, Action onChanged)
 		{
 			GUI.enabled = row.element.enabled;
@@ -56,17 +57,16 @@ namespace LooseLink
 				return;
 			}
 
-			// TODO ALLOC: Reuse this List
-			List<ServiceTypeInfo> types = new();
-			row.element.source.ColllectAllServiceTypeInfo(types);
+			_typesCache.Clear();
+			row.element.source.ColllectAllServiceTypeInfo(_typesCache);
 
-			if (types.IsNullOrEmpty())
+			if (_typesCache.IsNullOrEmpty())
 			{
 				GUI.Label(position, "-");
 				return;
 			}
 
-			DrawServices(position, types);
+			DrawServices(position, _typesCache);
 		}
 
 		void DrawServices(Rect position, IReadOnlyList<ServiceTypeInfo> typeInfo)

@@ -152,18 +152,20 @@ namespace LooseLink
 			}
 		}
 
-		internal bool TryGetSources(Func<ServiceSource, bool> filter, out IServiceSourceProvider installer, out ServiceSource result)
+		internal bool TryGetSourceWithType(Type type, out IServiceSourceProvider installer, out ServiceSource result)
 		{
 			foreach (IServiceSourceProvider currentInstaller in GetAllInstallers())
 			{
 				installer = currentInstaller;
-				if (installer.IsEnabled && installer.TryGetFirstSources(filter, out result))
+				if (installer.IsEnabled && installer.TryGetSourceWithType(type, out result))
 					return true;
 			}
 			installer = null;
 			result = null;
 			return false;
 		}
+
+
 
 
 		public int MaxPriority => GetAllInstallers().FirstOrDefault()?.PriorityValue ?? 0;
@@ -211,55 +213,54 @@ namespace LooseLink
 		// INVOKE SUBSCRIPTION ---------------------
 
 		static readonly List<ServiceSource> _sourcesCached = new();
+		static readonly List<Type> _typesCached = new();
 
 		public void InvokeEnvironmentChangedOnWholeEnvironment()
 		{
-			// TODO: Save Allocation
-			List<Type> types = new();
-			TypesOfWholeEnvironment(types);
-			InvokeEnvironmentChanged(types);
+			_typesCached.Clear();
+			TypesOfWholeEnvironment(_typesCached);
+			InvokeEnvironmentChanged(_typesCached);
 		}
 
 		internal void InvokeEnvironmentChangedOnInstaller(IServiceSourceProvider provider)
 		{
-			// TODO: Save Allocation
-			List<Type> types = new();
+			_typesCached.Clear();
 			_sourcesCached.Clear();
 			provider.CollectAllEnabled(_sourcesCached);
 			foreach (ServiceSource source in _sourcesCached)
-				source.CollectServiceTypesRecursively(types);
+				source.CollectServiceTypesRecursively(_typesCached);
 
-			InvokeEnvironmentChanged(types);
+			InvokeEnvironmentChanged(_typesCached);
 		}
 
 		internal void InvokeEnvironmentChangedOnSources(ServiceSource source1, ServiceSource source2)
 		{
-			// TODO: Save Allocation
-			List<Type> types = new();
-			source1.CollectServiceTypesRecursively(types);
-			source2.CollectServiceTypesRecursively(types);
-			InvokeEnvironmentChanged(types);
+			_typesCached.Clear();
+			source1.CollectServiceTypesRecursively(_typesCached);
+			source2.CollectServiceTypesRecursively(_typesCached);
+			InvokeEnvironmentChanged(_typesCached);
 		}
 
 		internal void InvokeEnvironmentChangedOnSource(ServiceSource source)
 		{
-			// TODO: Save Allocation
-			List<Type> types = new();
-			source.CollectServiceTypesRecursively(types);
-			InvokeEnvironmentChanged(types);
+			_typesCached.Clear();
+			source.CollectServiceTypesRecursively(_typesCached);
+			InvokeEnvironmentChanged(_typesCached);
 		}
 
 		internal void InvokeEnvironmentChangedOnType(Type type)
 		{
-			// TODO: Save Allocation
-			List<Type> types = new() { type };
-			InvokeEnvironmentChanged(types);
+			_typesCached.Clear();
+			_typesCached.Add(type);
+			InvokeEnvironmentChanged(_typesCached);
 		}
+
 		internal void InvokeEnvironmentChangedOnTypes(Type type1, Type type2)
 		{
-			// TODO: Save Allocation
-			List<Type> types = new() { type1, type2 };
-			InvokeEnvironmentChanged(types);
+			_typesCached.Clear();
+			_typesCached.Add(type1);
+			_typesCached.Add(type2);
+			InvokeEnvironmentChanged(_typesCached);
 		}
 
 		void InvokeEnvironmentChanged(List<Type> types)

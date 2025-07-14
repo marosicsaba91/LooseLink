@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
@@ -42,7 +43,7 @@ namespace LooseLink
 				ServiceSource serviceSource = provider.GetSourceAt(i);
 				if (!serviceSource.Enabled)
 					continue;
-				if (serviceSource.IsServiceSource)
+				if (serviceSource.IsSourceAndNotSet)
 					result.Add( serviceSource);
 				else if (serviceSource.IsSourceSet)
 				{
@@ -53,16 +54,16 @@ namespace LooseLink
 			}
 		}
 
-		public static bool TryGetFirstSources(this IServiceSourceProvider provider, Func<ServiceSource, bool> filter, out ServiceSource result)
+		public static bool TryGetSourceWithType(this IServiceSourceProvider provider, Type type, out ServiceSource result)
 		{
 			for (int i = 0; i < provider.SourceCount; i++)
 			{
 				ServiceSource serviceSource = provider.GetSourceAt(i);
 				if (!serviceSource.Enabled)
 					continue;
-				if (serviceSource.IsServiceSource)
-				{
-					if (filter(serviceSource))
+				if (serviceSource.IsSourceAndNotSet)
+				{ 
+					if (serviceSource.ContainsType_NotSet(type))
 					{
 						result = serviceSource;
 						return true;
@@ -71,7 +72,7 @@ namespace LooseLink
 				else if (serviceSource.IsSourceSet)
 				{
 					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
-					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller && subSet.TryGetFirstSources(filter, out result))
+					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller && subSet.TryGetSourceWithType(type, out result))
 						return true;
 				}
 			}

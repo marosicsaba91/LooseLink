@@ -82,7 +82,7 @@ namespace LooseLink
 
 		public ServiceSourceTypes SourceType => GetDynamicServiceSource()?.SourceType ?? preferredSourceType;
 
-		public bool IsServiceSource
+		public bool IsSourceAndNotSet
 		{
 			get
 			{
@@ -113,7 +113,7 @@ namespace LooseLink
 			}
 		}
 
-		internal Texture Icon => !IsSourceSet && !IsServiceSource
+		internal Texture Icon => !IsSourceSet && !IsSourceAndNotSet
 			? IconHelper.ErrorIcon
 			: IconHelper.GetIconOfObject(serviceSourceObject);
 
@@ -121,7 +121,7 @@ namespace LooseLink
 		public IEnumerable<ServiceSourceTypes> AlternativeSourceTypes => GetDynamicServiceSource().AlternativeSourceTypes;
 		public Object LoadedObject => GetDynamicServiceSource().LoadedObject;
 
-		internal bool AreTypesComingFromDifferentServiceSourceComponent
+		internal bool IsTypesComingFromDifferentServiceSourceComponent
 		{
 			get
 			{
@@ -135,7 +135,7 @@ namespace LooseLink
 		}
 
 		public List<IServiceSourceCondition> Conditions =>
-			AreTypesComingFromDifferentServiceSourceComponent ?
+			IsTypesComingFromDifferentServiceSourceComponent ?
 			GetDynamicServiceSource()?.ServerObject.Source.Conditions :
 			GetDynamicServiceSource()?.Conditions;
 
@@ -148,7 +148,7 @@ namespace LooseLink
 
 		internal void ClearCachedTypes_NoEnvironmentChangeEvent()
 		{
-			if (IsServiceSource)
+			if (IsSourceAndNotSet)
 				GetDynamicServiceSource().ClearCachedTypes();
 			else if (IsSourceSet)
 				_sourceSet.ClearDynamicData_NoEnvironmentChangeEvent();
@@ -157,7 +157,7 @@ namespace LooseLink
 
 		internal void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent()
 		{
-			if (IsServiceSource)
+			if (IsSourceAndNotSet)
 				GetDynamicServiceSource().ClearCachedInstancesAndTypes();
 			else if (IsSourceSet)
 				_sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
@@ -209,24 +209,12 @@ namespace LooseLink
 			return _sourceSet;
 		}
 
-		DynamicServiceSource GetDynamicServiceSource()
+		internal DynamicServiceSource GetDynamicServiceSource()
 		{
 			if (serviceSourceObject == null)
 				return null;
 			InitDynamicIfNeeded();
 			return _dynamicSource;
-		}
-
-		internal void ResolveAllServices()
-		{
-			DynamicServiceSource dynamicServiceSource = GetDynamicServiceSource();
-			if (dynamicServiceSource == null)
-				return;
-
-			List<Type> types = new();  // TODO ALLOC
-			CollectServiceTypesRecursively(types);
-			foreach (Type type in types)
-				dynamicServiceSource.TryGetService(type, provider: null, out object _);
 		}
 
 		DynamicServiceSource GetServiceSourceOf(Object sourceObject, ServiceSourceTypes previousType) // NO SOURCE SET
@@ -276,12 +264,11 @@ namespace LooseLink
 		internal void ColllectAllServiceTypeInfo(List<ServiceTypeInfo> result)
 		{
 			if (serviceSourceObject == null) return;
-
 			InitDynamicIfNeeded();
 
-			if (!IsServiceSource) return;
+			if (!IsSourceAndNotSet) return;
 
-			if (AreTypesComingFromDifferentServiceSourceComponent)
+			if (IsTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
 				source.ColllectAllServiceTypeInfo(result);
@@ -320,17 +307,16 @@ namespace LooseLink
 
 			additionalTypes ??= new List<SerializableType>();
 
-			if (IsServiceSource)
+			if (IsSourceAndNotSet)
 			{
-				if (AreTypesComingFromDifferentServiceSourceComponent)
+				if (IsTypesComingFromDifferentServiceSourceComponent)
 				{
-					ServiceSource s = GetDynamicServiceSource().ServerObject.Source;
-					s.CollectServiceTypesRecursively(result);
+					ServiceSource serviceSource = GetDynamicServiceSource().ServerObject.Source;
+					serviceSource.CollectServiceTypesRecursively(result);
 				}
 				else
 				{
-					IEnumerable<Type> types = _dynamicSource.GetDynamicServiceTypes();   // TODO ALLOC: Pass The List Insead
-					result.AddRange(types);
+					result.AddRange(_dynamicSource.GetDynamicServiceTypes());
 
 					foreach (SerializableType typeSetting in additionalTypes)
 					{
@@ -382,48 +368,51 @@ namespace LooseLink
 
 		public void CollectPossibleAdditionalTypes(List<Type> result)
 		{
-			if (!IsServiceSource) return;
-			if (AreTypesComingFromDifferentServiceSourceComponent) return;
+			if (!IsSourceAndNotSet) return;
+			if (IsTypesComingFromDifferentServiceSourceComponent) return;
 			foreach (Type t in GetDynamicServiceSource().GetPossibleAdditionalTypes())
 				result.Add(t);
 		}
 
-		public void CollectDynamicServiceTypes(List<Type> result)
+		internal void CollectDynamicServiceTypes_NotSet(List<Type> result)
 		{
-			if (!IsServiceSource) return;
-			if (AreTypesComingFromDifferentServiceSourceComponent)
+			if (!IsSourceAndNotSet) return;
+			if (serviceSourceObject == null) return;
+			InitDynamicIfNeeded();
+			if (IsTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
-				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
-				source.ColllectAllServiceTypeInfo(allInfo);
-				foreach (ServiceTypeInfo info in allInfo)
-					result.Add(info.type);
+				source.CollectDynamicServiceTypes_NotSet(result);
 			}
 			else
 				foreach (Type type in GetDynamicServiceSource().GetDynamicServiceTypes())
 					result.Add(type);
 		}
 
-		public bool TryFindType(Type type)
+		internal bool ContainsType_NotSet(Type type)
 		{
-			if (AreTypesComingFromDifferentServiceSourceComponent)
+			if (serviceSourceObject == null) return false;
+			InitDynamicIfNeeded();
+
+			if (IsTypesComingFromDifferentServiceSourceComponent)
 			{
 				ServiceSource source = GetDynamicServiceSource().ServerObject.Source;
-				List<ServiceTypeInfo> allInfo = new();     // TODO ALLOC
-				source.ColllectAllServiceTypeInfo(allInfo);
-				foreach (ServiceTypeInfo info in allInfo)
-					if (info.type == type)
-						return true;
+				return source.ContainsType_NotSet(type);
 			}
 			else
+			{
 				foreach (Type t in GetDynamicServiceSource().GetDynamicServiceTypes())
 					if (t == type)
 						return true;
 
+				foreach (SerializableType variable in additionalTypes)
+					if (variable.Type == type)
+						return true;
+			}
 			return false;
 		}
 
-		public bool TryGetService(Type looseServiceType, IServiceSourceProvider provider, out object service) => 
+		public bool TryGetService(Type looseServiceType, IServiceSourceProvider provider, out object service) =>
 			GetDynamicServiceSource().TryGetService(looseServiceType, provider, out service);
 	}
 }

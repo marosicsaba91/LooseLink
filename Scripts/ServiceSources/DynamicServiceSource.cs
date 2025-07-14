@@ -56,7 +56,7 @@ namespace LooseLink
 			out object service)
 		{
 			Resolvability resolvability = Resolvability;
-			if (resolvability.type != Resolvability.Type.Resolvable && resolvability.type != Resolvability.Type.AlwaysResolved)
+			if (resolvability.type is not Resolvability.Type.Resolvable and not Resolvability.Type.AlwaysResolved)
 			{
 				service = default;
 				return false;
@@ -149,7 +149,8 @@ namespace LooseLink
 			_possibleAdditionalTypes.Clear();
 			_dynamicServiceTypes.Clear();
 			_typeToServiceOnSource.Clear();
-			_serverObject = (SourceObject as GameObject)?.GetComponent<ServerObject>();  // TODO: Fix
+			if (SourceObject is GameObject go)
+				_serverObject = go.GetComponent<ServerObject>();
 			_resolvingConditions.Clear();
 			_resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
 
