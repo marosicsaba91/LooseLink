@@ -32,21 +32,12 @@ namespace LooseLink
 			resolvability = new Resolvability(Resolvability.Type.Resolvable);
 		}
 
-		public Object SelectionObject
+		public Object SelectionObject => Category switch
 		{
-			get
-			{
-				switch (Category)
-				{
-					case RowCategory.Set:
-						return provider?.ProviderObject;
-					case RowCategory.Source:
-						return source.ServiceSourceObject;
-					default:
-						return null;
-				}
-			}
-		}
+			RowCategory.Set => provider?.ProviderObject,
+			RowCategory.Source => source.ServiceSourceObject,
+			_ => null,
+		};
 
 		public bool enabled;
 
