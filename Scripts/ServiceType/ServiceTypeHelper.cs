@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Assemblies;
 
 namespace LooseLink
 {
 	public static class ServiceTypeHelper
 	{
-		public static readonly List<Type> allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
+		public static readonly List<Type> allTypes = CurrentAssemblies.GetLoadedAssemblies().SelectMany(a => a.GetTypes()).ToList();
 		static readonly HashSet<Type> serviceTypes;
 		static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
 		static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap;
@@ -14,7 +15,7 @@ namespace LooseLink
 		internal static void Init() { }
 		static ServiceTypeHelper()
 		{
-			allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).ToList();
+			allTypes = CurrentAssemblies.GetLoadedAssemblies().SelectMany(a => a.GetTypes()).ToList();
 			serviceTypes = AllGlobalServiceTypes(allTypes);
 
 			SetupServiceDictionaries(
