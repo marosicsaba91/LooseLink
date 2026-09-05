@@ -3,14 +3,16 @@
 using System.Linq;
 using EasyEditor;
 using MUtility;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	static class ServicesEditorHelper
 	{
-		const int smallMabelSize = 10;
+		const int _smallMabelSize = 10;
 
 		static GUIStyle _smallCenterLabelStyle;
 		public static GUIStyle SmallCenterLabelStyle => _smallCenterLabelStyle = _smallCenterLabelStyle ?? new GUIStyle
@@ -18,7 +20,7 @@ namespace LooseLink
 			alignment = TextAnchor.MiddleCenter,
 			padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
 			normal = { textColor = GUI.skin.label.normal.textColor },
-			fontSize = smallMabelSize,
+			fontSize = _smallMabelSize,
 			clipping = TextClipping.Clip
 		};
 
@@ -39,7 +41,7 @@ namespace LooseLink
 			alignment = TextAnchor.MiddleLeft,
 			padding = new RectOffset(left: 0, right: 0, top: 0, bottom: 0),
 			normal = { textColor = GUI.skin.label.normal.textColor },
-			fontSize = smallMabelSize
+			fontSize = _smallMabelSize
 		};
 
 		static GUIStyle _centerLabelStyle;
@@ -59,13 +61,13 @@ namespace LooseLink
 
 		static GUIStyle _smallCenterButtonStyle;
 		public static GUIStyle SmallCenterButtonStyle =>
-			_smallCenterButtonStyle = _smallCenterButtonStyle ?? new GUIStyle(GUI.skin.button) { fontSize = smallMabelSize };
+			_smallCenterButtonStyle = _smallCenterButtonStyle ?? new GUIStyle(GUI.skin.button) { fontSize = _smallMabelSize };
 
 
 		static GUIStyle _smallLeftButtonStyle;
 		public static GUIStyle SmallLeftButtonStyle =>
 			_smallLeftButtonStyle = _smallLeftButtonStyle ?? new GUIStyle(GUI.skin.button)
-			{ fontSize = smallMabelSize, alignment = TextAnchor.MiddleLeft, };
+			{ fontSize = _smallMabelSize, alignment = TextAnchor.MiddleLeft, };
 
 
 		static GUIStyle _leftButtonStyle;

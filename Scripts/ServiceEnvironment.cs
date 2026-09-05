@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using MUtility;
-using UnityEditor;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static UnityEngine.UI.DefaultControls;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	public class ServiceEnvironment
 	{
 		readonly List<IServiceSourceProvider> _installers = new();
@@ -63,7 +63,7 @@ namespace LooseLink
 
 		// SORT INSTALLERS ---------------
 
-		static readonly Comparison<IServiceSourceProvider> installerSorting = (a, b) => b.PriorityValue.CompareTo(a.PriorityValue);
+		static readonly Comparison<IServiceSourceProvider> _installerSorting = (a, b) => b.PriorityValue.CompareTo(a.PriorityValue);
 
 		internal void SortInstallers()
 		{
@@ -80,7 +80,7 @@ namespace LooseLink
 			for (int index = 1; index < _installers.Count; index++)
 			{
 				IServiceSourceProvider s2 = _installers[index];
-				if (installerSorting.Invoke(s1, s2) > 0)
+				if (_installerSorting.Invoke(s1, s2) > 0)
 				{
 					isSorted = false;
 					break;
@@ -92,7 +92,7 @@ namespace LooseLink
 			if (isSorted)
 				return false;
 
-			_installers.Sort(installerSorting);
+			_installers.Sort(_installerSorting);
 			return true;
 		}
 
@@ -100,11 +100,11 @@ namespace LooseLink
 
 		public List<IServiceSourceProvider> GetAllInstallers() => Application.isPlaying ? _installers : FindInstallers();
 
-		static readonly List<IServiceSourceProvider> sets = new();
+		static readonly List<IServiceSourceProvider> _sets = new();
 		static List<IServiceSourceProvider> FindInstallers()
 		{
-			sets.Clear();
-			sets.AddRange(Services.FindGlobalInstallers);
+			_sets.Clear();
+			_sets.AddRange(Services.FindGlobalInstallers);
 
 			List<InstallerComponent> localInstallers = new();
 			localInstallers.AddRange(
@@ -113,9 +113,9 @@ namespace LooseLink
 				FindObjectsOfTypeAll<ServerObject>().Where(serverObj => serverObj.InstallAutomatically));
 
 
-			int maxPriority = sets.Count == 0 ? 0 : sets.Max(set => set.PriorityValue);
+			int maxPriority = _sets.Count == 0 ? 0 : _sets.Max(set => set.PriorityValue);
 
-			sets.AddRange(localInstallers.Where(
+			_sets.AddRange(localInstallers.Where(
 				inst => inst.Priority.type == InstallerPriority.Type.ConcreteValue));
 
 			foreach (InstallerComponent localInstaller in localInstallers.Where(
@@ -123,11 +123,11 @@ namespace LooseLink
 			{
 				maxPriority++;
 				localInstaller.SetInstallationValue(maxPriority);
-				sets.Add(localInstaller);
+				_sets.Add(localInstaller);
 			}
 
-			sets.Sort(installerSorting);
-			return sets;
+			_sets.Sort(_installerSorting);
+			return _sets;
 		}
 
 		static IEnumerable<T> FindObjectsOfTypeAll<T>() where T : Component

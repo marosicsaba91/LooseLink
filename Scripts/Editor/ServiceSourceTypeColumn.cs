@@ -3,9 +3,11 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using EasyEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	class ServiceSourceTypeColumn : Column<FoldableRow<ServiceLocatorRow>>
 	{
 		bool IsColumnOpen

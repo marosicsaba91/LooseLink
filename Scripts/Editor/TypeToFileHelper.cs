@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 using Object = UnityEngine.Object;
 
 #if UNITY_EDITOR
@@ -9,20 +10,21 @@ using UnityEditor;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	static class TypeToFileHelper
 	{
-		static readonly Dictionary<Type, Object> typeObjectDictionary = new();
+		static readonly Dictionary<Type, Object> _typeObjectDictionary = new();
 
 		public static Object GetObject(Type type)
 		{
 			if (type == null)
 				return null;
 
-			if (typeObjectDictionary.TryGetValue(type, out Object result))
+			if (_typeObjectDictionary.TryGetValue(type, out Object result))
 				return result;
 
 			Object obj = Find();
-			typeObjectDictionary.Add(type, obj);
+			_typeObjectDictionary.Add(type, obj);
 			return obj;
 
 			Object Find()

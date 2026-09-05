@@ -5,9 +5,11 @@ using UnityEngine;
 using MUtility;
 using Object = UnityEngine.Object;
 using EasyEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	class ServiceSourceColumn : FoldoutColumn<ServiceLocatorRow>
 	{
 		readonly ServiceLocatorWindow _serviceLocatorWindow;

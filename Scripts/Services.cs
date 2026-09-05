@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MUtility;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -13,13 +13,14 @@ using UnityEditor;
 namespace LooseLink
 {
 
+	[NoAutoStaticsCleanup]
 	public static class Services
 	{
-		static readonly bool debugLogs = false;
+		static readonly bool _debugLogs = false;
 		public static TimeSpan SetupTime { get; private set; }
 
-		static readonly ServiceEnvironment environment = new();
-		public static ServiceEnvironment Environment => environment;
+		static readonly ServiceEnvironment _environment = new();
+		public static ServiceEnvironment Environment => _environment;
 		internal static bool IsDestroying { get; private set; }
 		internal static bool AreServiceLocatorInitialized { get; private set; }
 
@@ -47,14 +48,14 @@ namespace LooseLink
 #if UNITY_EDITOR
 			EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
 #endif
-			environment.SetAllGlobalInstallers(FindGlobalInstallers);
-			environment.InitServiceSources();
+			_environment.SetAllGlobalInstallers(FindGlobalInstallers);
+			_environment.InitServiceSources();
 			ServiceTypeHelper.Init();
 			IsDestroying = false;
 			AreServiceLocatorInitialized = true;
 
 			SetupTime = DateTime.Now - start;
-			if (debugLogs)
+			if (_debugLogs)
 				Debug.Log($"Init {SetupTime.TotalMilliseconds} ms");
 		}
 
@@ -112,7 +113,7 @@ namespace LooseLink
 
 		public static bool TryGet(Type looseServiceType, out object service)
 		{
-			if (debugLogs)
+			if (_debugLogs)
 				Debug.Log("Resolve");
 
 			if (Environment.TryGetSourceWithType(looseServiceType, out IServiceSourceProvider installer, out ServiceSource source))

@@ -7,11 +7,11 @@ using Object = UnityEngine.Object;
 namespace LooseLink
 {
 
-	abstract class DynamicServiceSourceFromGO : DynamicServiceSource
+	abstract class DynamicServiceSourceFromGo : DynamicServiceSource
 	{
 		public readonly GameObject gameObject;
 
-		internal DynamicServiceSourceFromGO(GameObject gameObject)
+		internal DynamicServiceSourceFromGo(GameObject gameObject)
 		{
 			this.gameObject = gameObject;
 		}

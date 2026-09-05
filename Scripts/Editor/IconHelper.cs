@@ -2,6 +2,7 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 using EasyEditor;
+using Unity.Scripting.LifecycleManagement;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -9,6 +10,7 @@ using UnityEditor;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	static class IconHelper
 	{
 		public enum FileType
@@ -36,11 +38,11 @@ namespace LooseLink
 		}
 
 #if UNITY_EDITOR
-		static readonly Texture warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
-		static readonly Texture errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
-		static readonly Texture successIcon = EditorGUIUtility.IconContent("TestPassed").image;
-		static readonly Texture blockedIcon = EditorHelper.GetIcon(IconType.X);
-		static readonly Texture resolvableIcon = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
+		static readonly Texture _warningImage = EditorGUIUtility.IconContent("console.warnicon.sml").image;
+		static readonly Texture _errorImage = EditorGUIUtility.IconContent("console.erroricon.sml").image;
+		static readonly Texture _successIcon = EditorGUIUtility.IconContent("TestPassed").image;
+		static readonly Texture _blockedIcon = EditorHelper.GetIcon(IconType.X);
+		static readonly Texture _resolvableIcon = EditorGUIUtility.IconContent("FilterSelectedOnly").image;
 #endif
 
 		internal static Texture SuccessIcon
@@ -48,7 +50,7 @@ namespace LooseLink
 			get
 			{
 #if UNITY_EDITOR
-				return successIcon;
+				return _successIcon;
 #else
             return null;
 #endif
@@ -60,7 +62,7 @@ namespace LooseLink
 			get
 			{
 #if UNITY_EDITOR
-				return warningImage;
+				return _warningImage;
 #else
             return null;
 #endif
@@ -72,7 +74,7 @@ namespace LooseLink
 			get
 			{
 #if UNITY_EDITOR
-				return errorImage;
+				return _errorImage;
 #else
             return null;
 #endif
@@ -84,7 +86,7 @@ namespace LooseLink
 			get
 			{
 #if UNITY_EDITOR
-				return blockedIcon;
+				return _blockedIcon;
 #else
             return null;
 #endif
@@ -95,7 +97,7 @@ namespace LooseLink
 			get
 			{
 #if UNITY_EDITOR
-				return resolvableIcon;
+				return _resolvableIcon;
 #else
             return null;
 #endif
@@ -174,7 +176,7 @@ namespace LooseLink
 				case ServiceSourceSet _:
 					return "Service Source Set";
 				default:
-					return unexpectedCategoryText;
+					return _unexpectedCategoryText;
 			}
 		}
 
@@ -197,7 +199,7 @@ namespace LooseLink
 				case ServiceSourceTypes.FromMonoBehaviourType:
 					return "MB. script";
 				default:
-					return unexpectedCategoryText;
+					return _unexpectedCategoryText;
 			}
 		}
 
@@ -220,7 +222,7 @@ namespace LooseLink
 				case ServiceSourceTypes.FromMonoBehaviourType:
 					return "MonoBehaviour Script: Creates a new GameObject with a the selected Component on it.";
 				default:
-					return unexpectedCategoryText;
+					return _unexpectedCategoryText;
 			}
 		}
 
@@ -244,7 +246,7 @@ namespace LooseLink
 				case ServiceSourceTypes.FromMonoBehaviourType:
 					return "MonoBehaviour Script";
 				default:
-					return unexpectedCategoryText;
+					return _unexpectedCategoryText;
 			}
 		}
 
@@ -267,11 +269,11 @@ namespace LooseLink
 				case ServiceSourceTypes.FromMonoBehaviourType:
 					return "MB. Script";
 				default:
-					return unexpectedCategoryText;
+					return _unexpectedCategoryText;
 			}
 		}
 
-		const string unexpectedCategoryText = "Error: Unexpected Category";
+		const string _unexpectedCategoryText = "Error: Unexpected Category";
 
 	}
 }

@@ -12,8 +12,8 @@ namespace LooseLink
 {
 	class ServiceLocatorWindow : EditorWindow
 	{
-		const string editorPrefsKey = "ServiceLocatorWindowState";
-		static readonly Vector2 minimumSize = new (300, 100);
+		const string _editorPrefsKey = "ServiceLocatorWindowState";
+		static readonly Vector2 _minimumSize = new (300, 100);
 
 		ServiceSourceColumn _serviceSourcesColumn;
 		ServiceSourceTypeColumn _typeColumn;
@@ -33,19 +33,19 @@ namespace LooseLink
 		static void ShowWindow()
 		{
 			ServiceLocatorWindow window = GetWindow<ServiceLocatorWindow>();
-			window.minSize = minimumSize;
+			window.minSize = _minimumSize;
 			window.titleContent = new GUIContent("Loose Link Services");
 			window.Show();
 		}
 
 		public void OnEnable()
 		{
-			minSize = minimumSize;
+			minSize = _minimumSize;
 			wantsMouseMove = true;
 			_settingIcon = EditorGUIUtility.IconContent("Settings");
 
 			string data = EditorPrefs.GetString(
-				editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
+				_editorPrefsKey, JsonUtility.ToJson(this, prettyPrint: false));
 			JsonUtility.FromJsonOverwrite(data, this);
 			Selection.selectionChanged += Repaint;
 		}
@@ -53,7 +53,7 @@ namespace LooseLink
 		public void OnDisable()
 		{
 			string data = JsonUtility.ToJson(this, prettyPrint: false);
-			EditorPrefs.SetString(editorPrefsKey, data);
+			EditorPrefs.SetString(_editorPrefsKey, data);
 			Selection.selectionChanged -= Repaint;
 		}
 

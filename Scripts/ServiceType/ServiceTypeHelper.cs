@@ -1,33 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine.Assemblies;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	public static class ServiceTypeHelper
 	{
-		public static readonly List<Type> allTypes = CurrentAssemblies.GetLoadedAssemblies().SelectMany(a => a.GetTypes()).ToList();
-		static readonly HashSet<Type> serviceTypes;
-		static readonly Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap;
-		static readonly Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap;
+		public static readonly List<Type> allTypes;
+		static readonly HashSet<Type> _serviceTypes;
+		static readonly Dictionary<Type, List<Type>> _serviceToNonAbstractTypeMap;
+		static readonly Dictionary<Type, List<Type>> _nonAbstractToServiceTypeMap;
 
 		internal static void Init() { }
 		static ServiceTypeHelper()
 		{
 			allTypes = CurrentAssemblies.GetLoadedAssemblies().SelectMany(a => a.GetTypes()).ToList();
-			serviceTypes = AllGlobalServiceTypes(allTypes);
+			_serviceTypes = AllGlobalServiceTypes(allTypes);
 
 			SetupServiceDictionaries(
-				serviceTypes,
-				out serviceToNonAbstractTypeMap,
-				out nonAbstractToServiceTypeMap);
+				_serviceTypes,
+				out _serviceToNonAbstractTypeMap,
+				out _nonAbstractToServiceTypeMap);
 		}
 
-		static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> allTypes)
+		static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> types)
 		{
 			HashSet<Type> result = new();
-			foreach (Type type in allTypes)
+			foreach (Type type in types)
 			{
 				if (type.ContainsGenericParameters)
 					continue;
@@ -45,8 +47,8 @@ namespace LooseLink
 			out Dictionary<Type, List<Type>> serviceToNonAbstractTypeMap,
 			out Dictionary<Type, List<Type>> nonAbstractToServiceTypeMap)
 		{
-			serviceToNonAbstractTypeMap = new Dictionary<Type, List<Type>>();
-			nonAbstractToServiceTypeMap = new Dictionary<Type, List<Type>>();
+			serviceToNonAbstractTypeMap = new();
+			nonAbstractToServiceTypeMap = new();
 
 			foreach (Type type in allTypes)
 			{
@@ -92,11 +94,11 @@ namespace LooseLink
 
 		// EXTENSION
 
-		internal static bool IsServiceType(this Type type) => serviceTypes.Contains(type);
+		internal static bool IsServiceType(this Type type) => _serviceTypes.Contains(type);
 
 		internal static IEnumerable<Type> GetServicesOfNonAbstractType(Type type)
 		{
-			if (nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
+			if (_nonAbstractToServiceTypeMap.TryGetValue(type, out List<Type> value))
 				foreach (Type serviceType in value)
 					yield return serviceType;
 		}

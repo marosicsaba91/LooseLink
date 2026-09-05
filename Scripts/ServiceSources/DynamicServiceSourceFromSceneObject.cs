@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 namespace LooseLink
 {
 
-	class DynamicServiceSourceFromSceneObject : DynamicServiceSourceFromGO
+	class DynamicServiceSourceFromSceneObject : DynamicServiceSourceFromGo
 	{
 
 		public DynamicServiceSourceFromSceneObject(GameObject gameObject) : base(gameObject) { }

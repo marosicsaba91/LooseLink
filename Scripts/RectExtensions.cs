@@ -4,8 +4,8 @@ namespace MUtility
 {
 	public static class RectExtensions
 	{
-		const float standardVerticalSpacing = 2;
-		const float singleLineHeight = 16;
+		const float _standardVerticalSpacing = 2;
+		const float _singleLineHeight = 16;
 
 		public static Rect Combine(this Rect self, Rect other)
 		{
@@ -75,7 +75,7 @@ namespace MUtility
 
 		public static void RemoveOneSpace(this ref Rect self, GeneralDirection2D side = GeneralDirection2D.Up)
 		{
-			self.RemoveSpace(standardVerticalSpacing, side);
+			self.RemoveSpace(_standardVerticalSpacing, side);
 		}
 
 		public static void RemoveSpace(this ref Rect self, float space, GeneralDirection2D side = GeneralDirection2D.Up)
@@ -102,7 +102,7 @@ namespace MUtility
 
 		public static Rect SliceOutLine(this ref Rect self, GeneralDirection2D side = GeneralDirection2D.Up, bool addSpace = true)
 		{
-			return self.SliceOut(singleLineHeight, side, addSpace);
+			return self.SliceOut(_singleLineHeight, side, addSpace);
 		}
 
 		public static Rect SliceOut(this ref Rect self, float pixels, GeneralDirection2D side = GeneralDirection2D.Up, bool addSpace = true)
@@ -114,7 +114,7 @@ namespace MUtility
 
 				float newHeight = self.height - pixels;
 				if (addSpace)
-					newHeight -= standardVerticalSpacing;
+					newHeight -= _standardVerticalSpacing;
 				self.height = Mathf.Max(0, newHeight);
 
 				if (side == GeneralDirection2D.Down)
@@ -125,14 +125,14 @@ namespace MUtility
 
 					slice.y = self.yMax;
 					if (addSpace)
-						slice.y += standardVerticalSpacing;
+						slice.y += _standardVerticalSpacing;
 				}
 				else
 				{
 					self.y += pixels;
 
 					if (addSpace)
-						self.y += standardVerticalSpacing;
+						self.y += _standardVerticalSpacing;
 				}
 			}
 			else
@@ -140,7 +140,7 @@ namespace MUtility
 				slice.width = pixels;
 				float newWidth = self.width - pixels;
 				if (addSpace)
-					newWidth -= standardVerticalSpacing;
+					newWidth -= _standardVerticalSpacing;
 				self.width = Mathf.Max(0, newWidth);
 
 				if (side == GeneralDirection2D.Right)
@@ -150,14 +150,14 @@ namespace MUtility
 
 					slice.x = self.xMax;
 					if (addSpace)
-						self.width -= standardVerticalSpacing;
+						self.width -= _standardVerticalSpacing;
 
 				}
 				else
 				{
 					self.x += pixels;
 					if (addSpace)
-						self.x += standardVerticalSpacing;
+						self.x += _standardVerticalSpacing;
 				}
 			}
 
@@ -166,7 +166,7 @@ namespace MUtility
 
 		public static Rect GetColum(this Rect rect, int index, int columnCount, bool addSpaces = true)
 		{
-			float space = addSpaces ? standardVerticalSpacing : 0;
+			float space = addSpaces ? _standardVerticalSpacing : 0;
 			float allSpaces = space * (columnCount - 1);
 			float columnWidth = (rect.width - allSpaces) / columnCount;
 			float x = rect.x + (columnWidth + space) * index;
@@ -175,7 +175,7 @@ namespace MUtility
 
 		public static Rect GetRow(this Rect rect, int index, int rowCount, bool addSpaces = true)
 		{
-			float space = addSpaces ? standardVerticalSpacing : 0;
+			float space = addSpaces ? _standardVerticalSpacing : 0;
 			float allSpaces = space * (rowCount - 1);
 			float rowHeight = (rect.height - allSpaces) / rowCount;
 			float y = rect.y + (rowHeight + space) * index;

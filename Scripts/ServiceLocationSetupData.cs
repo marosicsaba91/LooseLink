@@ -1,10 +1,12 @@
 ﻿using System.Linq;
 using EasyEditor;
 using MUtility;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	class ServiceLocationSetupData : ScriptableObject
 	{
 		internal enum CantResolveAction
@@ -32,8 +34,8 @@ namespace LooseLink
 
 		public bool IsDefault { get; private set; } = false;
 
-		static ServiceLocationSetupData[] allInstances = null;
-		static ServiceLocationSetupData instance = null;
+		static ServiceLocationSetupData[] _allInstances = null;
+		static ServiceLocationSetupData _instance = null;
 
 		public static ServiceLocationSetupData Instance
 		{
@@ -41,23 +43,23 @@ namespace LooseLink
 			{
 				if (Application.isEditor)
 				{
-					allInstances = Resources.LoadAll<ServiceLocationSetupData>(string.Empty);
-					if (!allInstances.IsNullOrEmpty())
-						return allInstances.First();
+					_allInstances = Resources.LoadAll<ServiceLocationSetupData>(string.Empty);
+					if (!_allInstances.IsNullOrEmpty())
+						return _allInstances.First();
 				}
-				else if (allInstances == null)
+				else if (_allInstances == null)
 				{
-					allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
-					instance = allInstances.FirstOrDefault();
+					_allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+					_instance = _allInstances.FirstOrDefault();
 				}
 
-				if (instance == null)
+				if (_instance == null)
 				{
-					instance = CreateInstance<ServiceLocationSetupData>();
-					instance.IsDefault = true;
+					_instance = CreateInstance<ServiceLocationSetupData>();
+					_instance.IsDefault = true;
 				}
 
-				return instance;
+				return _instance;
 			}
 		}
 
@@ -76,8 +78,8 @@ namespace LooseLink
 		{
 			get
 			{
-				allInstances ??= Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
-				return allInstances.Length > 1;
+				_allInstances ??= Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+				return _allInstances.Length > 1;
 			}
 		}
 

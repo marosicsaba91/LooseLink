@@ -8,9 +8,11 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using EasyEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace LooseLink
 {
+	[NoAutoStaticsCleanup]
 	class ServicesColumn : Column<FoldableRow<ServiceLocatorRow>>
 	{
 

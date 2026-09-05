@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 namespace LooseLink
 {
 
-	class DynamicServiceSourceFromPrefabFile : DynamicServiceSourceFromGO
+	class DynamicServiceSourceFromPrefabFile : DynamicServiceSourceFromGo
 	{
 		internal DynamicServiceSourceFromPrefabFile(GameObject prefabFile) : base(prefabFile) { }
 

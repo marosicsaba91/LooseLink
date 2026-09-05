@@ -4,28 +4,30 @@ using System.Collections.Generic;
 using System.Linq;
 using EasyEditor;
 using MUtility;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace LooseLink.Editor
 {
+	[NoAutoStaticsCleanup]
 	static class ServiceSourceDrawer
 	{
-		const float padding = 4;
-		const float foldoutW = 18;
-		const float toggleW = 14;
-		const float serviceTypeW = 100;
-		const float actionButtonWidth = 20;
-		const float actionBarWidth = actionButtonWidth * 3 - 2;
+		const float _padding = 4;
+		const float _foldoutW = 18;
+		const float _toggleW = 14;
+		const float _serviceTypeW = 100;
+		const float _actionButtonWidth = 20;
+		const float _actionBarWidth = _actionButtonWidth * 3 - 2;
 
-		static readonly float space = EditorGUIUtility.standardVerticalSpacing;
-		static readonly float lineHeight = EditorGUIUtility.singleLineHeight;
+		static readonly float _space = EditorGUIUtility.standardVerticalSpacing;
+		static readonly float _lineHeight = EditorGUIUtility.singleLineHeight;
 
-		static readonly GUIContent invalidObjectContent = new("Invalid Object", typeTooltip);
-		static readonly GUIContent noObjectContent = new("Select an Object", typeTooltip);
+		static readonly GUIContent _invalidObjectContent = new("Invalid Object", _typeTooltip);
+		static readonly GUIContent _noObjectContent = new("Select an Object", _typeTooltip);
 
-		const string typeTooltip =
+		const string _typeTooltip =
 			"Selected object should be one of these:\n" +
 			"   In Scene Game Object\n" +
 			"   Prefab\n" +
@@ -34,16 +36,16 @@ namespace LooseLink.Editor
 			"   Non abstract ScriptableObject Script\n" +
 			"   Service Set File";
 
-		static readonly GUIStyle categoryPopupStyle = default;
+		static readonly GUIStyle _categoryPopupStyle = default;
 
-		static GUIStyle LeftAlignedButtonStyle => categoryPopupStyle ?? new GUIStyle("Button")
+		static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
 		{
 			alignment = TextAnchor.MiddleLeft
 		};
 
-		static readonly GUIStyle actionButtonStyle = default;
+		static readonly GUIStyle _actionButtonStyle = default;
 
-		static GUIStyle ActionButtonStyle => actionButtonStyle ?? new GUIStyle("Label")
+		static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
 		{
 			fontSize = 10,
 			alignment = TextAnchor.MiddleCenter,
@@ -92,7 +94,7 @@ namespace LooseLink.Editor
 				float height = DrawServiceSource(sourceSource, containingProvider, i, serializedObject, rect.position,
 					rect.width);
 
-				GUILayout.Space(height - lineHeight - 3);
+				GUILayout.Space(height - _lineHeight - 3);
 			}
 
 			if (containingProvider.IsSingleSourceProvider)
@@ -140,7 +142,7 @@ namespace LooseLink.Editor
 
 		static float PixelHeightOfSource()
 		{
-			float oneLine = lineHeight + (2 * padding);
+			float oneLine = _lineHeight + (2 * _padding);
 
 			if (_source == null)
 				return oneLine;
@@ -159,7 +161,7 @@ namespace LooseLink.Editor
 			lineCount += _conditions.Count;
 
 
-			return ((lineHeight + space) * lineCount) + (2 * padding);
+			return ((_lineHeight + _space) * lineCount) + (2 * _padding);
 		}
 
 
@@ -174,8 +176,8 @@ namespace LooseLink.Editor
 
 			if (_source.IsSourceAndNotSet)
 			{
-				typesPos.x += foldoutW + space;
-				typesPos.width -= foldoutW + space;
+				typesPos.x += _foldoutW + _space;
+				typesPos.width -= _foldoutW + _space;
 
 				Rect conditionsPosition = DrawServices(typesPos);
 
@@ -189,17 +191,17 @@ namespace LooseLink.Editor
 		static readonly List<ServiceSource> _sourceCache = new();
 		static Rect DrawHeader(Rect position)
 		{
-			position.x += padding;
-			position.y += padding;
-			position.width -= padding * 2;
-			position.height -= padding * 2;
+			position.x += _padding;
+			position.y += _padding;
+			position.width -= _padding * 2;
+			position.height -= _padding * 2;
 
 			float x = position.x;
 			float withRemained = position.width;
 
 			if (!_containingProvider.IsSingleSourceProvider)
 			{
-				Rect togglePos = new(position.x + space, position.y, toggleW, lineHeight);
+				Rect togglePos = new(position.x + _space, position.y, _toggleW, _lineHeight);
 				bool enabled = EditorGUI.Toggle(togglePos, _source.Enabled);
 				if (enabled != _source.Enabled)
 				{
@@ -211,8 +213,8 @@ namespace LooseLink.Editor
 				withRemained -= togglePos.width;
 			}
 
-			float w = withRemained - (serviceTypeW + space * 4 + actionButtonWidth * 3);
-			Rect objectPos = new(x + space * 2, position.y, w, lineHeight);
+			float w = withRemained - (_serviceTypeW + _space * 4 + _actionButtonWidth * 3);
+			Rect objectPos = new(x + _space * 2, position.y, w, _lineHeight);
 			GUI.enabled = !_containingProvider.IsSingleSourceProvider;
 			Object obj = EditorGUI.ObjectField(
 				objectPos,
@@ -221,11 +223,11 @@ namespace LooseLink.Editor
 				allowSceneObjects: true);
 			GUI.enabled = true;
 
-			Rect sourceTypePos = new(objectPos.xMax + space, position.y, serviceTypeW, lineHeight);
+			Rect sourceTypePos = new(objectPos.xMax + _space, position.y, _serviceTypeW, _lineHeight);
 
 			ServiceSourceTypes sourceType = _source.PreferredSourceType;
 			if (_source.ServiceSourceObject == null)
-				GUI.Label(sourceTypePos, noObjectContent);
+				GUI.Label(sourceTypePos, _noObjectContent);
 			else if (_source.IsSourceAndNotSet)
 			{
 				sourceType = _source.SourceType;
@@ -264,7 +266,7 @@ namespace LooseLink.Editor
 				GUI.Label(sourceTypePos, "Source Set ({_sourceCache.Count()");
 			}
 			else
-				GUI.Label(sourceTypePos, invalidObjectContent);
+				GUI.Label(sourceTypePos, _invalidObjectContent);
 
 			// Object or source Type changed
 			if (obj != _source.ServiceSourceObject || sourceType != _source.PreferredSourceType)
@@ -284,7 +286,7 @@ namespace LooseLink.Editor
 			if (!_containingProvider.IsSingleSourceProvider)
 			{
 				// Action Buttons 
-				Rect actionButtonPos = new(sourceTypePos.xMax + space, position.y, actionBarWidth, lineHeight);
+				Rect actionButtonPos = new(sourceTypePos.xMax + _space, position.y, _actionBarWidth, _lineHeight);
 				ListAction action = DrawActionBar(actionButtonPos, _containingProvider.SourceCount, _sourceIndex);
 				if (action != ListAction.Non)
 				{
@@ -314,8 +316,8 @@ namespace LooseLink.Editor
 				}
 			}
 
-			position.y += lineHeight + space;
-			position.height = lineHeight;
+			position.y += _lineHeight + _space;
+			position.height = _lineHeight;
 			return position;
 		}
 
@@ -331,14 +333,14 @@ namespace LooseLink.Editor
 				.ToList();
 
 
-			position.y += lineHeight + space;
+			position.y += _lineHeight + _space;
 			if (!_source.isTypesExpanded)
 				return position;
 
 			foreach (Type type in _dynamicServiceTypes)
 			{
 				DrawServiceType(position, type);
-				position.y += lineHeight + space;
+				position.y += _lineHeight + _space;
 			}
 
 			List<Type> notUsedAdditionalTypes = _possibleAdditionalServiceTypes?.Where(
@@ -349,27 +351,27 @@ namespace LooseLink.Editor
 				{
 					notUsedAdditionalTypes?.Remove(_additionalServiceTypes[index].Type);
 					DrawSerializableType(position, _source, _additionalServiceTypes, index, usedTypes);
-					position.y += lineHeight + space;
+					position.y += _lineHeight + _space;
 				}
 
 
 
 			bool isAnyNotUsedType = !notUsedAdditionalTypes.IsNullOrEmpty();
 			Rect buttonPos = position;
-			buttonPos.width -= actionBarWidth + space;
+			buttonPos.width -= _actionBarWidth + _space;
 			if (DrawButton(buttonPos, ListAction.Add, isAnyNotUsedType))
 			{
 				_source.TryAddServiceType(notUsedAdditionalTypes[index: 0]);
 				_anyChange = true;
 			}
 
-			position.y += lineHeight + space;
+			position.y += _lineHeight + _space;
 			return position;
 		}
 
 		static void DrawServiceType(Rect position, Type type)
 		{
-			position.width -= 3 * actionButtonWidth;
+			position.width -= 3 * _actionButtonWidth;
 			DrawPingBox(position, TypeToFileHelper.GetObject(type), type.ToString());
 		}
 
@@ -382,7 +384,7 @@ namespace LooseLink.Editor
 		{
 			Color guiColor = GUI.color;
 			SerializableType serializableType = serializedTypes[typeIndex];
-			position.width -= 3 * actionButtonWidth;
+			position.width -= 3 * _actionButtonWidth;
 			Type type = serializableType.Type;
 			bool validType = _possibleAdditionalServiceTypes.Contains(type);
 
@@ -412,8 +414,8 @@ namespace LooseLink.Editor
 
 			GUI.color = guiColor;
 
-			position.x = position.xMax + space;
-			position.width = actionBarWidth;
+			position.x = position.xMax + _space;
+			position.width = _actionBarWidth;
 			ListAction action = DrawActionBar(position, serializedTypes.Count, typeIndex);
 
 			if (action != ListAction.Non)
@@ -450,7 +452,7 @@ namespace LooseLink.Editor
 				string message = condition.GetConditionMessage();
 				GUIContent content = new(message, success ? IconHelper.SuccessIcon : IconHelper.BlockedIcon);
 				GUI.Label(position, content);
-				position.y += lineHeight + space;
+				position.y += _lineHeight + _space;
 			}
 		}
 
@@ -465,8 +467,8 @@ namespace LooseLink.Editor
 
 		static ListAction DrawActionBar(Rect position, int count, int index)
 		{
-			position.width = actionButtonWidth;
-			const float shift = actionButtonWidth - 1;
+			position.width = _actionButtonWidth;
+			const float shift = _actionButtonWidth - 1;
 
 			ListAction result = ListAction.Non;
 			if (DrawButton(position, ListAction.MoveUp, index > 0))
@@ -482,10 +484,10 @@ namespace LooseLink.Editor
 			return result;
 		}
 
-		static readonly GUIContent upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
-		static readonly GUIContent downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
-		static readonly GUIContent deleteIcon = new(EditorHelper.GetIcon(IconType.X));
-		static readonly GUIContent addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
+		static readonly GUIContent _upIcon = EditorGUIUtility.IconContent("scrollup_uielements");
+		static readonly GUIContent _downIcon = EditorGUIUtility.IconContent("scrolldown_uielements");
+		static readonly GUIContent _deleteIcon = new(EditorHelper.GetIcon(IconType.X));
+		static readonly GUIContent _addNewIcon = EditorGUIUtility.IconContent("CreateAddNew");
 
 		static bool DrawButton(Rect position, ListAction action, bool enabled = true)
 		{
@@ -493,10 +495,10 @@ namespace LooseLink.Editor
 			bool result = GUI.Button(position, GUIContent.none);
 
 			GUIContent icon =
-				action == ListAction.Add ? addNewIcon :
-				action == ListAction.Delete ? deleteIcon :
-				action == ListAction.MoveDown ? downIcon :
-				action == ListAction.MoveUp ? upIcon :
+				action == ListAction.Add ? _addNewIcon :
+				action == ListAction.Delete ? _deleteIcon :
+				action == ListAction.MoveDown ? _downIcon :
+				action == ListAction.MoveUp ? _upIcon :
 				GUIContent.none;
 
 			if (action == ListAction.Add)
