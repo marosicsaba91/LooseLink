@@ -49,7 +49,7 @@ namespace LooseLink
 				}
 				else if (_allInstances == null)
 				{
-					_allInstances = Resources.FindObjectsOfTypeAll<ServiceLocationSetupData>();
+					_allInstances = Resources.LoadAll<ServiceLocationSetupData>(string.Empty);
 					_instance = _allInstances.FirstOrDefault();
 				}
 

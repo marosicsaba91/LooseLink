@@ -21,7 +21,7 @@ namespace LooseLink
 			get => type == Type.ConcreteValue ? priorityValueSetting : priorityValueAtInstallation;
 			set
 			{
-				if (priorityValueSetting == value)
+				if (type == Type.ConcreteValue && priorityValueSetting == value)
 					return;
 				priorityValueSetting = value;
 				type = Type.ConcreteValue;

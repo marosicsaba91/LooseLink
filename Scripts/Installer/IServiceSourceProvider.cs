@@ -35,45 +35,85 @@ namespace LooseLink
 
 	public static class ServiceSourceProviderHelper
 	{
-		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<ServiceSource> result)
+		public static void CollectAllEnabled(this IServiceSourceProvider provider, List<ServiceSource> result) =>
+			CollectAllEnabled(provider, result, new HashSet<ServiceSourceSet>());
+
+		static void CollectAllEnabled(
+			this IServiceSourceProvider provider,
+			List<ServiceSource> result,
+			HashSet<ServiceSourceSet> activeSets)
 		{
-			for (int i = 0; i < provider.SourceCount; i++)
+			ServiceSourceSet currentSet = provider as ServiceSourceSet;
+			if (currentSet != null && !activeSets.Add(currentSet)) return;
+
+			try
 			{
-				ServiceSource serviceSource = provider.GetSourceAt(i);
-				if (!serviceSource.Enabled)
-					continue;
-				if (serviceSource.IsSourceAndNotSet)
-					result.Add( serviceSource);
-				else if (serviceSource.IsSourceSet)
+				for (int i = 0; i < provider.SourceCount; i++)
 				{
-					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
-					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller)
-						subSet.CollectAllEnabled(result);
+					ServiceSource serviceSource = provider.GetSourceAt(i);
+					if (!serviceSource.Enabled)
+						continue;
+					if (serviceSource.IsSourceAndNotSet)
+						result.Add(serviceSource);
+					else if (serviceSource.IsSourceSet)
+					{
+						ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
+						if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller)
+							subSet.CollectAllEnabled(result, activeSets);
+					}
 				}
+			}
+			finally
+			{
+				if (currentSet != null)
+					activeSets.Remove(currentSet);
 			}
 		}
 
-		public static bool TryGetSourceWithType(this IServiceSourceProvider provider, Type type, out ServiceSource result)
+		public static bool TryGetSourceWithType(this IServiceSourceProvider provider, Type type, out ServiceSource result) =>
+			TryGetSourceWithType(provider, type, new HashSet<ServiceSourceSet>(), out result);
+
+		static bool TryGetSourceWithType(
+			this IServiceSourceProvider provider,
+			Type type,
+			HashSet<ServiceSourceSet> activeSets,
+			out ServiceSource result)
 		{
-			for (int i = 0; i < provider.SourceCount; i++)
+			ServiceSourceSet currentSet = provider as ServiceSourceSet;
+			if (currentSet != null && !activeSets.Add(currentSet))
 			{
-				ServiceSource serviceSource = provider.GetSourceAt(i);
-				if (!serviceSource.Enabled)
-					continue;
-				if (serviceSource.IsSourceAndNotSet)
-				{ 
-					if (serviceSource.ContainsType_NotSet(type) && serviceSource.Resolvability.IsResolvable)
+				result = null;
+				return false;
+			}
+
+			try
+			{
+				for (int i = 0; i < provider.SourceCount; i++)
+				{
+					ServiceSource serviceSource = provider.GetSourceAt(i);
+					if (!serviceSource.Enabled)
+						continue;
+					if (serviceSource.IsSourceAndNotSet)
 					{
-						result = serviceSource;
-						return true;
+						if (serviceSource.ContainsType_NotSet(type) && serviceSource.Resolvability.IsResolvable)
+						{
+							result = serviceSource;
+							return true;
+						}
+					}
+					else if (serviceSource.IsSourceSet)
+					{
+						ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
+						if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller &&
+							subSet.TryGetSourceWithType(type, activeSets, out result))
+							return true;
 					}
 				}
-				else if (serviceSource.IsSourceSet)
-				{
-					ServiceSourceSet subSet = serviceSource.GetServiceSourceSet();
-					if (subSet != null && !subSet.automaticallyUseAsGlobalInstaller && subSet.TryGetSourceWithType(type, out result))
-						return true;
-				}
+			}
+			finally
+			{
+				if (currentSet != null)
+					activeSets.Remove(currentSet);
 			}
 
 			result = null;
@@ -88,8 +128,15 @@ namespace LooseLink
 
 		internal static void DestroyOwnedInstances(this IServiceSourceProvider provider)
 		{
+			HashSet<ServiceSourceSet> visitedSets = new();
+			if (provider is ServiceSourceSet sourceSet)
+			{
+				sourceSet.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
+				return;
+			}
+
 			for (int i = 0; i < provider.SourceCount; i++)
-				provider.GetSourceAt(i)?.DestroyOwnedInstances_NoEnvironmentChangeEvent();
+				provider.GetSourceAt(i)?.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
 		}
 
 		public static ServiceSource AddSource(

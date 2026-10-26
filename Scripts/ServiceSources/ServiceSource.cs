@@ -61,7 +61,7 @@ namespace LooseLink
 					return;
 				List<Type> affectedTypes = CollectCurrentServiceTypes();
 				if (!value)
-					_dynamicSource?.DestroyOwnedInstance();
+					DestroyOwnedInstances_NoEnvironmentChangeEvent();
 				enabled = value;
 				if (enabled)
 					InitDynamicIfNeeded();
@@ -151,29 +151,38 @@ namespace LooseLink
 			SourceChanged(affectedTypes);
 		}
 
-		internal void ClearCachedTypes_NoEnvironmentChangeEvent()
+		internal void ClearCachedTypes_NoEnvironmentChangeEvent() =>
+			ClearCachedTypes_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void ClearCachedTypes_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
 			if (IsSourceAndNotSet)
 				GetDynamicServiceSource().ClearCachedTypes();
 			else if (IsSourceSet)
-				_sourceSet.ClearDynamicData_NoEnvironmentChangeEvent();
+				_sourceSet.ClearDynamicData_NoEnvironmentChangeEvent(visitedSets);
 			InitDynamicIfNeeded();
 		}
 
-		internal void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent()
+		internal void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent() =>
+			ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
 			if (IsSourceAndNotSet)
 				GetDynamicServiceSource().ClearCachedInstancesAndTypes();
 			else if (IsSourceSet)
-				_sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+				_sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(visitedSets);
 		}
 
-		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent()
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent() =>
+			DestroyOwnedInstances_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
 			if (IsSourceAndNotSet)
 				GetDynamicServiceSource().DestroyOwnedInstance();
 			else if (IsSourceSet)
-				_sourceSet.DestroyOwnedInstances_NoEnvironmentChangeEvent();
+				_sourceSet.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
 		}
 
 
@@ -313,7 +322,10 @@ namespace LooseLink
 		}
 
 
-		public void CollectServiceTypesRecursively(List<Type> result)
+		public void CollectServiceTypesRecursively(List<Type> result) =>
+			CollectServiceTypesRecursively(result, new HashSet<ServiceSourceSet>());
+
+		void CollectServiceTypesRecursively(List<Type> result, HashSet<ServiceSourceSet> activeSets)
 		{
 			if (serviceSourceObject == null) return;
 			InitDynamicIfNeeded();
@@ -325,7 +337,7 @@ namespace LooseLink
 				if (IsTypesComingFromDifferentServiceSourceComponent)
 				{
 					ServiceSource serviceSource = GetDynamicServiceSource().ServerObject.Source;
-					serviceSource.CollectServiceTypesRecursively(result);
+					serviceSource.CollectServiceTypesRecursively(result, activeSets);
 				}
 				else
 				{
@@ -341,10 +353,19 @@ namespace LooseLink
 			}
 			else if (IsSourceSet)
 			{
-				for (int i = 0; i < _sourceSet.SourceCount; i++)
+				if (!activeSets.Add(_sourceSet)) return;
+
+				try
 				{
-					ServiceSource subSource = _sourceSet.GetSourceAt(i);
-					subSource.CollectServiceTypesRecursively(result);
+					for (int i = 0; i < _sourceSet.SourceCount; i++)
+					{
+						ServiceSource subSource = _sourceSet.GetSourceAt(i);
+						subSource.CollectServiceTypesRecursively(result, activeSets);
+					}
+				}
+				finally
+				{
+					activeSets.Remove(_sourceSet);
 				}
 			}
 		}

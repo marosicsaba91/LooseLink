@@ -22,7 +22,7 @@ public class UAvatarCamera : MonoBehaviour, IServiceSourceCondition
 
     void Awake()
     {
-        _followable = Services.Get<Transform>("Avatar"); 
+        _followable = Services.Get<Avatar>().transform;
     } 
 
     void Update()

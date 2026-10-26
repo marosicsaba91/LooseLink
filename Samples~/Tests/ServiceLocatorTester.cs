@@ -9,7 +9,6 @@ public class ServiceLocatorTester : MonoBehaviour
 {
     [SerializeField] LoadableTypeObject typeName;
     [SerializeField] LocateButton locate; 
-    [SerializeField] string[] tags;
 
     [Space]
     [SerializeField] LocatedObject locatedProperty; 
@@ -21,7 +20,7 @@ public class ServiceLocatorTester : MonoBehaviour
     }    
     void OnDisable()
     {
-        Services.Environment.SubscribeToEnvironmentChange<BoxCollider2D>(BoxColliderChanged);
+        Services.Environment.UnSubscribeToEnvironmentChange<BoxCollider2D>(BoxColliderChanged);
     }
 
     void BoxColliderChanged()
@@ -45,7 +44,7 @@ public class ServiceLocatorTester : MonoBehaviour
             }
 
             DateTime time1 = DateTime.Now;
-            parentObject._located = Services.Get(type, parentObject.tags.Cast<object>().ToArray());
+            parentObject._located = Services.Get(type);
             DateTime time2 = DateTime.Now;
             parentObject.timeInTicks = (time2 - time1).Ticks;
         }
@@ -71,8 +70,12 @@ public class ServiceLocatorTester : MonoBehaviour
             return Type.GetType(value); 
         }
 
-        protected override IList<string> PopupElements(ServiceLocatorTester container) => 
-            Services.Environment.GetAllInstalledServiceTypes().Select(t =>t.FullName).ToList();
+        protected override IList<string> PopupElements(ServiceLocatorTester container) =>
+            ServiceTypeHelper.allTypes
+                .Where(type => type.IsDefined(typeof(ServiceTypeAttribute), inherit: false))
+                .Select(type => type.FullName)
+                .Where(typeName => !string.IsNullOrEmpty(typeName))
+                .ToList();
     }
 
 }

@@ -40,25 +40,37 @@ namespace LooseLink
 
 		public bool IsEnabled => true;
 
-		public void ClearDynamicData_NoEnvironmentChangeEvent()
+		public void ClearDynamicData_NoEnvironmentChangeEvent() =>
+			ClearDynamicData_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void ClearDynamicData_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
+			if (!visitedSets.Add(this)) return;
 			serviceSources = serviceSources ?? new List<ServiceSource>();
 			foreach (ServiceSource source in serviceSources)
-				source.ClearCachedTypes_NoEnvironmentChangeEvent();
+				source.ClearCachedTypes_NoEnvironmentChangeEvent(visitedSets);
 		}
 
-		public void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent()
+		public void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent() =>
+			ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
+			if (!visitedSets.Add(this)) return;
 			serviceSources = serviceSources ?? new List<ServiceSource>();
 			foreach (ServiceSource source in serviceSources)
-				source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+				source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(visitedSets);
 		}
 
-		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent()
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent() =>
+			DestroyOwnedInstances_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
+
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
 		{
+			if (!visitedSets.Add(this)) return;
 			serviceSources ??= new List<ServiceSource>();
 			foreach (ServiceSource source in serviceSources)
-				source.DestroyOwnedInstances_NoEnvironmentChangeEvent();
+				source.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
 		}
 
 		internal bool IsInResources() =>
@@ -73,14 +85,19 @@ namespace LooseLink
 			return false;
 		}
 
-		bool ContainsSet(ServiceSourceSet set)
+		bool ContainsSet(ServiceSourceSet set) =>
+			ContainsSet(set, new HashSet<ServiceSourceSet>());
+
+		bool ContainsSet(ServiceSourceSet set, HashSet<ServiceSourceSet> visitedSets)
 		{
 			if (this == set)
 				return true;
+			if (!visitedSets.Add(this))
+				return false;
 
 			foreach (ServiceSource setting in serviceSources)
 				if (setting.ServiceSourceObject is ServiceSourceSet child)
-					if (child.ContainsSet(set))
+					if (child.ContainsSet(set, visitedSets))
 						return true;
 
 			return false;

@@ -20,7 +20,7 @@ namespace Tests
         [UnityTest, Order(1)]
         public IEnumerator Test1_ScriptableObject()
         {
-            var shootingInput = Services.Get<IShootingInputProvider>();
+            IShootingInputProvider shootingInput = Services.Get<IShootingInputProvider>();
             Assert.IsTrue(shootingInput != null); 
             yield break;
         }
@@ -28,7 +28,7 @@ namespace Tests
         [UnityTest, Order(2)]
         public IEnumerator Test2_SceneObject()
         {
-            var movement = Services.Get<Avatar>();
+            Avatar movement = Services.Get<Avatar>();
             Assert.IsTrue(movement != null);
             yield break;
         }
@@ -36,7 +36,7 @@ namespace Tests
         [UnityTest, Order(3)]
         public IEnumerator Test3_Prefab()
         {
-            var ballisticsManager = Services.Get<BallisticsManager>();
+            BallisticsManager ballisticsManager = Services.Get<BallisticsManager>();
             Assert.IsTrue(ballisticsManager != null);
             yield break;
         } 
@@ -44,7 +44,7 @@ namespace Tests
         [UnityTest, Order(4)]
         public IEnumerator Test4_MonoBehaviourScript()
         {
-            var update = Services.Get<UpdateProvider>();
+            UpdateProvider update = Services.Get<UpdateProvider>();
             Assert.IsTrue(update != null);
             yield break;
         }
@@ -52,16 +52,16 @@ namespace Tests
         [UnityTest, Order(5)]
         public IEnumerator Test5_ScriptableObjectScript()
         {
-            var movement = Services.Get<IMovementInputProvider>();
+            IMovementInputProvider movement = Services.Get<IMovementInputProvider>();
             Assert.IsTrue(movement != null);
             yield break;
         }
         
         [UnityTest, Order(6)]
-        public IEnumerator Test6_Tag()
+        public IEnumerator Test6_RuntimeTypeLookup()
         {
-            var avatar = Services.Get<Transform>("Avatar");
-            Assert.IsTrue(avatar.GetComponent<Avatar>() != null);
+            object avatar = Services.Get(typeof(Avatar));
+            Assert.IsInstanceOf<Avatar>(avatar);
             yield break;
         }
 

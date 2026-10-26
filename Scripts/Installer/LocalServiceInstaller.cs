@@ -23,8 +23,9 @@ namespace LooseLink
 
 		public override void ClearDynamicData_NoEnvironmentChangeEvent()
 		{
+			HashSet<ServiceSourceSet> visitedSets = new();
 			foreach (ServiceSource source in serviceSources)
-				source.ClearCachedTypes_NoEnvironmentChangeEvent();
+				source.ClearCachedTypes_NoEnvironmentChangeEvent(visitedSets);
 		}
 
 		public int ServiceSourceCount => serviceSources.Count;

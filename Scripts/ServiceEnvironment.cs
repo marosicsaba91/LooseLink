@@ -77,7 +77,7 @@ namespace LooseLink
 		bool TrySortInstallers()
 		{
 			if (_installers.Count <= 1)
-				return true;
+				return false;
 			bool isSorted = true;
 			IServiceSourceProvider s1 = _installers[0];
 			for (int index = 1; index < _installers.Count; index++)

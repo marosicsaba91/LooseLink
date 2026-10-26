@@ -2,8 +2,9 @@
 {
 	public interface IInitializable
 	{
-		// Is called after Service was requested the first time. Could be before Awake.
-		// Other Service locations should be called here.
+		// Called once when the service is first resolved, after its object is available and cached.
+		// Resolve dependencies here when lazily created services may depend on one another.
+		// Circular service lookups from Awake or OnEnable cannot be resolved safely.
 		void Initialize();
 	}
 }
