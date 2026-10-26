@@ -26,6 +26,7 @@ namespace LooseLink
 			: Resolvability.Resolvable;
 
 		protected override bool NeedParentTransformForLoad => false;
+		protected override bool OwnsLoadedObject => true;
 		protected override Object Instantiate(Transform parent)
 		{
 			Object obj = ScriptableObject.CreateInstance(scriptableObjectType);

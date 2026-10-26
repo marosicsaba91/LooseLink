@@ -14,7 +14,7 @@ namespace MUtility
 			float right = Mathf.Max(self.position.x + self.size.x, other.position.x + other.size.x);
 			float top = Mathf.Max(self.position.y + self.size.y, other.position.y + other.size.y);
 
-			return new Rect(left, bottom, right - left, top - bottom);
+			return new(left, bottom, right - left, top - bottom);
 		}
 
 		public static Rect Crop(this Rect self, Rect crop)
@@ -24,7 +24,7 @@ namespace MUtility
 			float bottom = Mathf.Max(self.yMin, crop.yMin);
 			float top = Mathf.Min(self.yMax, crop.yMax);
 
-			return new Rect(left, bottom, right - left, top - bottom);
+			return new(left, bottom, right - left, top - bottom);
 		}
 
 		public static Rect ChangeLeft(this Rect self, float newValue)

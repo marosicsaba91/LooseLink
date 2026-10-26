@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MUtility;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -45,10 +44,11 @@ namespace LooseLink
 			{
 				if (serviceSourceObject == value)
 					return;
+				List<Type> affectedTypes = CollectCurrentServiceTypes();
 				serviceSourceObject = value;
 				InitDynamicSource();
 				monoScriptType = new SerializableType(serviceSourceObject);
-				SourceChanged();
+				SourceChanged(affectedTypes);
 			}
 		}
 
@@ -59,10 +59,13 @@ namespace LooseLink
 			{
 				if (enabled == value)
 					return;
+				List<Type> affectedTypes = CollectCurrentServiceTypes();
+				if (!value)
+					_dynamicSource?.DestroyOwnedInstance();
 				enabled = value;
 				if (enabled)
 					InitDynamicIfNeeded();
-				SourceChanged();
+				SourceChanged(affectedTypes);
 			}
 		}
 
@@ -73,10 +76,11 @@ namespace LooseLink
 			{
 				if (preferredSourceType == value)
 					return;
+				List<Type> affectedTypes = CollectCurrentServiceTypes();
 				preferredSourceType = value;
 				monoScriptType = new SerializableType(serviceSourceObject);
 				InitDynamicSource();
-				SourceChanged();
+				SourceChanged(affectedTypes);
 			}
 		}
 
@@ -142,8 +146,9 @@ namespace LooseLink
 
 		public void ClearCachedTypes()
 		{
+			List<Type> affectedTypes = CollectCurrentServiceTypes();
 			ClearCachedTypes_NoEnvironmentChangeEvent();
-			SourceChanged();
+			SourceChanged(affectedTypes);
 		}
 
 		internal void ClearCachedTypes_NoEnvironmentChangeEvent()
@@ -161,6 +166,14 @@ namespace LooseLink
 				GetDynamicServiceSource().ClearCachedInstancesAndTypes();
 			else if (IsSourceSet)
 				_sourceSet.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
+		}
+
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent()
+		{
+			if (IsSourceAndNotSet)
+				GetDynamicServiceSource().DestroyOwnedInstance();
+			else if (IsSourceSet)
+				_sourceSet.DestroyOwnedInstances_NoEnvironmentChangeEvent();
 		}
 
 
@@ -337,9 +350,22 @@ namespace LooseLink
 		}
 
 
+		List<Type> CollectCurrentServiceTypes()
+		{
+			List<Type> result = new();
+			CollectServiceTypesRecursively(result);
+			return result;
+		}
+
 		void SourceChanged()
 		{
-			Services.Environment.InvokeEnvironmentChangedOnSource(this);
+			SourceChanged(new List<Type>());
+		}
+
+		void SourceChanged(List<Type> affectedTypes)
+		{
+			CollectServiceTypesRecursively(affectedTypes);
+			Services.Environment.InvokeEnvironmentChangedOnTypes(affectedTypes);
 		}
 
 		internal void InitDynamicIfNeeded()
@@ -355,6 +381,12 @@ namespace LooseLink
 
 		internal void InitDynamicSource()
 		{
+			if (_dynamicSource != null)
+			{
+				_dynamicSource.ConditionsChanged -= SourceChanged;
+				_dynamicSource.Disconnect();
+				_dynamicSource.DestroyOwnedInstance();
+			}
 			_dynamicSource = null;
 			_sourceSet = null;
 			if (serviceSourceObject is ServiceSourceSet set)
@@ -364,6 +396,9 @@ namespace LooseLink
 			}
 			else
 				_dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
+
+			if (_dynamicSource != null)
+				_dynamicSource.ConditionsChanged += SourceChanged;
 		}
 
 		public void CollectPossibleAdditionalTypes(List<Type> result)

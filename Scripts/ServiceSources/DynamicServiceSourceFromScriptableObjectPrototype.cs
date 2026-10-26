@@ -31,6 +31,7 @@ namespace LooseLink
 		{ get { yield return ServiceSourceTypes.FromScriptableObjectFile; } }
 
 		protected override bool NeedParentTransformForLoad => false;
+		protected override bool OwnsLoadedObject => true;
 		protected override Object Instantiate(Transform parent) => Object.Instantiate(prototype);
 
 		protected override object GetServiceFromServerObject(Type type, Object serverObject) => serverObject;

@@ -22,9 +22,9 @@ namespace LooseLink
 		public EasyMessage lastTypeMapSetupTime = new(nameof(InfoMessage)) { messageType = MessageType.Info };
 
 		string InfoMessage =>
-			"Service Locator needs to setup itself once to operate fast after that." +
-			"This process takes relatively long time, so it can cause a noticeable hiccup." +
-			"Last setup was:  " + Services.SetupTime.Milliseconds + " ms." +
+			"Service Locator needs to setup itself once to operate fast after that. " +
+			"This process takes relatively long time, so it can cause a noticeable hiccup. " +
+			$"Last setup was: {Services.SetupTime.TotalMilliseconds:0.###} ms. " +
 			"You can choose to do this at the start of the software or at the first use of the Service Locator.";
 
 		public bool setupAtPlayInEditor;

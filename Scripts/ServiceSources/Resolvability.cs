@@ -17,7 +17,7 @@ namespace LooseLink
 		public readonly Type type;
 		public readonly string message;
 
-		public bool IsResolvable => type == Type.Resolvable;
+		public bool IsResolvable => type is Type.Resolvable or Type.AlwaysResolved;
 		public static Resolvability AlwaysResolved => new(Type.AlwaysResolved);
 		public static Resolvability Resolvable => new(Type.Resolvable);
 		public static Resolvability NoSourceObject => new(Type.Error, "No Service Source Object!");

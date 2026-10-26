@@ -19,6 +19,7 @@ namespace LooseLink.Editor
 				Undo.RecordObject(serializedObject.targetObject, "GlobalInstaller changed.");
 				set.automaticallyUseAsGlobalInstaller = newGI;
 				EditorUtility.SetDirty(serializedObject.targetObject);
+				Services.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
 			}
 
 			GUI.enabled = true;

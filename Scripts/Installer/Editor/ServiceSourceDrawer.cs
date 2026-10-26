@@ -36,20 +36,23 @@ namespace LooseLink.Editor
 			"   Non abstract ScriptableObject Script\n" +
 			"   Service Set File";
 
-		static readonly GUIStyle _categoryPopupStyle = default;
+		static readonly GUIStyle _categoryPopupStyle = null;
 
 		static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
 		{
 			alignment = TextAnchor.MiddleLeft
 		};
 
-		static readonly GUIStyle _actionButtonStyle = default;
+		static readonly GUIStyle _actionButtonStyle = null;
 
 		static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
 		{
 			fontSize = 10,
 			alignment = TextAnchor.MiddleCenter,
-			normal = { textColor = GUI.skin.label.normal.textColor }
+			normal =
+			{
+				textColor = GUI.skin.label.normal.textColor
+			}
 		};
 
 		static bool _anyChange;
@@ -233,7 +236,10 @@ namespace LooseLink.Editor
 				sourceType = _source.SourceType;
 				if (_source.AlternativeSourceTypes.Any())
 				{
-					List<ServiceSourceTypes> options = new() { sourceType };
+					List<ServiceSourceTypes> options = new()
+					{
+						sourceType
+					};
 					options.AddRange(_source.AlternativeSourceTypes);
 					options.Sort();
 					int currentIndex = options.IndexOf(sourceType);
@@ -263,7 +269,7 @@ namespace LooseLink.Editor
 			{
 				_sourceCache.Clear();
 				_insideSet.CollectAllEnabled(_sourceCache);
-				GUI.Label(sourceTypePos, "Source Set ({_sourceCache.Count()");
+				GUI.Label(sourceTypePos, $"Source Set ({_sourceCache.Count})");
 			}
 			else
 				GUI.Label(sourceTypePos, _invalidObjectContent);
@@ -346,7 +352,7 @@ namespace LooseLink.Editor
 			List<Type> notUsedAdditionalTypes = _possibleAdditionalServiceTypes?.Where(
 				t => !_dynamicServiceTypes.Contains(t)).ToList();
 
-			if (_source.additionalTypes != null)
+			if (_source.additionalTypes != null && _additionalServiceTypes != null)
 				for (int index = 0; index < _additionalServiceTypes.Count; index++)
 				{
 					notUsedAdditionalTypes?.Remove(_additionalServiceTypes[index].Type);
@@ -361,7 +367,7 @@ namespace LooseLink.Editor
 			buttonPos.width -= _actionBarWidth + _space;
 			if (DrawButton(buttonPos, ListAction.Add, isAnyNotUsedType))
 			{
-				_source.TryAddServiceType(notUsedAdditionalTypes[index: 0]);
+				_source.TryAddServiceType(notUsedAdditionalTypes![index: 0]);
 				_anyChange = true;
 			}
 
@@ -512,24 +518,6 @@ namespace LooseLink.Editor
 			GUI.Label(position, icon, ActionButtonStyle);
 			GUI.enabled = true;
 			return result;
-		}
-
-		static bool IsSourceEnabled
-		{
-			get
-			{
-				if (!_source.Enabled)
-					return false;
-				if (_containingProvider == null)
-					return true;
-				if (_containingProvider.GetType() != typeof(LocalServiceInstaller))
-					return true;
-				if (string.IsNullOrEmpty(((LocalServiceInstaller)_containingProvider).gameObject.scene.name))
-					return true;
-				if (((LocalServiceInstaller)_containingProvider).isActiveAndEnabled)
-					return true;
-				return false;
-			}
 		}
 	}
 }

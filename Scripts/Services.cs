@@ -20,6 +20,7 @@ namespace LooseLink
 		public static TimeSpan SetupTime { get; private set; }
 
 		static readonly ServiceEnvironment _environment = new();
+		static readonly Dictionary<Type, IPermanentProxy> _permanentProxies = new();
 		public static ServiceEnvironment Environment => _environment;
 		internal static bool IsDestroying { get; private set; }
 		internal static bool AreServiceLocatorInitialized { get; private set; }
@@ -34,8 +35,14 @@ namespace LooseLink
 			if (change == PlayModeStateChange.ExitingPlayMode)
 			{
 				IsDestroying = true;
+				ResetPermanentProxies();
+				DestroyAllOwnedInstances();
 				ClearAllCachedData();
+				_environment.ClearAllState_NoEnvironmentChangeEvent();
+				AreServiceLocatorInitialized = false;
 			}
+			else if (change == PlayModeStateChange.EnteredEditMode)
+				Init();
 		}
 #endif
 
@@ -46,6 +53,7 @@ namespace LooseLink
 			DateTime start = DateTime.Now;
 
 #if UNITY_EDITOR
+			EditorApplication.playModeStateChanged -= OnUnityPlayModeChanged;
 			EditorApplication.playModeStateChanged += OnUnityPlayModeChanged;
 #endif
 			_environment.SetAllGlobalInstallers(FindGlobalInstallers);
@@ -53,6 +61,8 @@ namespace LooseLink
 			ServiceTypeHelper.Init();
 			IsDestroying = false;
 			AreServiceLocatorInitialized = true;
+			_environment.ReportAmbiguousBindings();
+			ReconnectPermanentProxies();
 
 			SetupTime = DateTime.Now - start;
 			if (_debugLogs)
@@ -80,6 +90,9 @@ namespace LooseLink
 
 		static readonly List<ServiceSource> _sourceCache = new();
 
+		internal static void DestroyAllOwnedInstances() =>
+			Environment.DestroyAllOwnedInstances();
+
 		internal static void ClearAllCachedData()
 		{
 			_sourceCache.Clear();
@@ -90,6 +103,17 @@ namespace LooseLink
 
 		public static TService Get<TService>() =>
 			(TService)Get(typeof(TService));
+
+		public static PermanentProxy<TService> GetProxy<TService>()
+		{
+			Type serviceType = typeof(TService);
+			if (_permanentProxies.TryGetValue(serviceType, out IPermanentProxy existingProxy))
+				return (PermanentProxy<TService>)existingProxy;
+
+			PermanentProxy<TService> proxy = new();
+			_permanentProxies.Add(serviceType, proxy);
+			return proxy;
+		}
 
 		public static object Get(Type looseServiceType)
 		{
@@ -142,7 +166,7 @@ namespace LooseLink
 		}
 
 
-		static object CantFindService(Type looseServiceType)
+		internal static object CantFindService(Type looseServiceType)
 		{
 			ServiceLocationSetupData.CantResolveAction action = ServiceLocationSetupData.Instance.whenServiceCantBeResolved;
 
@@ -160,6 +184,18 @@ namespace LooseLink
 
 		internal static IEnumerable<IServiceSourceProvider> GetAllInstallers() =>
 			Environment.GetAllInstallers();
+
+		static void ReconnectPermanentProxies()
+		{
+			foreach (IPermanentProxy proxy in _permanentProxies.Values.ToArray())
+				proxy.Reconnect();
+		}
+
+		static void ResetPermanentProxies()
+		{
+			foreach (IPermanentProxy proxy in _permanentProxies.Values.ToArray())
+				proxy.Reset();
+		}
 
 	}
 }

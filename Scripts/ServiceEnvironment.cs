@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MUtility;
 using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,6 +25,7 @@ namespace LooseLink
 		{
 			_typeCache.Clear();
 			TypesOfWholeEnvironment(_typeCache);
+			DestroyAllOwnedInstances();
 			_installers.Clear();
 			InvokeEnvironmentChanged(_typeCache);
 		}
@@ -39,7 +39,7 @@ namespace LooseLink
 			_installers.Add(serviceSourceProvider);
 			TrySortInstallers();
 			InvokeEnvironmentChangedOnInstaller(serviceSourceProvider);
-			return false;
+			return true;
 		}
 
 		internal bool TryUninstallServiceSourceProvider(IServiceSourceProvider serviceSourceProvider)
@@ -48,9 +48,10 @@ namespace LooseLink
 				return false;
 			if (!_installers.Remove(serviceSourceProvider))
 				return false;
+			serviceSourceProvider.DestroyOwnedInstances();
 			TrySortInstallers();
 			InvokeEnvironmentChangedOnInstaller(serviceSourceProvider);
-			return false;
+			return true;
 		}
 
 		internal void SetAllGlobalInstallers(List<ServiceSourceSet> globalInstallers)
@@ -69,6 +70,8 @@ namespace LooseLink
 		{
 			if (TrySortInstallers())
 				InvokeEnvironmentChangedOnWholeEnvironment();
+			else
+				ReportAmbiguousBindings();
 		}
 
 		bool TrySortInstallers()
@@ -98,7 +101,9 @@ namespace LooseLink
 
 		// INSTALLER & SOURCE GETTERS ---------------
 
-		public List<IServiceSourceProvider> GetAllInstallers() => Application.isPlaying ? _installers : FindInstallers();
+		public IReadOnlyList<IServiceSourceProvider> GetAllInstallers() => Application.isPlaying ? _installers : FindInstallers();
+
+		internal bool ContainsInstaller(IServiceSourceProvider installer) => GetAllInstallers().Contains(installer);
 
 		static readonly List<IServiceSourceProvider> _sets = new();
 		static List<IServiceSourceProvider> FindInstallers()
@@ -113,10 +118,10 @@ namespace LooseLink
 				FindObjectsOfTypeAll<ServerObject>().Where(serverObj => serverObj.InstallAutomatically));
 
 
-			int maxPriority = _sets.Count == 0 ? 0 : _sets.Max(set => set.PriorityValue);
-
 			_sets.AddRange(localInstallers.Where(
 				inst => inst.Priority.type == InstallerPriority.Type.ConcreteValue));
+
+			int maxPriority = _sets.Count == 0 ? 0 : _sets.Max(set => set.PriorityValue);
 
 			foreach (InstallerComponent localInstaller in localInstallers.Where(
 				inst => inst.Priority.type == InstallerPriority.Type.HighestAtInstallation))
@@ -180,10 +185,18 @@ namespace LooseLink
 				source.InitDynamicIfNeeded();
 		}
 
+		internal void DestroyAllOwnedInstances()
+		{
+			foreach (IServiceSourceProvider installer in _installers)
+				installer.DestroyOwnedInstances();
+		}
+
 		// SUBSCRIPTION ---------------------
 
 		public event Action EnvironmentChanged;
 		readonly Dictionary<Type, HashSet<Action>> _subscribers = new();
+		readonly HashSet<string> _reportedAmbiguousBindingWarnings = new();
+		bool _isReportingAmbiguousBindings;
 
 		public void SubscribeToEnvironmentChange<T>(Action callback) =>
 			SubscribeToEnvironmentChange(typeof(T), callback);
@@ -208,6 +221,82 @@ namespace LooseLink
 			if (!_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
 				return;
 			callbacks.Remove(callback);
+		}
+
+		internal void ClearAllState_NoEnvironmentChangeEvent()
+		{
+			_installers.Clear();
+			_subscribers.Clear();
+			_reportedAmbiguousBindingWarnings.Clear();
+			EnvironmentChanged = null;
+		}
+
+		internal void ReportAmbiguousBindings()
+		{
+			if (!Services.AreServiceLocatorInitialized || Services.IsDestroying || _isReportingAmbiguousBindings)
+				return;
+
+			_isReportingAmbiguousBindings = true;
+			try
+			{
+				Dictionary<(Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> bindingsByTypeAndPriority = new();
+
+				foreach (IServiceSourceProvider provider in GetAllInstallers())
+				{
+					if (!provider.IsEnabled) continue;
+
+					List<ServiceSource> sources = new();
+					provider.CollectAllEnabled(sources);
+					foreach (ServiceSource source in sources)
+					{
+						if (!source.Resolvability.IsResolvable) continue;
+
+						List<Type> types = new();
+						source.CollectServiceTypesRecursively(types);
+						foreach (Type type in types)
+						{
+							if (type == null) continue;
+
+							(Type type, int priority) key = (type, provider.PriorityValue);
+							if (!bindingsByTypeAndPriority.TryGetValue(key, out List<(IServiceSourceProvider provider, ServiceSource source)> bindings))
+							{
+								bindings = new List<(IServiceSourceProvider provider, ServiceSource source)>();
+								bindingsByTypeAndPriority.Add(key, bindings);
+							}
+
+							if (!bindings.Any(binding =>
+									ReferenceEquals(binding.provider, provider) && ReferenceEquals(binding.source, source)))
+								bindings.Add((provider, source));
+						}
+					}
+				}
+
+				HashSet<string> activeWarnings = new();
+				foreach (KeyValuePair<(Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> entry in bindingsByTypeAndPriority)
+				{
+					if (entry.Value.Count <= 1) continue;
+
+					string[] bindingNames = entry.Value
+						.Select(binding => $"'{binding.provider.Name} / {binding.source.Name}'")
+						.OrderBy(name => name, StringComparer.Ordinal)
+						.ToArray();
+					string typeName = entry.Key.type.FullName ?? entry.Key.type.Name;
+					string warning =
+						$"Ambiguous LooseLink binding for '{typeName}' at priority {entry.Key.priority}: " +
+						$"{string.Join(", ", bindingNames)}. Resolution follows the current installer/source order, " +
+						"which is not guaranteed for equal priorities. Assign different priorities to define precedence.";
+
+					activeWarnings.Add(warning);
+					if (_reportedAmbiguousBindingWarnings.Add(warning))
+						Debug.LogWarning(warning, entry.Value[0].provider.ProviderObject);
+				}
+
+				_reportedAmbiguousBindingWarnings.IntersectWith(activeWarnings);
+			}
+			finally
+			{
+				_isReportingAmbiguousBindings = false;
+			}
 		}
 
 		// INVOKE SUBSCRIPTION ---------------------
@@ -263,20 +352,27 @@ namespace LooseLink
 			InvokeEnvironmentChanged(_typesCached);
 		}
 
+		internal void InvokeEnvironmentChangedOnTypes(List<Type> types) => InvokeEnvironmentChanged(types);
+
 		void InvokeEnvironmentChanged(List<Type> types)
 		{
 			if (!Services.AreServiceLocatorInitialized)
 				return;
 			if (Services.IsDestroying)
 				return;
+			ReportAmbiguousBindings();
 
-			if (types.IsEmpty())
+			Type[] changedTypes = types
+				.Where(type => type != null)
+				.Distinct()
+				.ToArray();
+			if (changedTypes.Length == 0)
 				return;
 
-			foreach (Type type in types)
+			foreach (Type type in changedTypes)
 				if (_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
 				{
-					foreach (Action callback in callbacks)
+					foreach (Action callback in callbacks.ToArray())
 						callback?.Invoke();
 				}
 			EnvironmentChanged?.Invoke();

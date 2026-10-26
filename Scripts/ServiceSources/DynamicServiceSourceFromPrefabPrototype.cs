@@ -29,6 +29,7 @@ namespace LooseLink
 		{ get { yield return ServiceSourceTypes.FromPrefabFile; } }
 
 		protected override bool NeedParentTransformForLoad => true;
+		protected override bool OwnsLoadedObject => true;
 
 		protected override Object Instantiate(Transform parent)
 		{

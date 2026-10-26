@@ -17,6 +17,7 @@ namespace LooseLink
 		ServerObject _serverObject;
 		bool _isDynamicTypeDataInitialized = false;
 		bool _isInitialized;
+		public event Action ConditionsChanged;
 
 		public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
@@ -64,6 +65,7 @@ namespace LooseLink
 
 			if (LoadedObject == null)
 			{
+				_isInitialized = false;
 				Transform parentObject = null;
 
 				if (NeedParentTransformForLoad)
@@ -111,6 +113,7 @@ namespace LooseLink
 		}
 
 		protected abstract bool NeedParentTransformForLoad { get; }
+		protected virtual bool OwnsLoadedObject => false;
 
 		protected abstract Object Instantiate(Transform parent);
 
@@ -151,8 +154,11 @@ namespace LooseLink
 			_typeToServiceOnSource.Clear();
 			if (SourceObject is GameObject go)
 				_serverObject = go.GetComponent<ServerObject>();
-			_resolvingConditions.Clear();
+			ClearConditionSubscriptions();
 			_resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
+			foreach (IServiceSourceCondition condition in _resolvingConditions)
+				if (condition is IServiceSourceConditionChangeNotifier notifier)
+					notifier.ConditionChanged += OnConditionChanged;
 
 			foreach (Type concreteType in _allNonAbstractTypes)
 			{
@@ -229,11 +235,44 @@ namespace LooseLink
 		public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 		public List<IServiceSourceCondition> Conditions => _resolvingConditions;
 
+		void OnConditionChanged() => ConditionsChanged?.Invoke();
+
+		void ClearConditionSubscriptions()
+		{
+			foreach (IServiceSourceCondition condition in _resolvingConditions)
+				if (condition is IServiceSourceConditionChangeNotifier notifier)
+					notifier.ConditionChanged -= OnConditionChanged;
+			_resolvingConditions.Clear();
+		}
+
+		public void Disconnect()
+		{
+			ClearConditionSubscriptions();
+			ConditionsChanged = null;
+		}
+
 		public void ClearCachedInstancesAndTypes()
 		{
 			LoadedObject = null;
+			_isInitialized = false;
 			_instantiatedServices.Clear();
 			ClearCachedTypes();
+		}
+
+		public void DestroyOwnedInstance()
+		{
+			if (!OwnsLoadedObject || LoadedObject == null)
+				return;
+
+			Object ownedInstance = LoadedObject;
+			LoadedObject = null;
+			_isInitialized = false;
+			_instantiatedServices.Clear();
+
+			if (Application.isPlaying)
+				Object.Destroy(ownedInstance);
+			else
+				Object.DestroyImmediate(ownedInstance);
 		}
 
 		public void ClearCachedTypes()

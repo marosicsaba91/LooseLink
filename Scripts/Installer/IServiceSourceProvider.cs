@@ -1,5 +1,4 @@
-﻿using Mono.Cecil;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
@@ -63,7 +62,7 @@ namespace LooseLink
 					continue;
 				if (serviceSource.IsSourceAndNotSet)
 				{ 
-					if (serviceSource.ContainsType_NotSet(type))
+					if (serviceSource.ContainsType_NotSet(type) && serviceSource.Resolvability.IsResolvable)
 					{
 						result = serviceSource;
 						return true;
@@ -85,6 +84,12 @@ namespace LooseLink
 		{
 			for (int i = 0; i < provider.SourceCount; i++)
 				yield return provider.GetSourceAt(i);
+		}
+
+		internal static void DestroyOwnedInstances(this IServiceSourceProvider provider)
+		{
+			for (int i = 0; i < provider.SourceCount; i++)
+				provider.GetSourceAt(i)?.DestroyOwnedInstances_NoEnvironmentChangeEvent();
 		}
 
 		public static ServiceSource AddSource(

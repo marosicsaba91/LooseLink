@@ -59,8 +59,13 @@ namespace LooseLink
 			if (AutoDontDestroyOnLoad)
 				DontDestroyOnLoad(gameObject);
 
-			Install();
+			if (InstallAutomatically)
+				Install();
 		}
+
+		void OnEnable() => NotifyEnabledStateChanged();
+
+		void OnDisable() => NotifyEnabledStateChanged();
 
 		void OnDestroy()
 		{
@@ -69,11 +74,20 @@ namespace LooseLink
 
 		void Install()
 		{
-			Priority.SetInstallationValue(Services.Environment.MaxPriority + 1);
+			SetInstallationValue(Services.Environment.MaxPriority + 1);
 			Services.Environment.TryInstallServiceSourceProvider(this);
 		}
 
 		void UnInstall() => Services.Environment.TryUninstallServiceSourceProvider(this);
+
+		void NotifyEnabledStateChanged()
+		{
+			if (!Services.AreServiceLocatorInitialized)
+				return;
+			if (!Services.Environment.ContainsInstaller(this))
+				return;
+			Services.Environment.InvokeEnvironmentChangedOnInstaller(this);
+		}
 
 	}
 }

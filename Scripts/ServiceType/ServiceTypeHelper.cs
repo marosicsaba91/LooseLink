@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Unity.Scripting.LifecycleManagement;
 using UnityEngine.Assemblies;
 
@@ -17,13 +18,28 @@ namespace LooseLink
 		internal static void Init() { }
 		static ServiceTypeHelper()
 		{
-			allTypes = CurrentAssemblies.GetLoadedAssemblies().SelectMany(a => a.GetTypes()).ToList();
+			allTypes = CurrentAssemblies.GetLoadedAssemblies()
+				.SelectMany(GetTypesSafe)
+				.Where(type => type != null)
+				.ToList();
 			_serviceTypes = AllGlobalServiceTypes(allTypes);
 
 			SetupServiceDictionaries(
 				_serviceTypes,
 				out _serviceToNonAbstractTypeMap,
 				out _nonAbstractToServiceTypeMap);
+		}
+
+		static Type[] GetTypesSafe(Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException exception)
+			{
+				return exception.Types;
+			}
 		}
 
 		static HashSet<Type> AllGlobalServiceTypes(IEnumerable<Type> types)
@@ -49,6 +65,7 @@ namespace LooseLink
 		{
 			serviceToNonAbstractTypeMap = new();
 			nonAbstractToServiceTypeMap = new();
+			Type[] abstractTypes = abstractServiceTypes.ToArray();
 
 			foreach (Type type in allTypes)
 			{
@@ -58,7 +75,7 @@ namespace LooseLink
 					continue;
 				if (type.ContainsGenericParameters)
 					continue;
-				foreach (Type abstractType in abstractServiceTypes)
+				foreach (Type abstractType in abstractTypes)
 					if (IsSubClassOrSelf(abstractType, type))
 					{
 						if (!nonAbstractToServiceTypeMap.ContainsKey(type))

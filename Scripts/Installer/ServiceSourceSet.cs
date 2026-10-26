@@ -54,6 +54,13 @@ namespace LooseLink
 				source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
 		}
 
+		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent()
+		{
+			serviceSources ??= new List<ServiceSource>();
+			foreach (ServiceSource source in serviceSources)
+				source.DestroyOwnedInstances_NoEnvironmentChangeEvent();
+		}
+
 		internal bool IsInResources() =>
 				Resources.LoadAll<ServiceSourceSet>(string.Empty).Any(so => so == this);
 
