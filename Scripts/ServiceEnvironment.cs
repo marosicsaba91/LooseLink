@@ -181,16 +181,9 @@ namespace LooseLink
 
 		// CHANGES ---------------------
 
-		readonly HashSet<string> _reportedAmbiguousBindingWarnings = new();
-		bool _isReportingAmbiguousBindings;
-
 		internal int Revision { get; private set; }
 
-		internal void MarkChanged()
-		{
-			IncrementRevision();
-			ReportAmbiguousBindings();
-		}
+		internal void MarkChanged() => IncrementRevision();
 
 		internal void IncrementRevision()
 		{
@@ -203,75 +196,6 @@ namespace LooseLink
 		internal void ClearAllState_NoEnvironmentChangeEvent()
 		{
 			_installers.Clear();
-			_reportedAmbiguousBindingWarnings.Clear();
-		}
-
-		internal void ReportAmbiguousBindings()
-		{
-			if (!Services.AreServiceLocatorInitialized || Services.IsDestroying || _isReportingAmbiguousBindings)
-				return;
-
-			_isReportingAmbiguousBindings = true;
-			try
-			{
-				Dictionary<(Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> bindingsByTypeAndPriority = new();
-
-				foreach (IServiceSourceProvider provider in GetAllInstallers())
-				{
-					if (!provider.IsEnabled) continue;
-
-					List<ServiceSource> sources = new();
-					provider.CollectAllEnabled(sources);
-					foreach (ServiceSource source in sources)
-					{
-						if (!source.Resolvability.IsResolvable) continue;
-
-						List<Type> types = new();
-						source.CollectServiceTypesRecursively(types);
-						foreach (Type type in types)
-						{
-							if (type == null) continue;
-
-							(Type type, int priority) key = (type, provider.PriorityValue);
-							if (!bindingsByTypeAndPriority.TryGetValue(key, out List<(IServiceSourceProvider provider, ServiceSource source)> bindings))
-							{
-								bindings = new List<(IServiceSourceProvider provider, ServiceSource source)>();
-								bindingsByTypeAndPriority.Add(key, bindings);
-							}
-
-							if (!bindings.Any(binding =>
-									ReferenceEquals(binding.provider, provider) && ReferenceEquals(binding.source, source)))
-								bindings.Add((provider, source));
-						}
-					}
-				}
-
-				HashSet<string> activeWarnings = new();
-				foreach (KeyValuePair<(Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> entry in bindingsByTypeAndPriority)
-				{
-					if (entry.Value.Count <= 1) continue;
-
-					string[] bindingNames = entry.Value
-						.Select(binding => $"'{binding.provider.Name} / {binding.source.Name}'")
-						.OrderBy(name => name, StringComparer.Ordinal)
-						.ToArray();
-					string typeName = entry.Key.type.FullName ?? entry.Key.type.Name;
-					string warning =
-						$"Ambiguous LooseLink binding for '{typeName}' at priority {entry.Key.priority}: " +
-						$"{string.Join(", ", bindingNames)}. Resolution follows the current installer/source order, " +
-						"which is not guaranteed for equal priorities. Assign different priorities to define precedence.";
-
-					activeWarnings.Add(warning);
-					if (_reportedAmbiguousBindingWarnings.Add(warning))
-						Debug.LogWarning(warning, entry.Value[0].provider.ProviderObject);
-				}
-
-				_reportedAmbiguousBindingWarnings.IntersectWith(activeWarnings);
-			}
-			finally
-			{
-				_isReportingAmbiguousBindings = false;
-			}
 		}
 
 	}

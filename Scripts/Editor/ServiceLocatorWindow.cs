@@ -22,6 +22,8 @@ namespace LooseLink
 		GUITable<FoldableRow<ServiceLocatorRow>> _serviceTable;
 		GUIContent _settingIcon;
 		bool _showSetup = false;
+		int _bindingDiagnosticsRevision = int.MinValue;
+		readonly List<string> _bindingDiagnostics = new();
 
 		[SerializeField] List<string> openedElements = new();
 		public bool isSourceCategoryOpen = false;
@@ -175,11 +177,14 @@ namespace LooseLink
 
 			GenerateServiceSourceTable();
 			List<FoldableRow<ServiceLocatorRow>> rows = GenerateTreeView();
-			_serviceTable.Draw(new Rect(x: 0, 0, position.width, position.height), rows);
+			float diagnosticsHeight = DrawBindingDiagnostics();
+			_serviceTable.Draw(
+				new Rect(x: 0, diagnosticsHeight, position.width, position.height - diagnosticsHeight),
+				rows);
 
 			const float buttonS = 22;
 			Rect setupButtonRect = new(new Vector2(
-					position.width - buttonS + 1, 0),
+					position.width - buttonS + 1, diagnosticsHeight),
 				new Vector2(buttonS, buttonS));
 
 
@@ -187,6 +192,94 @@ namespace LooseLink
 				_showSetup = true;
 			setupButtonRect.x += 1;
 			GUI.Label(setupButtonRect, _settingIcon);
+		}
+
+		float DrawBindingDiagnostics()
+		{
+			RefreshBindingDiagnostics();
+			if (_bindingDiagnostics.Count == 0)
+				return 0;
+
+			const float margin = 2;
+			float width = Mathf.Max(1, position.width - margin * 2);
+			string message = string.Join("\n", _bindingDiagnostics);
+			float height = EditorStyles.helpBox.CalcHeight(new GUIContent(message), width);
+			EditorGUI.HelpBox(new Rect(margin, margin, width, height), message, UnityEditor.MessageType.Warning);
+			return height + margin * 2;
+		}
+
+		void RefreshBindingDiagnostics()
+		{
+			int revision = Services.Environment.Revision;
+			if (_bindingDiagnosticsRevision == revision)
+				return;
+
+			_bindingDiagnosticsRevision = revision;
+			_bindingDiagnostics.Clear();
+
+			Dictionary<(System.Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> bindingsByTypeAndPriority = new();
+			foreach (IServiceSourceProvider provider in Services.GetAllInstallers())
+			{
+				if (!provider.IsEnabled) continue;
+
+				List<ServiceSource> sources = new();
+				provider.CollectAllEnabled(sources);
+				foreach (ServiceSource source in sources)
+				{
+					if (!source.Resolvability.IsResolvable) continue;
+
+					List<System.Type> types = new();
+					source.CollectServiceTypesRecursively(types);
+					foreach (System.Type type in types)
+					{
+						if (type == null) continue;
+
+						(System.Type type, int priority) key = (type, provider.PriorityValue);
+						if (!bindingsByTypeAndPriority.TryGetValue(key, out List<(IServiceSourceProvider provider, ServiceSource source)> bindings))
+						{
+							bindings = new();
+							bindingsByTypeAndPriority.Add(key, bindings);
+						}
+
+						if (!bindings.Any(binding =>
+								ReferenceEquals(binding.provider, provider) && ReferenceEquals(binding.source, source)))
+							bindings.Add((provider, source));
+					}
+				}
+			}
+
+			foreach (KeyValuePair<(System.Type type, int priority), List<(IServiceSourceProvider provider, ServiceSource source)>> entry in bindingsByTypeAndPriority)
+			{
+				if (entry.Value.Count <= 1) continue;
+
+				string typeName = entry.Key.type.FullName ?? entry.Key.type.Name;
+				IGrouping<IServiceSourceProvider, (IServiceSourceProvider provider, ServiceSource source)>[] providerGroups = entry.Value
+					.GroupBy(binding => binding.provider)
+					.ToArray();
+
+				if (providerGroups.Length > 1)
+				{
+					string providers = string.Join(", ", providerGroups
+						.Select(group => $"'{group.Key.Name}'")
+						.OrderBy(name => name, System.StringComparer.Ordinal));
+					_bindingDiagnostics.Add(
+						$"Ambiguous binding for '{typeName}' at priority {entry.Key.priority} across providers {providers}. " +
+						"Assign different priorities to define precedence.");
+				}
+
+				foreach (IGrouping<IServiceSourceProvider, (IServiceSourceProvider provider, ServiceSource source)> providerGroup in providerGroups)
+				{
+					ServiceSource[] providerSources = providerGroup.Select(binding => binding.source).ToArray();
+					if (providerSources.Length <= 1) continue;
+
+					string shadowedSources = string.Join(", ", providerSources
+						.Skip(1)
+						.Select(source => $"'{source.Name}'"));
+					_bindingDiagnostics.Add(
+						$"Shadowed binding for '{typeName}' in provider '{providerGroup.Key.Name}': " +
+						$"'{providerSources[0].Name}' takes precedence over {shadowedSources} by source order.");
+				}
+			}
 		}
 
 		List<FoldableRow<ServiceLocatorRow>> GenerateTreeView()

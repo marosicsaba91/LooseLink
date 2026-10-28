@@ -171,7 +171,7 @@ Local installers support two types of priorities:
 - A fixed priority value.
 - **Highest At Installation**, which assigns a value above the current maximum when installed.
 
-Competing bindings at the same provider priority are reported as configuration warnings.
+The Loose Link Services window reports competing bindings from different providers at the same priority as ambiguous configuration warnings. Multiple matching sources inside one provider are reported separately as shadowed bindings because their source-list order defines deterministic precedence.
 Assign distinct priorities when precedence between providers matters.
 
 Sources inside one provider are searched in their serialized list order. Their order can be changed in the source provider's Inspector.

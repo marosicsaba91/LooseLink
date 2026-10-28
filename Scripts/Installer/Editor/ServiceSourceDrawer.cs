@@ -36,16 +36,16 @@ namespace LooseLink.Editor
 			"   Non abstract ScriptableObject Script\n" +
 			"   Service Set File";
 
-		static readonly GUIStyle _categoryPopupStyle = null;
+		static GUIStyle _categoryPopupStyle;
 
-		static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ?? new GUIStyle("Button")
+		static GUIStyle LeftAlignedButtonStyle => _categoryPopupStyle ??= new GUIStyle("Button")
 		{
 			alignment = TextAnchor.MiddleLeft
 		};
 
-		static readonly GUIStyle _actionButtonStyle = null;
+		static GUIStyle _actionButtonStyle;
 
-		static GUIStyle ActionButtonStyle => _actionButtonStyle ?? new GUIStyle("Label")
+		static GUIStyle ActionButtonStyle => _actionButtonStyle ??= new GUIStyle("Label")
 		{
 			fontSize = 10,
 			alignment = TextAnchor.MiddleCenter,

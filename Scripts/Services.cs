@@ -61,7 +61,6 @@ namespace LooseLink
 			ServiceTypeHelper.Init();
 			IsDestroying = false;
 			AreServiceLocatorInitialized = true;
-			_environment.ReportAmbiguousBindings();
 
 			SetupTime = DateTime.Now - start;
 			if (_debugLogs)
