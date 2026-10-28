@@ -126,19 +126,6 @@ namespace LooseLink
 				yield return provider.GetSourceAt(i);
 		}
 
-		internal static void DestroyOwnedInstances(this IServiceSourceProvider provider)
-		{
-			HashSet<ServiceSourceSet> visitedSets = new();
-			if (provider is ServiceSourceSet sourceSet)
-			{
-				sourceSet.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
-				return;
-			}
-
-			for (int i = 0; i < provider.SourceCount; i++)
-				provider.GetSourceAt(i)?.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
-		}
-
 		public static ServiceSource AddSource(
 			this IServiceSourceProvider provider,
 			Object sourceObject,

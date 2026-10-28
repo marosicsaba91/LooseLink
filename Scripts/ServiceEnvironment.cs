@@ -20,14 +20,10 @@ namespace LooseLink
 		public bool TryUninstallServiceSourceSet(ServiceSourceSet serviceSourceSet) =>
 			TryUninstallServiceSourceProvider(serviceSourceSet);
 
-		static readonly List<Type> _typeCache = new();
 		public void UninstallAllSourceSets()
 		{
-			_typeCache.Clear();
-			TypesOfWholeEnvironment(_typeCache);
-			DestroyAllOwnedInstances();
 			_installers.Clear();
-			InvokeEnvironmentChanged(_typeCache);
+			MarkChanged();
 		}
 
 		internal bool TryInstallServiceSourceProvider(IServiceSourceProvider serviceSourceProvider)
@@ -38,7 +34,7 @@ namespace LooseLink
 				return false;
 			_installers.Add(serviceSourceProvider);
 			TrySortInstallers();
-			InvokeEnvironmentChangedOnInstaller(serviceSourceProvider);
+			MarkChanged();
 			return true;
 		}
 
@@ -48,18 +44,18 @@ namespace LooseLink
 				return false;
 			if (!_installers.Remove(serviceSourceProvider))
 				return false;
-			serviceSourceProvider.DestroyOwnedInstances();
 			TrySortInstallers();
-			InvokeEnvironmentChangedOnInstaller(serviceSourceProvider);
+			MarkChanged();
 			return true;
 		}
 
 		internal void SetAllGlobalInstallers(List<ServiceSourceSet> globalInstallers)
 		{
-			UninstallAllSourceSets();
+			_installers.Clear();
 			foreach (ServiceSourceSet globalInstaller in globalInstallers)
 				_installers.Add(globalInstaller);
 			TrySortInstallers();
+			MarkChanged();
 		}
 
 		// SORT INSTALLERS ---------------
@@ -68,10 +64,8 @@ namespace LooseLink
 
 		internal void SortInstallers()
 		{
-			if (TrySortInstallers())
-				InvokeEnvironmentChangedOnWholeEnvironment();
-			else
-				ReportAmbiguousBindings();
+			TrySortInstallers();
+			MarkChanged();
 		}
 
 		bool TrySortInstallers()
@@ -185,50 +179,27 @@ namespace LooseLink
 				source.InitDynamicIfNeeded();
 		}
 
-		internal void DestroyAllOwnedInstances()
-		{
-			foreach (IServiceSourceProvider installer in _installers)
-				installer.DestroyOwnedInstances();
-		}
+		// CHANGES ---------------------
 
-		// SUBSCRIPTION ---------------------
-
-		public event Action EnvironmentChanged;
-		readonly Dictionary<Type, HashSet<Action>> _subscribers = new();
 		readonly HashSet<string> _reportedAmbiguousBindingWarnings = new();
 		bool _isReportingAmbiguousBindings;
 
-		public void SubscribeToEnvironmentChange<T>(Action callback) =>
-			SubscribeToEnvironmentChange(typeof(T), callback);
+		internal int Revision { get; private set; }
 
-		public void UnSubscribeToEnvironmentChange<T>(Action callback) =>
-			UnSubscribeToEnvironmentChange(typeof(T), callback);
-
-
-		public void SubscribeToEnvironmentChange(Type type, Action callback)
+		internal void MarkChanged()
 		{
-			if (!_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
+			unchecked
 			{
-				callbacks = new HashSet<Action>();
-				_subscribers.Add(type, callbacks);
+				Revision++;
 			}
 
-			callbacks.Add(callback);
-		}
-
-		public void UnSubscribeToEnvironmentChange(Type type, Action callback)
-		{
-			if (!_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
-				return;
-			callbacks.Remove(callback);
+			ReportAmbiguousBindings();
 		}
 
 		internal void ClearAllState_NoEnvironmentChangeEvent()
 		{
 			_installers.Clear();
-			_subscribers.Clear();
 			_reportedAmbiguousBindingWarnings.Clear();
-			EnvironmentChanged = null;
 		}
 
 		internal void ReportAmbiguousBindings()
@@ -299,96 +270,5 @@ namespace LooseLink
 			}
 		}
 
-		// INVOKE SUBSCRIPTION ---------------------
-
-		static readonly List<ServiceSource> _sourcesCached = new();
-		static readonly List<Type> _typesCached = new();
-
-		public void InvokeEnvironmentChangedOnWholeEnvironment()
-		{
-			_typesCached.Clear();
-			TypesOfWholeEnvironment(_typesCached);
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnInstaller(IServiceSourceProvider provider)
-		{
-			_typesCached.Clear();
-			_sourcesCached.Clear();
-			provider.CollectAllEnabled(_sourcesCached);
-			foreach (ServiceSource source in _sourcesCached)
-				source.CollectServiceTypesRecursively(_typesCached);
-
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnSources(ServiceSource source1, ServiceSource source2)
-		{
-			_typesCached.Clear();
-			source1.CollectServiceTypesRecursively(_typesCached);
-			source2.CollectServiceTypesRecursively(_typesCached);
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnSource(ServiceSource source)
-		{
-			_typesCached.Clear();
-			source.CollectServiceTypesRecursively(_typesCached);
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnType(Type type)
-		{
-			_typesCached.Clear();
-			_typesCached.Add(type);
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnTypes(Type type1, Type type2)
-		{
-			_typesCached.Clear();
-			_typesCached.Add(type1);
-			_typesCached.Add(type2);
-			InvokeEnvironmentChanged(_typesCached);
-		}
-
-		internal void InvokeEnvironmentChangedOnTypes(List<Type> types) => InvokeEnvironmentChanged(types);
-
-		void InvokeEnvironmentChanged(List<Type> types)
-		{
-			if (!Services.AreServiceLocatorInitialized)
-				return;
-			if (Services.IsDestroying)
-				return;
-			ReportAmbiguousBindings();
-
-			Type[] changedTypes = types
-				.Where(type => type != null)
-				.Distinct()
-				.ToArray();
-			if (changedTypes.Length == 0)
-				return;
-
-			foreach (Type type in changedTypes)
-				if (_subscribers.TryGetValue(type, out HashSet<Action> callbacks))
-				{
-					foreach (Action callback in callbacks.ToArray())
-						callback?.Invoke();
-				}
-			EnvironmentChanged?.Invoke();
-		}
-
-		// TYPES OF METHODS ---------------------
-		void TypesOfWholeEnvironment(List<Type> result)
-		{
-			foreach (IServiceSourceProvider provider in GetAllInstallers())
-			{
-				if (!provider.IsEnabled) continue;
-				_sourcesCached.Clear();
-				provider.CollectAllEnabled(_sourcesCached);
-				foreach (ServiceSource source in _sourcesCached)
-					source.CollectServiceTypesRecursively(result);
-			}
-		}
 	}
 }

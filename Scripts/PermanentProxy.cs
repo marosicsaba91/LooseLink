@@ -6,7 +6,6 @@ namespace LooseLink
 {
 	internal interface IPermanentProxy
 	{
-		void Reconnect();
 		void Reset();
 	}
 
@@ -14,12 +13,7 @@ namespace LooseLink
 	{
 		T _target;
 		bool _hasTarget;
-		bool _isTracking;
-
-		internal PermanentProxy()
-		{
-			Services.Environment.SubscribeToEnvironmentChange<T>(OnEnvironmentChanged);
-		}
+		int _resolvedRevision = -1;
 
 		public T Target
 		{
@@ -32,41 +26,44 @@ namespace LooseLink
 			}
 		}
 
-		public bool HasTarget => _hasTarget && IsTargetAlive(_target);
+		public bool HasTarget =>
+			_resolvedRevision == Services.Environment.Revision &&
+			_hasTarget &&
+			IsTargetAlive(_target);
 
+		/// <summary>
+		/// Invoked lazily when accessing <see cref="Target"/> or <see cref="TryGetTarget"/>
+		/// discovers that the effective binding changed.
+		/// </summary>
 		public event Action<T, T> BindingChanged;
 
 		public bool TryGetTarget(out T target)
 		{
-			_isTracking = true;
 			if (!HasTarget)
 				RefreshBinding();
 
 			target = _target;
-			return HasTarget;
-		}
-
-		void OnEnvironmentChanged()
-		{
-			if (_isTracking)
-				RefreshBinding();
+			return _hasTarget && IsTargetAlive(_target);
 		}
 
 		void RefreshBinding()
 		{
 			bool hasTarget = Services.TryGet(out T target) && IsTargetAlive(target);
-			SetBinding(target, hasTarget);
+			SetBinding(target, hasTarget, Services.Environment.Revision);
 		}
 
-		void SetBinding(T target, bool hasTarget)
+		void SetBinding(T target, bool hasTarget, int resolvedRevision)
 		{
-			if (_hasTarget == hasTarget && (!hasTarget || IsSameTarget(_target, target)))
-				return;
-
 			T previousTarget = _target;
+			bool bindingChanged = _hasTarget != hasTarget ||
+				(hasTarget && !IsSameTarget(previousTarget, target));
+
 			_target = target;
 			_hasTarget = hasTarget;
-			BindingChanged?.Invoke(previousTarget, _target);
+			_resolvedRevision = resolvedRevision;
+
+			if (bindingChanged)
+				BindingChanged?.Invoke(previousTarget, _target);
 		}
 
 		static bool IsTargetAlive(T target)
@@ -83,20 +80,11 @@ namespace LooseLink
 			return ReferenceEquals(target1, target2);
 		}
 
-		void IPermanentProxy.Reconnect()
-		{
-			Services.Environment.UnSubscribeToEnvironmentChange<T>(OnEnvironmentChanged);
-			Services.Environment.SubscribeToEnvironmentChange<T>(OnEnvironmentChanged);
-			if (_isTracking)
-				RefreshBinding();
-		}
-
 		void IPermanentProxy.Reset()
 		{
-			Services.Environment.UnSubscribeToEnvironmentChange<T>(OnEnvironmentChanged);
 			_target = default;
 			_hasTarget = false;
-			_isTracking = false;
+			_resolvedRevision = -1;
 			BindingChanged = null;
 		}
 	}

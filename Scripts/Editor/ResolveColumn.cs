@@ -87,9 +87,7 @@ namespace LooseLink
 					GUIContent unResolveContent =new(EditorHelper.GetIcon(IconType.X));
 					if (GUI.Button(unResolveButtonRect, unResolveContent))
 					{
-						source.DestroyOwnedInstances_NoEnvironmentChangeEvent();
-						source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent();
-						Services.Environment.InvokeEnvironmentChangedOnSource(source);
+						source.TryDestroyCreatedService();
 					}
 				}
 
@@ -173,9 +171,8 @@ namespace LooseLink
 				position.height - 2 * margin);
 			if (GUI.Button(buttonRect, "Clear"))
 			{
-				Services.DestroyAllOwnedInstances();
 				Services.ClearAllCachedData();
-				Services.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
+				Services.Environment.MarkChanged();
 			}
 		}
 	}

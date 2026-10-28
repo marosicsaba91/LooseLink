@@ -82,7 +82,7 @@ namespace LooseLink.Editor
 			{
 				Undo.RecordObject(editor.serializedObject.targetObject, "Add new service source setting.");
 				provider.ClearDynamicData_NoEnvironmentChangeEvent();
-				Services.Environment.InvokeEnvironmentChangedOnWholeEnvironment();
+				Services.Environment.MarkChanged();
 			}
 		}
 
@@ -297,26 +297,13 @@ namespace LooseLink.Editor
 				if (action != ListAction.Non)
 				{
 					if (action == ListAction.MoveUp)
-					{
 						_containingProvider.SwapSources(_sourceIndex, _sourceIndex - 1);
-						ServiceSource source1 = _containingProvider.GetSourceAt(_sourceIndex);
-						ServiceSource source2 = _containingProvider.GetSourceAt(_sourceIndex - 1);
-						Services.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
-					}
 
 					if (action == ListAction.MoveDown)
-					{
 						_containingProvider.SwapSources(_sourceIndex, _sourceIndex + 1);
-						ServiceSource source1 = _containingProvider.GetSourceAt(_sourceIndex);
-						ServiceSource source2 = _containingProvider.GetSourceAt(_sourceIndex + 1);
-						Services.Environment.InvokeEnvironmentChangedOnSources(source1, source2);
-					}
 
 					if (action == ListAction.Delete)
-					{
 						_containingProvider.RemoveSourceAt(_sourceIndex);
-						Services.Environment.InvokeEnvironmentChangedOnSource(_source);
-					}
 
 					_anyChange = true;
 				}
@@ -412,9 +399,8 @@ namespace LooseLink.Editor
 			int newIndex = EditorGUI.Popup(position, index, elementsString);
 			if (newIndex != index)
 			{
-				Type oldType = serializableType.Type;
 				serializableType.Type = popupTypeList[newIndex];
-				Services.Environment.InvokeEnvironmentChangedOnTypes(oldType, serializableType.Type);
+				Services.Environment.MarkChanged();
 				_anyChange = true;
 			}
 

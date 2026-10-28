@@ -29,20 +29,48 @@ namespace LooseLink
 		}
 
 		public int ServiceSourceCount => serviceSources.Count;
-		public override void AddSource(ServiceSource item) => serviceSources.Add(item);
+		public override void AddSource(ServiceSource item)
+		{
+			serviceSources.Add(item);
+			Services.Environment.MarkChanged();
+		}
 
-		public override void ClearSources() => serviceSources.Clear();
+		public override void ClearSources()
+		{
+			if (serviceSources.Count == 0) return;
+			serviceSources.Clear();
+			Services.Environment.MarkChanged();
+		}
 
 		public override bool ContainsSource(ServiceSource item) => serviceSources.Contains(item);
 
-		public override bool RemoveSource(ServiceSource item) => serviceSources.Remove(item);
+		public override bool RemoveSource(ServiceSource item)
+		{
+			if (!serviceSources.Remove(item)) return false;
+			Services.Environment.MarkChanged();
+			return true;
+		}
 
 		public override int IndexOfSource(ServiceSource item) => serviceSources.IndexOf(item);
 
-		public override void InsertSource(int index, ServiceSource item) => serviceSources.Insert(index, item);
+		public override void InsertSource(int index, ServiceSource item)
+		{
+			serviceSources.Insert(index, item);
+			Services.Environment.MarkChanged();
+		}
 
-		public override void RemoveSourceAt(int index) => serviceSources.RemoveAt(index);
-		public override void SwapSources(int index1, int index2) => serviceSources.Swap(index1, index2);
+		public override void RemoveSourceAt(int index)
+		{
+			serviceSources.RemoveAt(index);
+			Services.Environment.MarkChanged();
+		}
+
+		public override void SwapSources(int index1, int index2)
+		{
+			if (index1 == index2) return;
+			serviceSources.Swap(index1, index2);
+			Services.Environment.MarkChanged();
+		}
 
 	}
 }

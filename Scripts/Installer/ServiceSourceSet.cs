@@ -62,17 +62,6 @@ namespace LooseLink
 				source.ClearCachedInstancesAndTypes_NoEnvironmentChangeEvent(visitedSets);
 		}
 
-		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent() =>
-			DestroyOwnedInstances_NoEnvironmentChangeEvent(new HashSet<ServiceSourceSet>());
-
-		internal void DestroyOwnedInstances_NoEnvironmentChangeEvent(HashSet<ServiceSourceSet> visitedSets)
-		{
-			if (!visitedSets.Add(this)) return;
-			serviceSources ??= new List<ServiceSource>();
-			foreach (ServiceSource source in serviceSources)
-				source.DestroyOwnedInstances_NoEnvironmentChangeEvent(visitedSets);
-		}
-
 		internal bool IsInResources() =>
 				Resources.LoadAll<ServiceSourceSet>(string.Empty).Any(so => so == this);
 
@@ -104,25 +93,58 @@ namespace LooseLink
 		}
 
 		public int SourceCount => serviceSources.Count;
-		public void AddSource(ServiceSource item) => serviceSources.Add(item);
+		public void AddSource(ServiceSource item)
+		{
+			serviceSources.Add(item);
+			Services.Environment.MarkChanged();
+		}
 
-		public void ClearSources() => serviceSources.Clear();
+		public void ClearSources()
+		{
+			if (serviceSources.Count == 0) return;
+			serviceSources.Clear();
+			Services.Environment.MarkChanged();
+		}
 
 		public bool ContainsSource(ServiceSource item) => serviceSources.Contains(item);
 
-		public bool RemoveSource(ServiceSource item) => serviceSources.Remove(item);
+		public bool RemoveSource(ServiceSource item)
+		{
+			if (!serviceSources.Remove(item)) return false;
+			Services.Environment.MarkChanged();
+			return true;
+		}
 
 		public int IndexOfSource(ServiceSource item) => serviceSources.IndexOf(item);
 
-		public void InsertSource(int index, ServiceSource item) => serviceSources.Insert(index, item);
+		public void InsertSource(int index, ServiceSource item)
+		{
+			serviceSources.Insert(index, item);
+			Services.Environment.MarkChanged();
+		}
 
-		public void RemoveSourceAt(int index) => serviceSources.RemoveAt(index);
-		public void SwapSources(int index1, int index2) => serviceSources.Swap(index1, index2);
+		public void RemoveSourceAt(int index)
+		{
+			serviceSources.RemoveAt(index);
+			Services.Environment.MarkChanged();
+		}
+
+		public void SwapSources(int index1, int index2)
+		{
+			if (index1 == index2) return;
+			serviceSources.Swap(index1, index2);
+			Services.Environment.MarkChanged();
+		}
 
 		public ServiceSource this[int index]
 		{
 			get => serviceSources[index];
-			set => serviceSources[index] = value;
+			set
+			{
+				if (ReferenceEquals(serviceSources[index], value)) return;
+				serviceSources[index] = value;
+				Services.Environment.MarkChanged();
+			}
 		}
 
 	}

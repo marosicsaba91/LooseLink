@@ -23,21 +23,7 @@ namespace LooseLink
 			}
 		}
 
-		readonly struct ConstructedObject
-		{
-			public DynamicServiceSource Source { get; }
-			public Object Instance { get; }
-
-			public ConstructedObject(DynamicServiceSource source, Object obj)
-			{
-				Source = source;
-				Instance = obj;
-			}
-		}
-
 		static readonly List<ConstructionFrame> _constructionStack = new();
-		static readonly List<ConstructedObject> _constructedObjects = new();
-		static bool _constructionFailed;
 
 		readonly Dictionary<Type, object> _typeToServiceOnSource = new();
 		readonly List<Type> _dynamicServiceTypes = new();
@@ -94,6 +80,7 @@ namespace LooseLink
 				return false;
 			}
 
+			bool createdServiceObject = false;
 			if (LoadedObject == null)
 			{
 				if (!TryCreateServiceObject(type, provider))
@@ -101,6 +88,8 @@ namespace LooseLink
 					service = null;
 					return false;
 				}
+
+				createdServiceObject = true;
 			}
 
 			TryInitializeService();
@@ -110,6 +99,24 @@ namespace LooseLink
 				service = GetServiceFromServerObject(type, LoadedObject);
 				if (!IsServiceAlive(service))
 				{
+					if (CreatesLoadedObject && !createdServiceObject)
+					{
+						ForgetCachedServiceObject();
+						if (TryCreateServiceObject(type, provider))
+						{
+							createdServiceObject = true;
+							TryInitializeService();
+							service = GetServiceFromServerObject(type, LoadedObject);
+						}
+					}
+
+					if (IsServiceAlive(service))
+					{
+						_instantiatedServices[type] = service;
+						Services.Environment.MarkChanged();
+						return true;
+					}
+
 					_instantiatedServices.Remove(type);
 					service = null;
 					return false;
@@ -117,6 +124,9 @@ namespace LooseLink
 
 				_instantiatedServices[type] = service;
 			}
+
+			if (createdServiceObject)
+				Services.Environment.MarkChanged();
 
 			return true;
 		}
@@ -136,9 +146,6 @@ namespace LooseLink
 				return false;
 			}
 
-			bool isRootConstruction = _constructionStack.Count == 0;
-			if (isRootConstruction)
-				_constructedObjects.Clear();
 			_constructionStack.Add(new(this, type));
 			_isCreating = true;
 
@@ -155,61 +162,22 @@ namespace LooseLink
 				}
 
 				Object createdObject = Instantiate(parentObject);
-				if (_constructionFailed || createdObject == null)
-				{
-					DestroyOwnedObject(createdObject);
+				if (createdObject == null)
 					return false;
-				}
 
 				LoadedObject = createdObject;
 				_instantiatedServices.Clear();
-				_constructedObjects.Add(new(this, createdObject));
 				return true;
 			}
 			finally
 			{
 				_isCreating = false;
 				_constructionStack.RemoveAt(_constructionStack.Count - 1);
-				if (isRootConstruction)
-				{
-					bool constructionFailed = _constructionFailed;
-					_constructionFailed = false;
-					if (constructionFailed)
-						RollbackConstructedObjects();
-					else
-						_constructedObjects.Clear();
-				}
 			}
-		}
-
-		static void RollbackConstructedObjects()
-		{
-			List<ConstructedObject> constructedObjects = new(_constructedObjects);
-			_constructedObjects.Clear();
-			for (int i = constructedObjects.Count - 1; i >= 0; i--)
-			{
-				ConstructedObject constructedObject = constructedObjects[i];
-				constructedObject.Source.RollbackConstructedObject(constructedObject.Instance);
-			}
-		}
-
-		void RollbackConstructedObject(Object constructedObject)
-		{
-			if (!ReferenceEquals(LoadedObject, constructedObject))
-				return;
-
-			LoadedObject = null;
-			_isInitialized = false;
-			_instantiatedServices.Clear();
-			DestroyOwnedObject(constructedObject);
 		}
 
 		void ReportCircularConstruction(Type requestedType)
 		{
-			if (_constructionFailed)
-				return;
-
-			_constructionFailed = true;
 			List<string> dependencyChain = new();
 			foreach (ConstructionFrame frame in _constructionStack)
 				dependencyChain.Add($"{frame.Source.Name} ({frame.RequestedType.Name})");
@@ -246,7 +214,7 @@ namespace LooseLink
 		}
 
 		protected abstract bool NeedParentTransformForLoad { get; }
-		protected virtual bool OwnsLoadedObject => false;
+		protected virtual bool CreatesLoadedObject => false;
 
 		protected abstract Object Instantiate(Transform parent);
 
@@ -386,34 +354,32 @@ namespace LooseLink
 
 		public void ClearCachedInstancesAndTypes()
 		{
-			LoadedObject = null;
-			_isInitialized = false;
-			_instantiatedServices.Clear();
+			ForgetCachedServiceObject();
 			ClearCachedTypes();
 		}
 
-		public void DestroyOwnedInstance()
+		void ForgetCachedServiceObject()
 		{
-			if (!OwnsLoadedObject || LoadedObject == null)
-				return;
-
-			Object ownedInstance = LoadedObject;
 			LoadedObject = null;
 			_isInitialized = false;
 			_instantiatedServices.Clear();
-
-			DestroyOwnedObject(ownedInstance);
 		}
 
-		void DestroyOwnedObject(Object ownedObject)
+		public bool TryDestroyCreatedService()
 		{
-			if (!OwnsLoadedObject || ownedObject == null)
-				return;
+			if (!CreatesLoadedObject || LoadedObject == null)
+				return false;
+
+			Object createdService = LoadedObject;
+			ForgetCachedServiceObject();
 
 			if (Application.isPlaying)
-				Object.Destroy(ownedObject);
+				Object.Destroy(createdService);
 			else
-				Object.DestroyImmediate(ownedObject);
+				Object.DestroyImmediate(createdService);
+
+			Services.Environment.MarkChanged();
+			return true;
 		}
 
 		public void ClearCachedTypes()

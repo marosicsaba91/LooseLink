@@ -36,7 +36,6 @@ namespace LooseLink
 			{
 				IsDestroying = true;
 				ResetPermanentProxies();
-				DestroyAllOwnedInstances();
 				ClearAllCachedData();
 				_environment.ClearAllState_NoEnvironmentChangeEvent();
 				AreServiceLocatorInitialized = false;
@@ -62,7 +61,6 @@ namespace LooseLink
 			IsDestroying = false;
 			AreServiceLocatorInitialized = true;
 			_environment.ReportAmbiguousBindings();
-			ReconnectPermanentProxies();
 
 			SetupTime = DateTime.Now - start;
 			if (_debugLogs)
@@ -89,9 +87,6 @@ namespace LooseLink
 		}
 
 		static readonly List<ServiceSource> _sourceCache = new();
-
-		internal static void DestroyAllOwnedInstances() =>
-			Environment.DestroyAllOwnedInstances();
 
 		internal static void ClearAllCachedData()
 		{
@@ -184,12 +179,6 @@ namespace LooseLink
 
 		internal static IEnumerable<IServiceSourceProvider> GetAllInstallers() =>
 			Environment.GetAllInstallers();
-
-		static void ReconnectPermanentProxies()
-		{
-			foreach (IPermanentProxy proxy in _permanentProxies.Values.ToArray())
-				proxy.Reconnect();
-		}
 
 		static void ResetPermanentProxies()
 		{

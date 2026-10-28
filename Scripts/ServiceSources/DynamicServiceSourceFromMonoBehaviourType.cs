@@ -34,7 +34,7 @@ namespace LooseLink
 		}
 
 		protected override bool NeedParentTransformForLoad => true;
-		protected override bool OwnsLoadedObject => true;
+		protected override bool CreatesLoadedObject => true;
 
 		protected override Object Instantiate(Transform parent)
 		{

@@ -86,7 +86,7 @@ namespace LooseLink
 				return;
 			if (!Services.Environment.ContainsInstaller(this))
 				return;
-			Services.Environment.InvokeEnvironmentChangedOnInstaller(this);
+			Services.Environment.MarkChanged();
 		}
 
 	}
