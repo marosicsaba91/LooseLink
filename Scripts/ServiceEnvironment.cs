@@ -188,12 +188,16 @@ namespace LooseLink
 
 		internal void MarkChanged()
 		{
+			IncrementRevision();
+			ReportAmbiguousBindings();
+		}
+
+		internal void IncrementRevision()
+		{
 			unchecked
 			{
 				Revision++;
 			}
-
-			ReportAmbiguousBindings();
 		}
 
 		internal void ClearAllState_NoEnvironmentChangeEvent()

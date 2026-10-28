@@ -34,8 +34,6 @@ namespace LooseLink
 		bool _isDynamicTypeDataInitialized = false;
 		bool _isInitialized;
 		bool _isCreating;
-		public event Action ConditionsChanged;
-
 		public virtual Object LoadedObject { get; set; } // GameObject or ScriptableObject
 
 		readonly Dictionary<Type, object> _instantiatedServices = new();
@@ -255,11 +253,8 @@ namespace LooseLink
 			_typeToServiceOnSource.Clear();
 			if (SourceObject is GameObject go)
 				_serverObject = go.GetComponent<ServerObject>();
-			ClearConditionSubscriptions();
+			_resolvingConditions.Clear();
 			_resolvingConditions.AddRange(GetTypesOf<IServiceSourceCondition>(SourceObject));
-			foreach (IServiceSourceCondition condition in _resolvingConditions)
-				if (condition is IServiceSourceConditionChangeNotifier notifier)
-					notifier.ConditionChanged += OnConditionChanged;
 
 			foreach (Type concreteType in _allNonAbstractTypes)
 			{
@@ -335,22 +330,6 @@ namespace LooseLink
 		public abstract ServiceSourceTypes SourceType { get; }
 		public abstract IEnumerable<ServiceSourceTypes> AlternativeSourceTypes { get; }
 		public List<IServiceSourceCondition> Conditions => _resolvingConditions;
-
-		void OnConditionChanged() => ConditionsChanged?.Invoke();
-
-		void ClearConditionSubscriptions()
-		{
-			foreach (IServiceSourceCondition condition in _resolvingConditions)
-				if (condition is IServiceSourceConditionChangeNotifier notifier)
-					notifier.ConditionChanged -= OnConditionChanged;
-			_resolvingConditions.Clear();
-		}
-
-		public void Disconnect()
-		{
-			ClearConditionSubscriptions();
-			ConditionsChanged = null;
-		}
 
 		public void ClearCachedInstancesAndTypes()
 		{

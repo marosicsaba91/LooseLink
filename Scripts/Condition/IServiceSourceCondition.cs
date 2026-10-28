@@ -6,8 +6,4 @@
 		string GetConditionMessage();
 	}
 
-	public interface IServiceSourceConditionChangeNotifier : IServiceSourceCondition
-	{
-		event System.Action ConditionChanged;
-	}
 }

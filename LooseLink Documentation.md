@@ -2,11 +2,32 @@
 
 LooseLink is a Unity-native, type-based service locator designed to resolve (locate or create) unique, high-level, singleton-like services. It is a powerful tool for keeping your codebase clean, testable, flexible, and easy to modify.
 
-## The problem we want to solve
+## Table of Contents
+
+- [The Problem We Want to Solve](#the-problem-we-want-to-solve)
+- [Core Model](#core-model)
+- [Service Environment and the Services Window
+  ](#service-environment-and-the-services-window)
+- [Service Sources](#service-sources)
+- [Source Providers](#source-providers)
+  - [Project Level Provider: ServiceSourceSet](#project-level-provider-servicesourceset)
+  - [Scene Level Provider: LocalServiceInstaller](#scene-level-provider-localserviceinstaller)
+  - [GameObject Level Provider: ServerObject](#gameobject-level-provider-serverobject)
+- [Resolution Order](#resolution-order)
+- [Requesting Services](#requesting-services)
+- [Exposing Service Types](#exposing-service-types)
+- [Lazy Creation and Circular Dependencies](#lazy-creation-and-circular-dependencies)
+- [Source Conditions and Fallbacks](#source-conditions-and-fallbacks)
+- [PermanentProxy: Following Service Replacements](#permanentproxy-following-service-replacements)
+- [Runtime Environment Changes](#runtime-environment-changes)
+- [Global LooseLink Settings](#global-looselink-settings)
+- [Step-by-Step Guide](#step-by-step-guide)
+
+## The Problem We Want to Solve
 
 Unity classes often contain too much information about other classes and the overall architecture of the software.
 
-A client class usually need to know most of this to be able to use a high-level system:
+A client class usually needs to know most of the following to use a high-level system:
 
 - What is its exact class?
 - Is it a component in a scene or a ScriptableObject?
@@ -18,36 +39,76 @@ This is what it should actually know:
 
 - I need this functionality to do my work.
 
-LooseLink is designed to make this blissful ignorance called loose coupling possible and easy.
+LooseLink is designed to make this blissful ignorance (the essence of loose coupling) possible and easy.
 
 ---
 
-To resolve a service the cliant only needs to request it like this:
+To resolve a service, the client only needs to request it like this:
 
 ```csharp
 IInputManager input = Services.Get<IInputManager>();
 ```
 
-The resolved object may come from another scene, a prefab, a ScriptableObject, a reusable configuration asset, or an object that does not exist yet. The service locator's job is to determine those details from a service environment that is easy to configure and monitor in the Editor. The client only knows the bare minimum, that it neesd the service.
+The resolved object may come from another scene, a prefab, a ScriptableObject, a reusable configuration asset, or an object that does not exist yet. The service locator's job is to determine those details using a service environment that is easy to configure and monitor in the Editor. The client knows only the bare minimum: that it needs the service.
 
 ----
 
 LooseLink is narrower than a general dependency-injection framework. It is only intended for manager-like, high-level objects where only one service is expected to be active for a given role at a time. This is why only type-based resolution is supported. It is not a general search mechanism for enemies, projectiles, UI elements, or collections of similar low-level objects. This limitation is intentional. LooseLink is built to complement a specific blind spot in Unity's toolset, not to replace its entire serialization system.
 
 
-## Core model
+## Core Model
 
 LooseLink has five principal layers:
 
-- **Service:** Object or only an interfaces of an object exposed to be accassable thrugh the service locator.
-- **Server Object:** A Unity Object (GameObject, MonoBehaviour or ScriptableObject) that provides one or more services.
-- **ServiceSource:** It describes how to access a Server Object and which Services (types) that object provides.
-- **SourceProvider:** It contains one or more service sources.
-- **ServiceEnvironment:** A global state of the software, aware of the currently installed providers.
+- **Service:** An object, or one of its interfaces, exposed through the service locator.
+- **Server Object:** A Unity Object (GameObject, MonoBehaviour, or ScriptableObject) that provides one or more services.
+- [**ServiceSource**](#service-sources): Describes how to access a Server Object and which Services (types) that object provides.
+- [**SourceProvider**](#source-providers): Contains one or more service sources.
+- [**ServiceEnvironment:**](#service-environment-and-the-services-window) The global state that tracks the currently installed providers.
 
 One object can provide several service types. For example, one `GameManager` component may be exposed as `IGameManager`, `ISaveManager`, and `GameManager`.
 
-## Service sources
+What happens when a client [requests a Service](#requesting-services) from LooseLink?
+
+Resolution searches eligible providers and sources in a fixed [Resolution Order](#resolution-order).  
+
+![Service resolution flow](img/service-resolution-diagram.png)
+
+(A blocked or invalid source is skipped so a lower-priority fallback can be used.)
+
+## Service Environment and the Services Window
+
+The **Loose Link Services window is the central monitoring interface of the Service Environment**. LooseLink deliberately makes the complete service environment visible instead of hiding global resolution rules behind code or scattered Inspector references.
+
+Services are configured through the Inspectors of installers, source sets, and server objects. The window monitors the resulting environment during setup and shows its live state during Play Mode. It displays which providers and sources are currently available, their priority and order, the service types they expose, whether a source is eligible, and the exact object currently cached behind a binding. This makes it possible to answer the most important debugging question directly: **what object would LooseLink resolve for this service right now, and why?**
+
+Open the editor window from:
+
+`Tools > Loose Link Services`
+
+![Loose Link Services window](img/loose-link-services-window.png)
+
+The window displays the active environment in four columns:
+
+| Column | Description |
+| --- | --- |
+| Service Sources | Installed providers, nested source sets, and leaf sources. |
+| Source Type | How the source accesses or creates its object. |
+| Services | The classes and interfaces exposed by the source. |
+| Server Object | The currently cached object, with controls for explicit resolution or deletion where applicable. |
+
+The window is the primary workflow for:
+
+- Verifying the environment produced by provider and source configuration in the Inspector.
+- Inspecting [priority and source order](#resolution-order), overrides, [conditions, and fallback behavior](#source-conditions-and-fallbacks).
+- Finding invalid, blocked, missing, or competing bindings before they become difficult runtime bugs.
+- Monitoring the live service environment during Play Mode.
+- Seeing whether a lazy service remains unresolved and, if not, which object is currently cached.
+- Explicitly instantiating a lazy service, clearing cached references, or deleting a created service on demand.
+
+The runtime API does not require the window to remain open. Its purpose is to make LooseLink's otherwise implicit type-based environment easy to observe, understand, and debug throughout development.
+
+## Service Sources
 
 A service source can access a service in several ways:
 
@@ -60,56 +121,62 @@ A service source can access a service in several ways:
 | ScriptableObject Prototype | Clones the asset lazily and returns the clone. |
 | MonoBehaviour Type | Creates a GameObject and adds the configured MonoBehaviour type lazily. |
 | ScriptableObject Type | Creates an instance of the configured ScriptableObject type lazily. |
-| ServiceSourceSet | Expands a reusable, nested collection of other sources. |
+| [ServiceSourceSet](#source-providers) | Expands a reusable, nested collection of other sources. |
 
 When a source creates an object, it caches the object and reuses it while it remains alive.
 
-## Providers
+If a cached Unity service is destroyed without notifying LooseLink, the source detects the missing object during the next resolution attempt. A source configured to create its service can then create and cache a replacement and mark the environment as changed.
 
-LooseLink supports three provider forms.
+(LooseLink does not own service instances. It is responsible only for providing an object of the requested type at the time of the request.)
 
-### LocalServiceInstaller
+## Source Providers
 
-A scene component containing multiple service sources. Its sources are eligible while the installer is installed, active, and enabled.
+LooseLink supports three provider forms.   
+They exist at different levels of the game's lifecycle.
 
-### ServerObject
-
-A component that exposes services from its own GameObject. Enable **Install Automatically** when the object should register itself without appearing in another installer.
-
-### ServiceSourceSet
-
+### Project Level Provider: **ServiceSourceSet**  
 A reusable ScriptableObject containing service configuration. A set can be nested inside an installer or another set.
+Enable the **Use as Global Installer** setting on the ServiceSourceSet to load it automatically.  
+Global sets must be stored inside a `Resources` folder so they are discoverable in both the Editor and player builds.
 
-Enable **Use as Global Installer** to load a set automatically. Global sets must be stored inside a `Resources` folder so they are discoverable in both the Editor and player builds.
+A source set can also be installed or uninstalled explicitly at runtime:
 
-## Priorities and overrides
+```csharp
+Services.Environment.TryInstallServiceSourceSet(sourceSet);
+Services.Environment.TryUninstallServiceSourceSet(sourceSet);
+```
 
-Providers are resolved from highest priority to lowest priority. This allows a scene, game mode, test, or platform-specific provider to override a global default.
+### Scene Level Provider: **LocalServiceInstaller**    
+A scene component containing multiple service sources.   
+Its sources are eligible while the installer is installed, active, and enabled.
 
-Sources inside one provider are resolved in their serialized list order. Their order can be changed in the Inspector.
+Lazily created GameObjects are parented under the component installer that provides them. When an asset provider such as a global `ServiceSourceSet` creates a GameObject, it is parented under LooseLink's persistent `Services` GameObject instead. Automatic component installers also provide a **Don't Destroy On Load** option when the installer and its created children should survive scene changes.
 
-Local installers support either:
+![Local Service Installer Inspector](img/local-service-installer-inspector.png)
+
+### GameObject Level Provider: **ServerObject**  
+A component that exposes services from its own GameObject.   
+Enable **Install Automatically** when the object should register itself.  
+If **Install Automatically** is not enabled, `ServerObject` can still be used to configure the ServiceSource type and the exposed services directly on the GameObject. In this case, use a `LocalServiceInstaller` to add the object to the ServiceEnvironment.
+
+![Server Object Inspector](img/server-object-inspector.png)
+
+## Resolution Order
+
+Providers are sorted by a priority value.  
+Providers with higher priority values are searched first.
+
+Local installers support two types of priorities:
 
 - A fixed priority value.
 - **Highest At Installation**, which assigns a value above the current maximum when installed.
 
-Competing bindings at the same provider priority are reported as configuration warnings. Assign distinct priorities when precedence between providers matters.
+Competing bindings at the same provider priority are reported as configuration warnings.
+Assign distinct priorities when precedence between providers matters.
 
-## Exposing service types
+Sources inside one provider are searched in their serialized list order. Their order can be changed in the source provider's Inspector.
 
-Mark a class or interface with `[ServiceType]` to make it discoverable automatically:
-
-```csharp
-[ServiceType]
-public interface IInputManager
-{
-	void ReadInput();
-}
-```
-
-Other compatible classes and interfaces can be exposed explicitly through the Inspector.
-
-## Requesting services
+## Requesting Services
 
 The generic API is normally the clearest option:
 
@@ -132,28 +199,52 @@ if (Services.TryGet(out IInputManager input))
 }
 ```
 
-Resolution searches eligible providers by priority and sources by list order. A blocked or invalid source is skipped so a lower-priority fallback can be used.
+The non-generic overload supports types selected at runtime:
 
-`Services.Get` applies the configured missing-service policy when resolution fails. The available policies are:
+```csharp
+if (Services.TryGet(typeof(IInputManager), out object service))
+{
+	IInputManager input = (IInputManager)service;
+	input.ReadInput();
+}
+```
+
+`Services.Get` applies the configured [missing-service policy](#global-looselink-settings) when resolution fails. The available policies are:
 
 - Return `null`.
 - Return `null` and log a warning.
 - Throw an exception.
 
-## Lazy creation and initialization
+## Exposing Service Types
 
-Created services are normally instantiated only when first requested. The source caches the resulting object for later requests.
+Mark a class or interface with the `[ServiceType]` attribute to make it discoverable automatically:
 
-Unity invokes `Awake()` and `OnEnable()` synchronously during `Instantiate`, `AddComponent`, and `CreateInstance`. LooseLink cannot cache the new object until that Unity construction call returns.
-
-This means circular dependency lookup from `Awake()` or `OnEnable()` is not safe:
-
-```text
-A.Awake() → Get<B>()
-B.Awake() → Get<A>()
+```csharp
+[ServiceType]
+public interface IInputManager
+{
+	void ReadInput();
+}
 ```
 
-LooseLink detects the second request for A, returns failure for that lookup, and logs the construction chain with advice to use `IInitializable`. It does not destroy or roll back the objects that Unity already created.
+Other classes and interfaces can be exposed explicitly through the Inspector.
+
+
+## Lazy Creation and Circular Dependencies
+
+If a Server Object is instantiated lazily when first requested, circular dependency resolution from `Awake()` or `OnEnable()` is not safe:
+
+```text
+Foo() → Get<A>()     // Creates A...
+A.Awake() → Get<B>() // Creates B...
+B.Awake() → Get<A>() // A already exists, but it cannot be returned because it has not been cached yet.
+```
+
+(Unity invokes `Awake()` and `OnEnable()` synchronously during `Instantiate`, `AddComponent`, and `CreateInstance`. This is why LooseLink cannot cache the new object until that Unity construction call returns.)
+
+LooseLink detects the second request for A, fails that lookup, and logs the construction chain with advice to use [`IInitializable`](#the-iinitializable-interface).
+
+### The IInitializable Interface
 
 Use `IInitializable` when lazily created services need post-creation setup or may depend on one another:
 
@@ -169,20 +260,26 @@ public sealed class GameplayManager : MonoBehaviour, IInitializable
 }
 ```
 
-LooseLink marks the object as initialized before invoking callbacks, so circular resolution through `Initialize()` is safe. Each created service object is initialized once per cached instance.
+LooseLink marks the object as initialized before invoking callbacks, so circular resolution through `Initialize()` is safe. The initialization pass runs once per cached server object. For a created GameObject, LooseLink invokes every `IInitializable` component on that GameObject; for a created ScriptableObject, it invokes the ScriptableObject itself when it implements the interface.
 
-## Conditions and fallbacks
+## Source Conditions and Fallbacks
 
-A component or ScriptableObject associated with a source can implement `IServiceSourceCondition`:
+A source can have one or more conditions. A component or ScriptableObject associated with the source defines a condition by implementing `IServiceSourceCondition`. LooseLink considers the source eligible only when every condition returns `true` from `CanResolve()`. `GetConditionMessage()` explains the current result in the Editor.
+
+LooseLink includes a `PlatformCondition` component for GameObject-based sources. Add it to the source GameObject and select the supported `RuntimePlatform` values in the Inspector. The source is skipped when the current platform is not selected; an empty platform list makes it unavailable everywhere.
+
+![Platform source condition in the Inspector](img/service-source-condition-inspector.png)
+
+Custom conditions use the same interface:
 
 ```csharp
-public sealed class PlatformCondition : MonoBehaviour, IServiceSourceCondition
+public sealed class OnlineCondition : MonoBehaviour, IServiceSourceCondition
 {
 	public bool CanResolve() =>
-		Application.platform == RuntimePlatform.WindowsPlayer;
+		Application.internetReachability != NetworkReachability.NotReachable;
 
 	public string GetConditionMessage() =>
-		"Available only on Windows.";
+		"Available only while the application is online.";
 }
 ```
 
@@ -192,18 +289,20 @@ When `CanResolve()` returns `false`, LooseLink skips that source and continues s
 2. Mobile input manager.
 3. Default fallback input manager.
 
-For a condition that can change at runtime, implement `IServiceSourceConditionChangeNotifier` and raise `ConditionChanged`:
+Ordinary `Services.Get` calls evaluate conditions during each resolution. When a runtime condition changes, notify LooseLink so [permanent proxies](#permanentproxy-following-service-replacements) know their cached binding may be stale:
 
 ```csharp
-public interface IServiceSourceConditionChangeNotifier : IServiceSourceCondition
+public void SetOnline(bool isOnline)
 {
-	event Action ConditionChanged;
+	if (_isOnline == isOnline)
+		return;
+
+	_isOnline = isOnline;
+	Services.NotifyEnvironmentChanged();
 }
 ```
 
-The notification advances the environment revision. It does not eagerly resolve services or invoke client callbacks.
-
-## Following service replacements
+## PermanentProxy: Following Service Replacements
 
 An ordinary lookup returns the service active at that moment:
 
@@ -224,7 +323,7 @@ input.BindingChanged += (previous, current) =>
 input.Target.ReadInput();
 ```
 
-Permanent proxies are lazy. Environment mutations only advance a revision number. A proxy reevaluates its binding the next time `Target` or `TryGetTarget` is accessed, and `BindingChanged` is invoked during that access only when the newly resolved object differs from the cached object.
+Permanent proxies are lazy. [Environment mutations](#runtime-environment-changes) only advance a revision number. A proxy reevaluates its binding the next time `Target` or `TryGetTarget` is accessed, and `BindingChanged` is invoked during that access only when the newly resolved object differs from the cached object.
 
 The proxy members have deliberately different side-effect guarantees:
 
@@ -237,7 +336,7 @@ The proxy members have deliberately different side-effect guarantees:
 
 `Services.GetProxy<T>()` returns a shared proxy for that service type. Event subscriptions therefore strongly retain their subscribers. Unity clients should unsubscribe in `OnDisable()` or `OnDestroy()`.
 
-## Runtime environment changes
+## Runtime Environment Changes
 
 The environment revision changes when, for example:
 
@@ -245,82 +344,125 @@ The environment revision changes when, for example:
 - An installer is enabled or disabled.
 - A source is enabled, disabled, reordered, or reconfigured.
 - Provider priority changes.
-- A source condition reports a change.
+- Client code calls `Services.NotifyEnvironmentChanged()`.
 - A lazily created service is created or explicitly destroyed.
 
-LooseLink does not publish an eager environment-wide change event. Clients that care about replacements use `PermanentProxy<T>` and observe changes on their next proxy access.
+LooseLink does not publish an eager environment-wide change event. Clients that care about replacements use [`PermanentProxy<T>`](#permanentproxy-following-service-replacements) and observe changes on their next proxy access.
 
-## Service lifetime and ownership
+## Global LooseLink Settings
 
-LooseLink does not own service instances.
+The settings button in the [Loose Link Services window](#loose-link-services-window) can create a `ServiceLocationSetupData` asset. Store exactly one setup asset in a `Resources` folder.
 
-Sources cache the objects they access or create, but disabling a source, replacing its configuration, uninstalling a provider, clearing the environment, or leaving Play Mode does not cause LooseLink to destroy the service.
+The setup asset controls when LooseLink initializes. Initialization creates a small database used to improve runtime performance and has a one-time cost per session. Initializing at startup pays that cost before normal gameplay; lazy initialization defers it until the first use of `Services`, where it may cause a small one-time hitch.
 
-If a cached Unity object has been destroyed, the source treats it as unavailable. A source configured to create services may create and cache a replacement on the next resolution. It does not delete any surviving previous container while doing so.
-
-Cache clearing only forgets references. If a still-live created object is forgotten and the source resolves again, another instance may be created. Managing that possibility is the developer's responsibility.
-
-Explicit deletion remains available for tools or developer-controlled cleanup:
-
-```csharp
-bool destroyed = serviceSource.TryDestroyCreatedService();
-```
-
-This succeeds only when the source created the cached object. LooseLink never calls it automatically. Existing scene objects, prefab assets, and ScriptableObject assets are not destroyed by this method.
-
-This policy matches the usual provider lifetimes:
-
-- A service parented under a scene installer normally disappears when its scene unloads.
-- A `ServerObject` and its services share the same GameObject lifetime.
-- A global service normally lives for the application lifetime.
-- Unusual cross-scene or runtime-created ScriptableObject lifetimes remain application responsibilities.
-
-## Setup asset
-
-The settings button in the Loose Link Services window can create a `ServiceLocationSetupData` asset. Store exactly one setup asset in a `Resources` folder.
-
-The setup asset controls:
+The available settings are:
 
 - Whether LooseLink initializes at Play Mode start in the Editor.
 - Whether LooseLink initializes before the first scene in a player build.
 - The action taken when `Services.Get` cannot resolve a service.
 
-Without a setup asset, LooseLink uses an in-memory default configuration.
+Without a setup asset, LooseLink uses a default configuration:
 
-## Loose Link Services window
+- **Initialize at Play Mode start in the Editor:** disabled. LooseLink initializes lazily when `Services` is first used.
+- **Initialize at startup in a player build:** enabled. LooseLink initializes before the first scene loads.
+- **When a service cannot be resolved:** return `null` and log a warning.
 
-Open the editor window from:
+## Step-by-Step Guide
 
-`Tools > Loose Link Services`
+This walkthrough creates an audio-manager service from a prefab when it is first requested.
 
-The window displays the active environment in four columns:
+### 1. Define the Service
 
-| Column | Description |
-| --- | --- |
-| Service Sources | Installed providers, nested source sets, and source leaves. |
-| Source Type | How the source accesses or creates its object. |
-| Services | The classes and interfaces exposed by the source. |
-| Server Object | The currently cached object, with controls for explicit resolution or deletion where applicable. |
+Create the interface that clients will depend on and mark it as a service type:
 
-The window supports source configuration, priority inspection, runtime monitoring, explicit lazy instantiation, cache clearing, and explicit deletion of a created service.
+```csharp
+using LooseLink;
 
-## Recommended use
+[ServiceType]
+public interface IAudioManager
+{
+	void Play(string soundId);
+}
+```
 
-LooseLink is best suited to unique services selected by role rather than location:
+Without the [ServiceType] interface you can set up the service on it's Source Provider's Editor Window manually.
 
-- `ISaveManager`
-- `IAudioManager`
-- `IInputManager`
-- `SurfaceNavigation`
-- `GameplayBodyManager`
+### 2. Implement the Service
 
-Use ordinary Inspector references when both objects already exist together in a known scene or asset. Use LooseLink when a dependency:
+Create a MonoBehaviour that implements the interface:
 
-- Lives in another scene.
-- Is represented by an interface.
-- Is selected by platform, game mode, or runtime condition.
-- Needs a local override over a global default.
-- Should be created only when first requested.
-- May be replaced during the consumer's lifetime.
+```csharp
+using UnityEngine;
 
-In one sentence: **LooseLink is a Unity-native, type-based service environment that selects, creates, caches, overrides, and lazily tracks singleton-like manager objects without owning their lifetime.**
+public sealed class AudioManager : MonoBehaviour, IAudioManager
+{
+	public void Play(string soundId)
+	{
+		// Play the requested sound.
+	}
+}
+```
+
+Add `AudioManager` to a GameObject and save that GameObject as a prefab.
+
+### 3. Add an Installer
+
+Create or select a GameObject in the scene and add a [`LocalServiceInstaller`](#source-providers) component. This installer makes its configured sources available while its GameObject is active and enabled.
+
+Enable **Don't Destroy On Load** if the installer and the services created under it should survive scene changes.
+
+### 4. Add the Prefab as a Source
+
+In the `LocalServiceInstaller` Inspector:
+
+1. Click **Add New Services Source**.
+2. Drag the audio-manager prefab into the source object field.
+3. Select **Prefab Prototype** as the source type.
+4. Expand **Services** and verify that `IAudioManager` is listed.
+
+If the `IAudioManager` has `[ServiceType]` and the prefab component implements it, LooseLink exposes the interface automatically. Use the add-service control when another compatible type needs to be exposed explicitly.
+
+### 5. Verify the Environment
+
+Open [`Tools > Loose Link Services`](#loose-link-services-window). The installer, prefab source, source type, and `IAudioManager` binding should appear in the environment.
+
+Before the first request, the Server Object column shows that the lazy service has not been instantiated. During Play Mode, the window shows the created object after resolution.
+
+### 6. Request the Service
+
+Resolve the interface from a client:
+
+```csharp
+using LooseLink;
+using UnityEngine;
+
+public sealed class MenuSounds : MonoBehaviour
+{
+	IAudioManager _audio;
+
+	void Awake()
+	{
+		_audio = Services.Get<IAudioManager>();
+	}
+
+	public void PlayConfirmSound()
+	{
+		_audio.Play("Confirm");
+	}
+}
+```
+
+The first request instantiates the prefab, caches its GameObject, and returns its `IAudioManager` component. Later requests reuse the same cached object while it remains alive.
+
+### 7. Add Initialization When Needed
+
+If the created service needs to resolve other services after Unity construction, implement [`IInitializable`](#the-iinitializable-interface) and perform that setup in `Initialize()`. Use this instead of `Awake()` or `OnEnable()` when lazy services may have circular dependencies.
+
+### Common Variations
+
+- To expose an object that already exists in the scene, add its GameObject as a source and use **Scene GameObject**.
+- To return a prefab component or ScriptableObject asset without cloning it, use the corresponding **File** source type.
+- To reuse a group of sources, create a [`ServiceSourceSet`](#source-providers) and add that set to an installer or another set.
+- To make a source set globally available, place it in a `Resources` folder and enable **Use as Global Installer**.
+- To provide fallbacks, add multiple eligible sources and control precedence through [provider priority and source order](#resolution-order), and [source conditions](#source-conditions-and-fallbacks).
+- To [follow service replacements](#permanentproxy-following-service-replacements), use `Services.GetProxy<T>()` instead of retaining the result of a single `Services.Get<T>()` call.

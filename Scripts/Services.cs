@@ -22,6 +22,7 @@ namespace LooseLink
 		static readonly ServiceEnvironment _environment = new();
 		static readonly Dictionary<Type, IPermanentProxy> _permanentProxies = new();
 		public static ServiceEnvironment Environment => _environment;
+		public static void NotifyEnvironmentChanged() => _environment.IncrementRevision();
 		internal static bool IsDestroying { get; private set; }
 		internal static bool AreServiceLocatorInitialized { get; private set; }
 

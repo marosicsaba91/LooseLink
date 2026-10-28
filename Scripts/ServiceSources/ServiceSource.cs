@@ -378,11 +378,6 @@ namespace LooseLink
 
 		internal void InitDynamicSource()
 		{
-			if (_dynamicSource != null)
-			{
-				_dynamicSource.ConditionsChanged -= SourceChanged;
-				_dynamicSource.Disconnect();
-			}
 			_dynamicSource = null;
 			_sourceSet = null;
 			if (serviceSourceObject is ServiceSourceSet set)
@@ -392,9 +387,6 @@ namespace LooseLink
 			}
 			else
 				_dynamicSource = GetServiceSourceOf(serviceSourceObject, preferredSourceType);
-
-			if (_dynamicSource != null)
-				_dynamicSource.ConditionsChanged += SourceChanged;
 		}
 
 		public void CollectPossibleAdditionalTypes(List<Type> result)
