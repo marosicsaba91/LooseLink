@@ -13,24 +13,33 @@ using UnityEditor;
 namespace LooseLink
 {
 
-	[NoAutoStaticsCleanup]
-	public static class Services
+	[AutoStaticsCleanup]
+	public static partial class Services
 	{
 		static readonly bool _debugLogs = false;
 		public static TimeSpan SetupTime { get; private set; }
 
-		static readonly ServiceEnvironment _environment = new();
-		static readonly Dictionary<Type, IPermanentProxy> _permanentProxies = new();
-		public static ServiceEnvironment Environment => _environment;
-		public static void NotifyEnvironmentChanged() => _environment.IncrementRevision();
+		static ServiceEnvironment _environment = new();
+		static Dictionary<Type, IPermanentProxy> _permanentProxies = new();
+		public static ServiceEnvironment Environment
+		{
+			get
+			{
+				TryInit();
+				return _environment;
+			}
+		}
+		public static void NotifyEnvironmentChanged() => Environment.IncrementRevisionCounter();
 		internal static bool IsDestroying { get; private set; }
 		internal static bool AreServiceLocatorInitialized { get; private set; }
-
-		static Services() => Init();
 
 		static Transform _parentObject;
 
 #if UNITY_EDITOR
+		[OnCodeUnloading]
+		static void UnsubscribeFromEditorEvents() =>
+			EditorApplication.playModeStateChanged -= OnUnityPlayModeChanged;
+
 		static void OnUnityPlayModeChanged(PlayModeStateChange change)
 		{
 			if (change == PlayModeStateChange.ExitingPlayMode)
@@ -42,11 +51,11 @@ namespace LooseLink
 				AreServiceLocatorInitialized = false;
 			}
 			else if (change == PlayModeStateChange.EnteredEditMode)
-				Init();
+				TryInit();
 		}
 #endif
 
-		internal static void Init()
+		internal static void TryInit()
 		{
 			if (AreServiceLocatorInitialized)
 				return;
@@ -76,6 +85,7 @@ namespace LooseLink
 		{
 			get
 			{
+				TryInit();
 				if (_parentObject == null)
 				{
 					_parentObject = new GameObject("Services").transform;
@@ -101,6 +111,7 @@ namespace LooseLink
 
 		public static PermanentProxy<TService> GetProxy<TService>()
 		{
+			TryInit();
 			Type serviceType = typeof(TService);
 			if (_permanentProxies.TryGetValue(serviceType, out IPermanentProxy existingProxy))
 				return (PermanentProxy<TService>)existingProxy;
@@ -132,6 +143,7 @@ namespace LooseLink
 
 		public static bool TryGet(Type looseServiceType, out object service)
 		{
+			TryInit();
 			if (_debugLogs)
 				Debug.Log("Resolve");
 

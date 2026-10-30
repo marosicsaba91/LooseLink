@@ -210,7 +210,7 @@ namespace LooseLink
 
 		void RefreshBindingDiagnostics()
 		{
-			int revision = Services.Environment.Revision;
+			int revision = Services.Environment.RevisionCounter;
 			if (_bindingDiagnosticsRevision == revision)
 				return;
 

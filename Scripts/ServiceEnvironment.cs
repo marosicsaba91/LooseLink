@@ -181,15 +181,15 @@ namespace LooseLink
 
 		// CHANGES ---------------------
 
-		internal int Revision { get; private set; }
+		internal int RevisionCounter { get; private set; }
 
-		internal void MarkChanged() => IncrementRevision();
+		internal void MarkChanged() => IncrementRevisionCounter();
 
-		internal void IncrementRevision()
+		internal void IncrementRevisionCounter()
 		{
 			unchecked
 			{
-				Revision++;
+				RevisionCounter++;
 			}
 		}
 

@@ -27,7 +27,7 @@ namespace LooseLink
 		}
 
 		public bool HasTarget =>
-			_resolvedRevision == Services.Environment.Revision &&
+			_resolvedRevision == Services.Environment.RevisionCounter &&
 			_hasTarget &&
 			IsTargetAlive(_target);
 
@@ -49,7 +49,7 @@ namespace LooseLink
 		void RefreshBinding()
 		{
 			bool hasTarget = Services.TryGet(out T target) && IsTargetAlive(target);
-			SetBinding(target, hasTarget, Services.Environment.Revision);
+			SetBinding(target, hasTarget, Services.Environment.RevisionCounter);
 		}
 
 		void SetBinding(T target, bool hasTarget, int resolvedRevision)

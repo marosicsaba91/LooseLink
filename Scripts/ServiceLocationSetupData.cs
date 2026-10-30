@@ -71,7 +71,7 @@ namespace LooseLink
 				return;
 			if (!Application.isEditor && !instance.setupAtStartInBuild)
 				return;
-			Services.Init();
+			Services.TryInit();
 		}
 
 		public static bool AreMultipleSetupInstances
